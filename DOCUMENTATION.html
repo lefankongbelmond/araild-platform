@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARAILD Platform — Documentation Complète</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', system-ui, sans-serif; background: #0F0A1E; color: #e2e8f0; line-height: 1.6; }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  .hero { background: linear-gradient(135deg, #7B2D8B 0%, #1B4FD8 100%); padding: 60px 24px; text-align: center; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); color: white; margin-bottom: 12px; }
+  .hero p { color: rgba(255,255,255,0.75); font-size: 1.1rem; max-width: 600px; margin: 0 auto 24px; }
+  .badge { display: inline-block; padding: 6px 16px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 100px; color: white; font-size: 0.8rem; font-weight: 600; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 24px 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+
+  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: #C084FC; margin-bottom: 12px; }
+  .card ul { list-style: none; }
+  .card li { font-size: 0.85rem; color: #94a3b8; padding: 4px 0; padding-left: 16px; position: relative; }
+  .card li::before { content: '→'; position: absolute; left: 0; color: #7B2D8B; }
+
+  .section-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: white; margin-bottom: 8px; }
+  .section-sub { color: #94a3b8; margin-bottom: 28px; font-size: 0.95rem; }
+
+  .code-block { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+  .code-block code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #a5f3fc; white-space: pre; }
+  .comment { color: #64748b; }
+  .keyword { color: #c084fc; }
+  .string { color: #86efac; }
+  .cmd { color: #fbbf24; }
+
+  .step { display: flex; gap: 16px; margin-bottom: 20px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 3px solid #7B2D8B; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #7B2D8B, #1B4FD8); color: white; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
+  .step-content h4 { color: white; font-weight: 700; margin-bottom: 6px; }
+  .step-content p { color: #94a3b8; font-size: 0.87rem; }
+
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; margin: 2px; }
+  .tag-purple { background: rgba(192,132,252,0.15); color: #C084FC; }
+  .tag-blue { background: rgba(96,165,250,0.15); color: #60A5FA; }
+  .tag-green { background: rgba(134,239,172,0.15); color: #86EFAC; }
+  .tag-red { background: rgba(252,165,165,0.15); color: #FCA5A5; }
+  .tag-yellow { background: rgba(253,224,71,0.15); color: #FDE047; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { text-align: left; padding: 10px 14px; background: rgba(123,45,139,0.3); color: #C084FC; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.85rem; color: #cbd5e1; }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 48px 0; }
+  .highlight-box { background: linear-gradient(135deg, rgba(123,45,139,0.2), rgba(27,79,216,0.2)); border: 1px solid rgba(123,45,139,0.4); border-radius: 16px; padding: 28px; margin: 24px 0; }
+  .highlight-box h3 { color: #C084FC; font-size: 1.1rem; margin-bottom: 8px; }
+  .highlight-box p { color: #94a3b8; font-size: 0.9rem; }
+
+  .file-tree { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #94a3b8; line-height: 1.9; }
+  .file-tree .dir { color: #60A5FA; font-weight: 600; }
+  .file-tree .file { color: #86EFAC; }
+  .file-tree .config { color: #FDE047; }
+
+  section { padding: 60px 0; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="badge">🌍 ONG Cameroun — Plateforme Full-Stack Complète</span>
+  <h1 style="margin-top:16px">ARAILD Platform</h1>
+  <p>Documentation technique complète de la plateforme web de levée de fonds et de gestion d'impact pour l'ONG ARAILD</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+    <span class="tag tag-purple">Next.js 14</span>
+    <span class="tag tag-blue">Node.js + Express</span>
+    <span class="tag tag-green">PostgreSQL + Prisma</span>
+    <span class="tag tag-red">Stripe</span>
+    <span class="tag tag-yellow">Docker</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="grid-3" style="margin-top:0">
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#C084FC;font-family:'Playfair Display',serif">79</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Fichiers générés</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#60A5FA;font-family:'Playfair Display',serif">8</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Tables PostgreSQL</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#86EFAC;font-family:'Playfair Display',serif">30+</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Endpoints API REST</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#FDE047;font-family:'Playfair Display',serif">14</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Pages frontend</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#FCA5A5;font-family:'Playfair Display',serif">5</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Services Docker</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2.5rem;font-weight:800;color:#C084FC;font-family:'Playfair Display',serif">2</div>
+      <div style="color:#94a3b8;font-size:0.85rem;margin-top:4px">Langues (FR/EN)</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- QUICK START -->
+  <section>
+    <h2 class="section-title">🚀 Démarrage rapide</h2>
+    <p class="section-sub">En 5 minutes, votre plateforme tourne en local</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Configurer le backend</h4>
+        <div class="code-block"><code><span class="cmd">cd backend</span>
+<span class="cmd">cp .env.example .env</span>   <span class="comment"># puis éditez les variables</span>
+<span class="cmd">npm install</span>
+<span class="cmd">npx prisma db push</span>      <span class="comment"># crée les tables</span>
+<span class="cmd">npm run db:seed</span>         <span class="comment"># données initiales</span>
+<span class="cmd">npm run dev</span>             <span class="comment"># → http://localhost:4000</span></code></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Configurer le frontend</h4>
+        <div class="code-block"><code><span class="cmd">cd frontend</span>
+<span class="cmd">echo "NEXT_PUBLIC_API_URL=http://localhost:4000/api" > .env.local</span>
+<span class="cmd">npm install</span>
+<span class="cmd">npm run dev</span>             <span class="comment"># → http://localhost:3000</span></code></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Accéder à l'admin</h4>
+        <p>URL : <strong style="color:#C084FC">http://localhost:3000/admin/login</strong></p>
+        <p style="margin-top:6px">Email : <code style="color:#86EFAC">admin@araild.com</code> · MDP : <code style="color:#86EFAC">Admin@ARAILD2024!</code></p>
+        <p style="margin-top:6px;color:#ef4444;font-size:0.82rem">⚠️ Changez ce mot de passe immédiatement en production !</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Production avec Docker</h4>
+        <div class="code-block"><code><span class="cmd">cp .env.example .env</span>    <span class="comment"># remplir TOUTES les variables</span>
+<span class="cmd">docker-compose up -d</span>    <span class="comment"># lance les 5 services</span>
+<span class="cmd">docker exec araild_api npx prisma migrate deploy</span>
+<span class="cmd">docker exec araild_api npm run db:seed</span></code></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ARCHITECTURE -->
+  <section>
+    <h2 class="section-title">🏗️ Architecture du projet</h2>
+    <p class="section-sub">Structure complète des 79 fichiers générés</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>📦 Backend (30 fichiers)</h3>
+        <div class="file-tree">
+<span class="dir">backend/</span>
+├── <span class="config">package.json</span>
+├── <span class="config">tsconfig.json</span>
+├── <span class="config">Dockerfile</span>
+├── <span class="dir">prisma/</span>
+│   ├── <span class="file">schema.prisma</span>    <span style="color:#64748b">← 8 tables</span>
+│   └── <span class="file">seed.ts</span>          <span style="color:#64748b">← données init</span>
+└── <span class="dir">src/</span>
+    ├── <span class="file">index.ts</span>         <span style="color:#64748b">← Express app</span>
+    ├── <span class="dir">controllers/</span>     <span style="color:#64748b">← 9 fichiers</span>
+    ├── <span class="dir">routes/</span>          <span style="color:#64748b">← 9 fichiers</span>
+    ├── <span class="dir">middleware/</span>      <span style="color:#64748b">← auth JWT</span>
+    ├── <span class="dir">services/</span>        <span style="color:#64748b">← email</span>
+    └── <span class="dir">utils/</span>           <span style="color:#64748b">← helpers</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎨 Frontend (44 fichiers)</h3>
+        <div class="file-tree">
+<span class="dir">frontend/</span>
+├── <span class="config">next.config.js</span>
+├── <span class="config">tailwind.config.ts</span>
+├── <span class="config">tsconfig.json</span>
+├── <span class="config">middleware.ts</span>      <span style="color:#64748b">← i18n</span>
+├── <span class="dir">app/</span>
+│   ├── <span class="file">page.tsx</span>          <span style="color:#64748b">← accueil</span>
+│   ├── <span class="dir">donate/</span>           <span style="color:#64748b">← Stripe</span>
+│   ├── <span class="dir">impact/</span>           <span style="color:#64748b">← graphiques</span>
+│   ├── <span class="dir">programs/</span>         <span style="color:#64748b">← 4 piliers</span>
+│   ├── <span class="dir">blog/</span>             <span style="color:#64748b">← articles</span>
+│   ├── <span class="dir">contact/</span>          <span style="color:#64748b">← formulaires</span>
+│   ├── <span class="dir">partners/</span>         <span style="color:#64748b">← partenaires</span>
+│   └── <span class="dir">admin/</span>            <span style="color:#64748b">← dashboard</span>
+├── <span class="dir">components/</span>         <span style="color:#64748b">← 12 composants</span>
+├── <span class="dir">lib/</span>
+│   └── <span class="file">api.ts</span>            <span style="color:#64748b">← client typé</span>
+└── <span class="dir">messages/</span>           <span style="color:#64748b">← fr.json / en.json</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- DATABASE -->
+  <section>
+    <h2 class="section-title">🗄️ Base de données</h2>
+    <p class="section-sub">8 tables PostgreSQL — schema Prisma complet</p>
+    <table>
+      <tr><th>Table</th><th>Colonnes clés</th><th>Usage</th></tr>
+      <tr><td><span class="tag tag-purple">users</span></td><td>id, email, password (bcrypt), role</td><td>Administrateurs</td></tr>
+      <tr><td><span class="tag tag-red">donations</span></td><td>amount, type (ONE_TIME/MONTHLY), status, stripeSessionId</td><td>Dons Stripe</td></tr>
+      <tr><td><span class="tag tag-blue">programs</span></td><td>slug, titleFr/En, pillar (ECONOMY/HEALTH/CLIMATE/GOVERNANCE), budget, raised</td><td>4 axes</td></tr>
+      <tr><td><span class="tag tag-green">projects</span></td><td>title, status, location, lat/lng, beneficiaries</td><td>Carte interactive</td></tr>
+      <tr><td><span class="tag tag-yellow">articles</span></td><td>slug, titleFr/En, contentFr/En, published, views</td><td>Blog</td></tr>
+      <tr><td><span class="tag tag-purple">partners</span></td><td>name, type (INSTITUTIONAL/FINANCIAL/TECHNICAL/MEDIA), country</td><td>Partenaires</td></tr>
+      <tr><td><span class="tag tag-blue">contacts</span></td><td>type (GENERAL/PARTNERSHIP/FUNDING/VOLUNTEER), status (NEW/READ/REPLIED)</td><td>Formulaires</td></tr>
+      <tr><td><span class="tag tag-green">newsletter</span></td><td>email, locale, active</td><td>Abonnés</td></tr>
+    </table>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- API ENDPOINTS -->
+  <section>
+    <h2 class="section-title">🔌 API REST — Endpoints</h2>
+    <p class="section-sub">30+ endpoints sécurisés · JWT pour les routes admin</p>
+    <table>
+      <tr><th>Méthode</th><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+      <tr><td><span class="tag tag-blue">POST</span></td><td>/api/auth/login</td><td>—</td><td>Connexion admin</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/stats/impact</td><td>—</td><td>Statistiques impact public</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/programs</td><td>—</td><td>Liste des programmes</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/articles</td><td>—</td><td>Blog public paginé</td></tr>
+      <tr><td><span class="tag tag-blue">POST</span></td><td>/api/donations/checkout</td><td>—</td><td>Session Stripe Checkout</td></tr>
+      <tr><td><span class="tag tag-blue">POST</span></td><td>/api/donations/webhook</td><td>Stripe sig</td><td>Webhook Stripe</td></tr>
+      <tr><td><span class="tag tag-blue">POST</span></td><td>/api/contacts</td><td>—</td><td>Formulaire contact/bailleurs</td></tr>
+      <tr><td><span class="tag tag-blue">POST</span></td><td>/api/newsletter/subscribe</td><td>—</td><td>Inscription newsletter</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/admin/dashboard</td><td>✅ JWT</td><td>Statistiques dashboard</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/donations/export</td><td>✅ JWT</td><td>Export CSV des dons</td></tr>
+      <tr><td><span class="tag tag-green">GET</span></td><td>/api/projects/map</td><td>—</td><td>Données carte interactive</td></tr>
+      <tr><td><span class="tag tag-yellow">PATCH</span></td><td>/api/contacts/:id/status</td><td>✅ JWT</td><td>Marquer message lu/répondu</td></tr>
+    </table>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PAGES FRONTEND -->
+  <section>
+    <h2 class="section-title">🎨 Pages & Composants</h2>
+    <p class="section-sub">14 pages publiques + 6 pages admin</p>
+    <div class="grid-2">
+      <div>
+        <h3 style="color:#C084FC;font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px">Pages publiques</h3>
+        <table>
+          <tr><th>Route</th><th>Contenu</th></tr>
+          <tr><td>/</td><td>Hero + Stats animées + Storytelling + Urgence</td></tr>
+          <tr><td>/donate</td><td>Montants suggérés + Impact/€ + Stripe</td></tr>
+          <tr><td>/impact</td><td>Résultats 2024 + 4 graphiques Recharts</td></tr>
+          <tr><td>/programs</td><td>4 piliers avec contexte, actions, ODD</td></tr>
+          <tr><td>/programs/[slug]</td><td>Détail programme + sidebar budget</td></tr>
+          <tr><td>/partners</td><td>Partenaires + Pourquoi ARAILD</td></tr>
+          <tr><td>/blog</td><td>Grille articles + featured + tags</td></tr>
+          <tr><td>/blog/[slug]</td><td>Article complet + CTA don</td></tr>
+          <tr><td>/contact</td><td>4 types (général, partenariat, financement, bénévolat)</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3 style="color:#C084FC;font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px">Dashboard Admin (protégé JWT)</h3>
+        <table>
+          <tr><th>Route</th><th>Fonctionnalités</th></tr>
+          <tr><td>/admin</td><td>4 KPIs live + actions rapides + progression</td></tr>
+          <tr><td>/admin/donations</td><td>Table dons + stats + export CSV</td></tr>
+          <tr><td>/admin/contacts</td><td>Vue split liste/détail + statuts</td></tr>
+          <tr><td>/admin/articles</td><td>CRUD + éditeur Markdown + publier</td></tr>
+          <tr><td>/admin/programs</td><td>Budgets + barres de progression</td></tr>
+          <tr><td>/admin/partners</td><td>CRUD partenaires</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- VARIABLES D'ENV -->
+  <section>
+    <h2 class="section-title">🔑 Variables d'environnement</h2>
+    <p class="section-sub">Toutes les variables nécessaires au déploiement</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Backend (.env)</h3>
+        <div class="code-block" style="margin-top:0"><code><span class="comment"># Base de données</span>
+<span class="string">DATABASE_URL</span>=postgresql://user:pass@host/db
+
+<span class="comment"># Sécurité</span>
+<span class="string">JWT_SECRET</span>=clé_minimum_32_caractères
+
+<span class="comment"># Stripe</span>
+<span class="string">STRIPE_SECRET_KEY</span>=sk_live_...
+<span class="string">STRIPE_WEBHOOK_SECRET</span>=whsec_...
+
+<span class="comment"># Email SMTP</span>
+<span class="string">SMTP_HOST</span>=smtp.gmail.com
+<span class="string">SMTP_USER</span>=noreply@araild.com
+<span class="string">SMTP_PASS</span>=app_password
+
+<span class="comment"># URLs</span>
+<span class="string">FRONTEND_URL</span>=https://araild.com
+<span class="string">ADMIN_EMAIL</span>=contact@araild.com</code></div>
+      </div>
+      <div class="card">
+        <h3>Frontend (.env.local)</h3>
+        <div class="code-block" style="margin-top:0"><code><span class="comment"># API Backend</span>
+<span class="string">NEXT_PUBLIC_API_URL</span>=https://api.araild.com/api
+
+<span class="comment"># Stripe (clé publique)</span>
+<span class="string">NEXT_PUBLIC_STRIPE_PK</span>=pk_live_...</code></div>
+
+        <h3 style="margin-top:20px">Configuration Stripe Webhook</h3>
+        <ul style="margin-top:8px">
+          <li>URL: <code style="color:#86EFAC;font-size:0.8rem">https://api.araild.com/api/donations/webhook</code></li>
+          <li style="margin-top:6px">Événements à écouter :</li>
+          <li><code style="color:#C084FC;font-size:0.78rem">checkout.session.completed</code></li>
+          <li><code style="color:#C084FC;font-size:0.78rem">checkout.session.expired</code></li>
+          <li><code style="color:#C084FC;font-size:0.78rem">invoice.payment_succeeded</code></li>
+          <li><code style="color:#C084FC;font-size:0.78rem">charge.refunded</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- DEPLOYMENT -->
+  <section>
+    <h2 class="section-title">☁️ Options de déploiement</h2>
+    <p class="section-sub">Du plus simple au plus contrôlé</p>
+    <div class="grid-3">
+      <div class="card" style="border-color:rgba(134,239,172,0.3)">
+        <h3 style="color:#86EFAC">🟢 Railway (recommandé)</h3>
+        <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px">Le plus simple. Déploiement en 10 minutes.</p>
+        <ul>
+          <li>Créer projet Railway</li>
+          <li>Ajouter plugin PostgreSQL</li>
+          <li>Déployer backend + frontend</li>
+          <li>Variables d'env automatiques</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px 12px;background:rgba(134,239,172,0.1);border-radius:8px;font-size:0.78rem;color:#86EFAC">railway.app — gratuit jusqu'à 5$/mois</div>
+      </div>
+      <div class="card" style="border-color:rgba(192,132,252,0.3)">
+        <h3 style="color:#C084FC">🟣 Render</h3>
+        <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px">Bon équilibre simplicité/contrôle.</p>
+        <ul>
+          <li>Web Service pour API</li>
+          <li>Static Site pour frontend</li>
+          <li>PostgreSQL managé</li>
+          <li>Auto-deploy sur push</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px 12px;background:rgba(192,132,252,0.1);border-radius:8px;font-size:0.78rem;color:#C084FC">render.com — 7$/mois</div>
+      </div>
+      <div class="card" style="border-color:rgba(96,165,250,0.3)">
+        <h3 style="color:#60A5FA">🔵 VPS Docker</h3>
+        <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px">Contrôle total. docker-compose inclus.</p>
+        <ul>
+          <li>Ubuntu 22.04 + Docker</li>
+          <li>docker-compose up -d</li>
+          <li>SSL automatique (Certbot)</li>
+          <li>Nginx reverse proxy inclus</li>
+        </ul>
+        <div style="margin-top:12px;padding:8px 12px;background:rgba(96,165,250,0.1);border-radius:8px;font-size:0.78rem;color:#60A5FA">Hetzner/OVH — 5-10€/mois</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- DESIGN SYSTEM -->
+  <section>
+    <h2 class="section-title">🎨 Design System ARAILD</h2>
+    <p class="section-sub">Identité visuelle extraite du dossier de présentation officiel</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Palette couleurs</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#7B2D8B;flex-shrink:0"></div>
+            <div><div style="color:white;font-size:0.85rem;font-weight:600">Violet ARAILD — #7B2D8B</div><div style="color:#94a3b8;font-size:0.78rem">Couleur principale · Logo</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#1B4FD8;flex-shrink:0"></div>
+            <div><div style="color:white;font-size:0.85rem;font-weight:600">Bleu confiance — #1B4FD8</div><div style="color:#94a3b8;font-size:0.78rem">Secondaire · CTA partenaires</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#16A34A;flex-shrink:0"></div>
+            <div><div style="color:white;font-size:0.85rem;font-weight:600">Vert impact — #16A34A</div><div style="color:#94a3b8;font-size:0.78rem">Environnement · Succès</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#DC2626;flex-shrink:0"></div>
+            <div><div style="color:white;font-size:0.85rem;font-weight:600">Rouge urgence — #DC2626</div><div style="color:#94a3b8;font-size:0.78rem">CTA dons · Alertes urgence</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Typographie & Composants</h3>
+        <div style="margin-top:8px;space-y:8px">
+          <div style="margin-bottom:12px">
+            <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:4px">TITRES</div>
+            <div style="font-family:Georgia,serif;font-size:1.4rem;font-weight:700;color:white">Playfair Display Bold</div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:4px">CORPS DE TEXTE</div>
+            <div style="font-size:0.95rem;color:#cbd5e1">DM Sans Regular / Medium</div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:6px">BOUTONS CTA</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="padding:6px 16px;background:#7B2D8B;border-radius:10px;color:white;font-size:0.8rem;font-weight:600">btn-primary</span>
+              <span style="padding:6px 16px;background:#1B4FD8;border-radius:10px;color:white;font-size:0.8rem;font-weight:600">btn-secondary</span>
+              <span style="padding:6px 16px;background:#DC2626;border-radius:10px;color:white;font-size:0.8rem;font-weight:600">btn-donate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES -->
+  <section>
+    <h2 class="section-title">✅ Fonctionnalités implémentées</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="color:#86EFAC;font-size:0.9rem;margin-bottom:12px">BACKEND</h3>
+        <div class="card" style="padding:16px">
+          <ul>
+            <li>Auth JWT + bcrypt + refresh token</li>
+            <li>Stripe Checkout + Webhooks (4 événements)</li>
+            <li>Dons récurrents mensuels (subscriptions)</li>
+            <li>Export CSV des dons avec BOM Excel</li>
+            <li>Emails HTML stylisés (confirmation don + notif contact)</li>
+            <li>Rate limiting (global + contact anti-spam)</li>
+            <li>Pagination sur toutes les listes</li>
+            <li>Compteur de vues sur les articles</li>
+            <li>Stats dashboard en temps réel</li>
+            <li>Seed complet (admin + 4 programmes + partenaires)</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:#C084FC;font-size:0.9rem;margin-bottom:12px">FRONTEND</h3>
+        <div class="card" style="padding:16px">
+          <ul>
+            <li>Hero avec badge urgence animé en temps réel</li>
+            <li>Compteurs animés (Intersection Observer)</li>
+            <li>Storytelling "Marie" avec transformation avant/après</li>
+            <li>Formulaire don en 2 étapes (montant → coordonnées)</li>
+            <li>Impact par euro (10€ = …, 25€ = …)</li>
+            <li>4 graphiques Recharts (barres, radar, camembert, tendance)</li>
+            <li>Dashboard admin avec KPIs live</li>
+            <li>Gestion messages split-view (liste + détail)</li>
+            <li>Multilingue FR/EN (next-intl)</li>
+            <li>SEO complet (metadata, OG, Twitter cards)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="divider"></div>
+  <div style="text-align:center;padding:32px 0;color:#475569;font-size:0.85rem">
+    <div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:white;margin-bottom:8px">ARAILD</div>
+    <p>Action pour la Recherche et l'Appui aux Initiatives Locales de Développement</p>
+    <p style="margin-top:4px">Bafoussam, Cameroun · contact@araild.com · +237 650 70 83 30</p>
+    <p style="margin-top:12px;font-size:0.78rem">Plateforme générée avec Claude · Architecture Next.js 14 + Node.js + PostgreSQL + Stripe + Docker</p>
+  </div>
+</div>
+</body>
+</html>
