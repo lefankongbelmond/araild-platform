@@ -360,6 +360,10 @@ input,textarea,select{font-family:inherit;font-size:1rem}
   .team-grid,.partners-grid,.grid-4{grid-template-columns:repeat(2,1fr)}
   .results-grid,.projets-grid,.post-grid,.doc-grid,.odd-grid,.grid-3{grid-template-columns:repeat(2,1fr)}
 }
+/* Masquer le menu mobile sur desktop */
+@media(min-width:901px){
+  .mobile-nav,.nav-overlay{display:none !important}
+}
 @media(max-width:900px){
   .main-nav,.header-cta .btn{display:none}
   .nav-toggle{display:flex}
