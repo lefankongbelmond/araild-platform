@@ -153,8 +153,161 @@ function araild_add_meta_boxes() {
     foreach (araild_meta_fields() as $cpt => $fields) {
         add_meta_box('araild_'.$cpt.'_meta', __('Détails ARAILD', 'araild'), 'araild_render_meta_box', $cpt, 'normal', 'high', ['fields' => $fields]);
     }
+    // Meta box pour la page Formation Femmes Petits Métiers
+    add_meta_box('araild_pff_meta', __('📷 Contenu & Photos — Formation Femmes Petits Métiers', 'araild'), 'araild_render_pff_meta_box', 'page', 'normal', 'high');
 }
 add_action('add_meta_boxes', 'araild_add_meta_boxes');
+
+function araild_render_pff_meta_box($post) {
+    if (get_page_template_slug($post->ID) !== 'page-formation-femmes.php') {
+        echo '<p style="color:#999;padding:8px 0">' . esc_html__('Cette meta box s\'active uniquement pour le template "Formation Femmes Petits Métiers".', 'araild') . '</p>';
+        return;
+    }
+    wp_nonce_field('araild_pff_save', 'araild_pff_meta_nonce');
+
+    $fields_groups = [
+        __('🖼️ Photos principales', 'araild') => [
+            '_pff_hero_img'   => ['label' => __('Photo Hero (bannière principale)', 'araild'),      'type' => 'media'],
+            '_pff_s1_img'     => ['label' => __('Photo Section 1 (Pourquoi cette formation)', 'araild'), 'type' => 'media'],
+            '_pff_s2_img'     => ['label' => __('Photo Section 2 (Témoignages)', 'araild'),         'type' => 'media'],
+            '_pff_s3_img'     => ['label' => __('Photo Section 3 (Conditions d\'accès)', 'araild'), 'type' => 'media'],
+        ],
+        __('🎨 Galerie photos', 'araild') => [
+            '_pff_galerie'         => ['label' => __('IDs médiathèque séparés par virgule (ex: 12,15,18)', 'araild'), 'type' => 'text'],
+            '_pff_galerie_titre'   => ['label' => __('Titre de la galerie', 'araild'), 'type' => 'text'],
+        ],
+        __('📝 Textes éditables', 'araild') => [
+            '_pff_sous_titre'  => ['label' => __('Sous-titre hero', 'araild'), 'type' => 'text'],
+            '_pff_b1_eyebrow'  => ['label' => __('Section 1 — Eyebrow (petit texte au-dessus)', 'araild'), 'type' => 'text'],
+            '_pff_b1_titre'    => ['label' => __('Section 1 — Titre', 'araild'), 'type' => 'text'],
+            '_pff_b1_texte'    => ['label' => __('Section 1 — Paragraphe principal', 'araild'), 'type' => 'textarea'],
+            '_pff_b2_eyebrow'  => ['label' => __('Section Modules — Eyebrow', 'araild'), 'type' => 'text'],
+            '_pff_b2_titre'    => ['label' => __('Section Modules — Titre', 'araild'), 'type' => 'text'],
+            '_pff_b2_sous_titre'=> ['label' => __('Section Modules — Sous-titre', 'araild'), 'type' => 'text'],
+            '_pff_b3_eyebrow'  => ['label' => __('Section Témoignages — Eyebrow', 'araild'), 'type' => 'text'],
+            '_pff_b3_titre'    => ['label' => __('Section Témoignages — Titre', 'araild'), 'type' => 'text'],
+            '_pff_b4_eyebrow'  => ['label' => __('Section Conditions — Eyebrow', 'araild'), 'type' => 'text'],
+            '_pff_b4_titre'    => ['label' => __('Section Conditions — Titre', 'araild'), 'type' => 'text'],
+            '_pff_insc_titre'  => ['label' => __('Formulaire — Titre', 'araild'), 'type' => 'text'],
+        ],
+        __('📊 Statistiques (Section 1)', 'araild') => [
+            '_pff_stat1'       => ['label' => __('Chiffre 1 (ex: 500+)', 'araild'), 'type' => 'text'],
+            '_pff_stat1_label' => ['label' => __('Label chiffre 1', 'araild'), 'type' => 'text'],
+            '_pff_stat2'       => ['label' => __('Chiffre 2', 'araild'), 'type' => 'text'],
+            '_pff_stat2_label' => ['label' => __('Label chiffre 2', 'araild'), 'type' => 'text'],
+            '_pff_stat3'       => ['label' => __('Chiffre 3', 'araild'), 'type' => 'text'],
+            '_pff_stat3_label' => ['label' => __('Label chiffre 3', 'araild'), 'type' => 'text'],
+        ],
+        __('🧵 6 Modules de formation', 'araild') => [
+            '_pff_m1_icone' => ['label' => __('Module 1 — Icône (emoji)', 'araild'), 'type' => 'text'],
+            '_pff_m1_nom'   => ['label' => __('Module 1 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m1_desc'  => ['label' => __('Module 1 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m1_color' => ['label' => __('Module 1 — Couleur hex (ex: #6a1b9a)', 'araild'), 'type' => 'text'],
+            '_pff_m1_duree' => ['label' => __('Module 1 — Durée (ex: 4 semaines)', 'araild'), 'type' => 'text'],
+            '_pff_m2_icone' => ['label' => __('Module 2 — Icône', 'araild'), 'type' => 'text'],
+            '_pff_m2_nom'   => ['label' => __('Module 2 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m2_desc'  => ['label' => __('Module 2 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m2_color' => ['label' => __('Module 2 — Couleur hex', 'araild'), 'type' => 'text'],
+            '_pff_m2_duree' => ['label' => __('Module 2 — Durée', 'araild'), 'type' => 'text'],
+            '_pff_m3_icone' => ['label' => __('Module 3 — Icône', 'araild'), 'type' => 'text'],
+            '_pff_m3_nom'   => ['label' => __('Module 3 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m3_desc'  => ['label' => __('Module 3 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m3_color' => ['label' => __('Module 3 — Couleur hex', 'araild'), 'type' => 'text'],
+            '_pff_m3_duree' => ['label' => __('Module 3 — Durée', 'araild'), 'type' => 'text'],
+            '_pff_m4_icone' => ['label' => __('Module 4 — Icône', 'araild'), 'type' => 'text'],
+            '_pff_m4_nom'   => ['label' => __('Module 4 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m4_desc'  => ['label' => __('Module 4 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m4_color' => ['label' => __('Module 4 — Couleur hex', 'araild'), 'type' => 'text'],
+            '_pff_m4_duree' => ['label' => __('Module 4 — Durée', 'araild'), 'type' => 'text'],
+            '_pff_m5_icone' => ['label' => __('Module 5 — Icône', 'araild'), 'type' => 'text'],
+            '_pff_m5_nom'   => ['label' => __('Module 5 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m5_desc'  => ['label' => __('Module 5 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m5_color' => ['label' => __('Module 5 — Couleur hex', 'araild'), 'type' => 'text'],
+            '_pff_m5_duree' => ['label' => __('Module 5 — Durée', 'araild'), 'type' => 'text'],
+            '_pff_m6_icone' => ['label' => __('Module 6 — Icône', 'araild'), 'type' => 'text'],
+            '_pff_m6_nom'   => ['label' => __('Module 6 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_m6_desc'  => ['label' => __('Module 6 — Description', 'araild'), 'type' => 'textarea'],
+            '_pff_m6_color' => ['label' => __('Module 6 — Couleur hex', 'araild'), 'type' => 'text'],
+            '_pff_m6_duree' => ['label' => __('Module 6 — Durée', 'araild'), 'type' => 'text'],
+        ],
+        __('💬 Témoignages (max 3)', 'araild') => [
+            '_pff_t1_cite' => ['label' => __('Témoignage 1 — Citation', 'araild'), 'type' => 'textarea'],
+            '_pff_t1_nom'  => ['label' => __('Témoignage 1 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_t1_lieu' => ['label' => __('Témoignage 1 — Module/Lieu', 'araild'), 'type' => 'text'],
+            '_pff_t2_cite' => ['label' => __('Témoignage 2 — Citation', 'araild'), 'type' => 'textarea'],
+            '_pff_t2_nom'  => ['label' => __('Témoignage 2 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_t2_lieu' => ['label' => __('Témoignage 2 — Module/Lieu', 'araild'), 'type' => 'text'],
+            '_pff_t3_cite' => ['label' => __('Témoignage 3 — Citation', 'araild'), 'type' => 'textarea'],
+            '_pff_t3_nom'  => ['label' => __('Témoignage 3 — Nom', 'araild'), 'type' => 'text'],
+            '_pff_t3_lieu' => ['label' => __('Témoignage 3 — Module/Lieu', 'araild'), 'type' => 'text'],
+        ],
+        __('✅ Conditions d\'accès', 'araild') => [
+            '_pff_conditions' => ['label' => __('Liste des conditions (1 par ligne)', 'araild'), 'type' => 'textarea'],
+        ],
+    ];
+
+    echo '<div style="display:grid;gap:24px;padding:8px 0">';
+    foreach ($fields_groups as $group_label => $fields) {
+        echo '<details open style="border:1px solid #ddd;border-radius:8px;padding:16px"><summary style="font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:12px">' . esc_html($group_label) . '</summary>';
+        echo '<div style="display:grid;gap:12px;margin-top:12px">';
+        foreach ($fields as $key => $f) {
+            $val = get_post_meta($post->ID, $key, true);
+            $id  = esc_attr($key);
+            echo '<div><label for="' . $id . '" style="display:block;font-weight:600;margin-bottom:4px;font-size:.9rem">' . esc_html($f['label']) . '</label>';
+            if ($f['type'] === 'textarea') {
+                echo '<textarea id="' . $id . '" name="' . $id . '" rows="3" style="width:100%">' . esc_textarea($val) . '</textarea>';
+            } elseif ($f['type'] === 'media') {
+                $url = $val ? esc_url(wp_get_attachment_image_url($val, 'thumbnail')) : '';
+                echo '<input type="hidden" class="araild-media-id" id="' . $id . '" name="' . $id . '" value="' . esc_attr($val) . '">';
+                echo '<div class="araild-media-preview" style="margin-bottom:6px">' . ($url ? '<img src="' . $url . '" style="max-height:80px;border-radius:6px">' : '') . '</div>';
+                echo '<button type="button" class="button button-primary araild-media-btn">' . esc_html__('📷 Choisir une photo', 'araild') . '</button> ';
+                echo '<button type="button" class="button araild-media-remove">' . esc_html__('Retirer', 'araild') . '</button>';
+            } else {
+                echo '<input type="text" id="' . $id . '" name="' . $id . '" value="' . esc_attr($val) . '" style="width:100%">';
+            }
+            echo '</div>';
+        }
+        echo '</div></details>';
+    }
+    echo '</div>';
+}
+
+function araild_save_pff_meta($post_id) {
+    if (!isset($_POST['araild_pff_meta_nonce']) || !wp_verify_nonce(sanitize_key($_POST['araild_pff_meta_nonce']), 'araild_pff_save')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    $text_keys = [
+        '_pff_sous_titre','_pff_galerie','_pff_galerie_titre',
+        '_pff_b1_eyebrow','_pff_b1_titre','_pff_b2_eyebrow','_pff_b2_titre','_pff_b2_sous_titre',
+        '_pff_b3_eyebrow','_pff_b3_titre','_pff_b4_eyebrow','_pff_b4_titre','_pff_insc_titre',
+        '_pff_stat1','_pff_stat1_label','_pff_stat2','_pff_stat2_label','_pff_stat3','_pff_stat3_label',
+        '_pff_m1_icone','_pff_m1_nom','_pff_m1_color','_pff_m1_duree',
+        '_pff_m2_icone','_pff_m2_nom','_pff_m2_color','_pff_m2_duree',
+        '_pff_m3_icone','_pff_m3_nom','_pff_m3_color','_pff_m3_duree',
+        '_pff_m4_icone','_pff_m4_nom','_pff_m4_color','_pff_m4_duree',
+        '_pff_m5_icone','_pff_m5_nom','_pff_m5_color','_pff_m5_duree',
+        '_pff_m6_icone','_pff_m6_nom','_pff_m6_color','_pff_m6_duree',
+        '_pff_t1_nom','_pff_t1_lieu','_pff_t2_nom','_pff_t2_lieu','_pff_t3_nom','_pff_t3_lieu',
+    ];
+    $textarea_keys = [
+        '_pff_b1_texte','_pff_conditions',
+        '_pff_m1_desc','_pff_m2_desc','_pff_m3_desc','_pff_m4_desc','_pff_m5_desc','_pff_m6_desc',
+        '_pff_t1_cite','_pff_t2_cite','_pff_t3_cite',
+    ];
+    $media_keys = ['_pff_hero_img','_pff_s1_img','_pff_s2_img','_pff_s3_img'];
+
+    foreach ($text_keys as $k) {
+        if (isset($_POST[$k])) update_post_meta($post_id, $k, sanitize_text_field(wp_unslash($_POST[$k])));
+    }
+    foreach ($textarea_keys as $k) {
+        if (isset($_POST[$k])) update_post_meta($post_id, $k, sanitize_textarea_field(wp_unslash($_POST[$k])));
+    }
+    foreach ($media_keys as $k) {
+        if (isset($_POST[$k])) update_post_meta($post_id, $k, absint($_POST[$k]));
+    }
+}
+add_action('save_post_page', 'araild_save_pff_meta');
 
 function araild_render_meta_box($post, $box) {
     $fields = $box['args']['fields'];
@@ -349,6 +502,7 @@ function araild_after_switch() {
         'FAQ'            => 'page-faq.php',
         'Formation en ligne' => 'page-formation.php',
         'Bibliothèque'   => 'page-bibliotheque.php',
+        'Formation Femmes Petits Métiers' => 'page-formation-femmes.php',
     ];
     $accueil_id = 0;
     foreach ($pages as $title => $template) {
@@ -569,6 +723,28 @@ function araild_handle_forms() {
         $body = "Nouvelle inscription formation\nNom : $name\nEmail : $email\nTél : $tel\nModule : $module\nFormat : $format\n\n$message";
         wp_mail($to, '[Formation ARAILD] ' . $module, $body, ['Reply-To: ' . $email]);
         wp_safe_redirect(add_query_arg('formation', 'success', wp_get_referer())); exit;
+    }
+
+    if ($action === 'pff_inscription') {
+        if (!isset($_POST['araild_pff_nonce']) || !wp_verify_nonce(sanitize_key($_POST['araild_pff_nonce']), 'araild_pff_insc')) {
+            wp_safe_redirect(add_query_arg('pff', 'error', wp_get_referer())); exit;
+        }
+        $name   = sanitize_text_field(wp_unslash($_POST['nom'] ?? ''));
+        $tel    = sanitize_text_field(wp_unslash($_POST['telephone'] ?? ''));
+        $email  = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+        $age    = absint($_POST['age'] ?? 0);
+        $ville  = sanitize_text_field(wp_unslash($_POST['ville'] ?? ''));
+        $module = sanitize_text_field(wp_unslash($_POST['module'] ?? ''));
+        $format = sanitize_text_field(wp_unslash($_POST['format'] ?? ''));
+        $msg    = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
+        if (!$name || !$tel || !$ville || !$module) {
+            wp_safe_redirect(add_query_arg('pff', 'error', wp_get_referer())); exit;
+        }
+        $to   = araild_opt('email', get_option('admin_email'));
+        $body = "Nouvelle inscription — Formation Femmes Petits Métiers\n\nNom : $name\nÂge : $age\nTéléphone : $tel\nEmail : $email\nVille : $ville\nModule souhaité : $module\nFormat : $format\n\nMessage :\n$msg";
+        $headers = $email ? ['Reply-To: ' . $email] : [];
+        wp_mail($to, '[ARAILD Femmes] Inscription — ' . $module, $body, $headers);
+        wp_safe_redirect(add_query_arg('pff', 'success', wp_get_referer())); exit;
     }
 
     if ($action === 'soutien') {
