@@ -347,6 +347,8 @@ function araild_after_switch() {
         'Nous soutenir'  => 'page-nous-soutenir.php',
         'Contact'        => 'page-contact.php',
         'FAQ'            => 'page-faq.php',
+        'Formation en ligne' => 'page-formation.php',
+        'Bibliothèque'   => 'page-bibliotheque.php',
     ];
     $accueil_id = 0;
     foreach ($pages as $title => $template) {
@@ -548,6 +550,25 @@ function araild_handle_forms() {
         $body = "Nom: $name\nEmail: $email\n\n$message";
         wp_mail($to, '[Contact ARAILD] ' . $subject, $body, ['Reply-To: ' . $email]);
         wp_safe_redirect(add_query_arg('contact', 'success', wp_get_referer())); exit;
+    }
+
+    if ($action === 'formation') {
+        if (!isset($_POST['araild_formation_nonce']) || !wp_verify_nonce(sanitize_key($_POST['araild_formation_nonce']), 'araild_formation')) {
+            wp_safe_redirect(add_query_arg('formation', 'error', wp_get_referer())); exit;
+        }
+        $name    = sanitize_text_field(wp_unslash($_POST['nom'] ?? ''));
+        $email   = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+        $tel     = sanitize_text_field(wp_unslash($_POST['telephone'] ?? ''));
+        $module  = sanitize_text_field(wp_unslash($_POST['module'] ?? ''));
+        $format  = sanitize_text_field(wp_unslash($_POST['format'] ?? ''));
+        $message = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
+        if (!$name || !is_email($email)) {
+            wp_safe_redirect(add_query_arg('formation', 'error', wp_get_referer())); exit;
+        }
+        $to   = araild_opt('email', get_option('admin_email'));
+        $body = "Nouvelle inscription formation\nNom : $name\nEmail : $email\nTél : $tel\nModule : $module\nFormat : $format\n\n$message";
+        wp_mail($to, '[Formation ARAILD] ' . $module, $body, ['Reply-To: ' . $email]);
+        wp_safe_redirect(add_query_arg('formation', 'success', wp_get_referer())); exit;
     }
 
     if ($action === 'soutien') {
