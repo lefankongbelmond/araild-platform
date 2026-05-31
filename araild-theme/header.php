@@ -59,9 +59,9 @@ if (!defined('ABSPATH')) exit;
 </header>
 
 <!-- Menu mobile -->
-<div class="mm-overlay" id="mm-overlay"></div>
-<aside class="mobile-menu" id="mobile-menu" aria-label="<?php esc_attr_e('Menu mobile', 'araild'); ?>">
-  <button class="close-mm" id="close-mm" aria-label="<?php esc_attr_e('Fermer le menu', 'araild'); ?>">&times;</button>
+<div class="nav-overlay" id="mm-overlay"></div>
+<aside class="mobile-nav" id="mobile-menu" aria-label="<?php esc_attr_e('Menu mobile', 'araild'); ?>">
+  <button class="close-nav" id="close-mm" aria-label="<?php esc_attr_e('Fermer le menu', 'araild'); ?>">&times;</button>
   <?php
   if (has_nav_menu('primary')) {
       wp_nav_menu(['theme_location' => 'primary', 'container' => false, 'depth' => 2]);
