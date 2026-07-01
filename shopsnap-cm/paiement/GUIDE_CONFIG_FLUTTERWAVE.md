@@ -28,7 +28,7 @@ Dashboard → **Payment Links** → **Create Payment Link** → Montant fixe `50
 Le scénario Make.com planifié (`scenario_generation_lien_paiement.json`) appelle l'API Flutterwave `POST /v3/payments` avec :
 ```
 {
-  "tx_ref": "shopsnap-{Nom_Boutique_slug}-{AAAAMM}",
+  "tx_ref": "shopsnap-{ID enregistrement Airtable de la ligne Abonnements}-{AAAAMM}",
   "amount": 5000,
   "currency": "XAF",
   "redirect_url": "https://votre-page-de-confirmation.example",
@@ -36,7 +36,7 @@ Le scénario Make.com planifié (`scenario_generation_lien_paiement.json`) appel
   "customizations": { "title": "Abonnement ShopSnap CM", "description": "Mensualité 5000 FCFA" }
 }
 ```
-La réponse contient un `link` unique à usage unique → stocké dans `Abonnements.Lien_Paiement_Actuel` → envoyé par WhatsApp. Le `tx_ref` encode la boutique et le mois, ce qui permet au webhook de savoir précisément qui a payé et pour quelle échéance.
+La réponse contient un `link` unique à usage unique → stocké dans `Abonnements.Lien_Paiement_Actuel` → envoyé par WhatsApp. Le `tx_ref` encode l'**ID Airtable** de la ligne (pas le nom de la boutique) et le mois : un ID Airtable ne contient ni espace ni tiret, donc le webhook peut le réextraire sans ambiguïté (`split` sur `-`) pour savoir précisément qui a payé et pour quelle échéance — un nom de boutique à plusieurs mots casserait ce découpage.
 
 ## 5. Tester avant le mode Live
 1. Utiliser les [numéros de test Mobile Money Flutterwave](https://developer.flutterwave.com/docs/testing-helpers) fournis dans leur doc développeur (mode Test uniquement).

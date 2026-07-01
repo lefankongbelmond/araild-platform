@@ -22,9 +22,9 @@
         "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
         "base": "YOUR_ADMIN_BASE_ID",
         "table": "Abonnements",
-        "filterByFormula": "AND({Statut_Abonnement} != 'resilie', {Jours_Avant_Echeance} <= 3)"
+        "filterByFormula": "AND(OR({Statut_Abonnement} = 'actif', {Statut_Abonnement} = 'en_retard'), {Jours_Avant_Echeance} <= 3)"
       },
-      "comment": "Toutes les boutiques a moins de 3 jours de l'echeance (ou deja en retard)"
+      "comment": "Toutes les boutiques actives ou en retard, a moins de 3 jours de l'echeance (ou deja en retard). Exclut suspendu/resilie : rien a faire pour elles tant qu'aucun paiement webhook ne les repasse actif."
     },
     {
       "id": 3,
@@ -41,8 +41,8 @@
               "version": 3,
               "metadata": { "designer": { "x": 900, "y": -250 }, "restore": {} },
               "filter": {
-                "name": "Pas encore suspendu (>= -5 jours)",
-                "conditions": [[ { "a": "{{2.Jours_Avant_Echeance}}", "o": "number:greaterEqual", "b": -5 } ]]
+                "name": "Encore actif (pas deja passe en retard) - un seul rappel/lien par echeance",
+                "conditions": [[ { "a": "{{2.Statut_Abonnement}}", "o": "text:equal", "b": "actif" } ]]
               },
               "parameters": {
                 "url": "https://api.flutterwave.com/v3/payments",
@@ -53,9 +53,9 @@
                 ],
                 "bodyType": "raw",
                 "parseResponse": true,
-                "data": "{\"tx_ref\":\"shopsnap-{{2.Nom_Boutique}}-{{formatDate(now; 'YYYYMM')}}\",\"amount\":\"{{2.Montant_FCFA}}\",\"currency\":\"XAF\",\"redirect_url\":\"https://votre-page-de-confirmation.example\",\"customer\":{\"phonenumber\":\"{{2.Telephone_Gerante}}\",\"name\":\"{{2.Nom_Boutique}}\"},\"customizations\":{\"title\":\"Abonnement ShopSnap CM\",\"description\":\"Mensualite 5000 FCFA\"}}"
+                "data": "{\"tx_ref\":\"shopsnap-{{2.id}}-{{formatDate(now; 'YYYYMM')}}\",\"amount\":\"{{2.Montant_FCFA}}\",\"currency\":\"XAF\",\"redirect_url\":\"https://votre-page-de-confirmation.example\",\"customer\":{\"phonenumber\":\"{{2.Telephone_Gerante}}\",\"name\":\"{{2.Nom_Boutique}}\"},\"customizations\":{\"title\":\"Abonnement ShopSnap CM\",\"description\":\"Mensualite 5000 FCFA\"}}"
               },
-              "comment": "Cree un lien de paiement Flutterwave unique pour ce cycle de facturation"
+              "comment": "Cree un lien de paiement Flutterwave unique pour ce cycle de facturation. tx_ref utilise l'ID d'enregistrement Airtable (alphanumerique, sans espace ni tiret) plutot que le nom de boutique : accepte par Flutterwave et reparsable sans ambiguite cote webhook, contrairement a un nom a plusieurs mots."
             },
             {
               "id": 5,
@@ -69,7 +69,7 @@
                 "id": "{{2.id}}",
                 "fields": {
                   "Lien_Paiement_Actuel": "{{4.data.link}}",
-                  "Statut_Abonnement": "{{if(2.Jours_Avant_Echeance < 0; 'en_retard'; 2.Statut_Abonnement)}}"
+                  "Statut_Abonnement": "{{if(2.Jours_Avant_Echeance < 0; \"en_retard\"; 2.Statut_Abonnement)}}"
                 }
               }
             },
@@ -183,7 +183,9 @@
       "Gabarit structurel, a reconnecter (Airtable admin base + WATI) apres import.",
       "Remplacer YOUR_ADMIN_BASE_ID, YOUR_AIRTABLE_ADMIN_CONNECTION, YOUR_FLUTTERWAVE_SECRET_KEY, YOUR_WATI_API_KEY.",
       "Creer d'abord les templates WATI 'rappel_abonnement_fr' et 'subscription_reminder_en' (approbation Meta requise) avant d'activer.",
-      "Le module 2 (Search Records) renvoie un tableau : Make itere automatiquement dessus, chaque iteration porte les references {{2.xxx}} d'une ligne Abonnements."
+      "Le module 2 (Search Records) renvoie un tableau : Make itere automatiquement dessus, chaque iteration porte les references {{2.xxx}} d'une ligne Abonnements.",
+      "tx_ref (module 4) encode l'ID d'enregistrement Airtable de la ligne Abonnements, pas le nom de boutique : voir scenario_webhook_flutterwave.json qui extrait ce meme ID pour retrouver la ligne via Get a Record.",
+      "Le filtre du module 4 (Statut_Abonnement = actif) garantit un seul rappel/lien par echeance : la ligne passe a en_retard des qu'elle devient en retard (module 5), donc les jours suivants ce filtre ne matche plus tant que le webhook ne la repasse pas a actif. Le module 9 (suspension) reste independant de ce filtre et continue de scanner les lignes en_retard jusqu'a -5 jours."
     ]
   }
 }

@@ -67,17 +67,16 @@
     },
     {
       "id": 6,
-      "module": "airtable:ActionSearchRecords",
+      "module": "airtable:ActionGetRecord",
       "version": 3,
       "metadata": { "designer": { "x": 1500, "y": 0 }, "restore": {} },
       "parameters": {
         "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
         "base": "YOUR_ADMIN_BASE_ID",
         "table": "Abonnements",
-        "maxRecords": 1,
-        "filterByFormula": "{Nom_Boutique} = \"{{extractBoutiqueFromTxRef(4.data.tx_ref)}}\""
+        "id": "{{get(split(4.data.tx_ref; \"-\"); 2)}}"
       },
-      "comment": "tx_ref est au format shopsnap-{Nom_Boutique}-{AAAAMM} - extraire le nom de boutique cote Make avec les fonctions texte (split sur '-')"
+      "comment": "tx_ref est au format shopsnap-{ID enregistrement Airtable}-{AAAAMM} (voir scenario_generation_lien_paiement.json). L'ID Airtable ne contient ni espace ni tiret, donc split sur '-' isole ce segment sans ambiguite (contrairement a un nom de boutique a plusieurs mots) - Get a Record direct par ID, pas de recherche par nom."
     },
     {
       "id": 7,
@@ -129,7 +128,7 @@
       "Gabarit structurel, a reconnecter (Airtable admin base) apres import.",
       "Remplacer YOUR_MAKE_WEBHOOK_ID (genere automatiquement par Make, a copier dans le dashboard Flutterwave), YOUR_WEBHOOK_SECRET_HASH (le meme secret que celui saisi dans Flutterwave Settings > Webhooks), YOUR_FLUTTERWAVE_SECRET_KEY, YOUR_ADMIN_BASE_ID, YOUR_AIRTABLE_ADMIN_CONNECTION.",
       "Les modules 2, 3, 5, 7 representent des FILTRES Make (l'icone entonnoir entre deux modules dans l'editeur), pas de vrais modules independants - a recreer via l'interface, pas en collant un module 'BasicFeatureIterator'.",
-      "La fonction extractBoutiqueFromTxRef n'existe pas nativement dans Make : dans l'editeur, remplacer par une combinaison des fonctions texte integrees, par exemple split(4.data.tx_ref; \"-\")[2] selon le nombre de tirets dans le nom de boutique - a ajuster si le nom de boutique contient lui-meme des tirets."
+      "get(split(...)) sont de vraies fonctions Make (contrairement a l'ancienne extractBoutiqueFromTxRef) : split() coupe le texte sur le separateur donne et renvoie un tableau, get() recupere l'element a l'index indique (index 2 = le 2e segment, indexation en base 1 dans l'editeur Make) - a verifier une fois colle dans l'editeur, l'indexation peut differer selon le contexte d'evaluation."
     ]
   }
 }

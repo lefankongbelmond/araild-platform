@@ -43,7 +43,7 @@ Intervalles acceptés : `daily`, `weekly`, `monthly`, `quarterly`, `yearly` (ou 
 Sur son tout premier paiement, ajouter `payment_plan` au payload de création de paiement (le même appel `POST /v3/payments` que dans `GUIDE_CONFIG_FLUTTERWAVE.md`, section Option B) :
 ```
 {
-  "tx_ref": "shopsnap-{Nom_Boutique}-{AAAAMM}",
+  "tx_ref": "shopsnap-{ID enregistrement Airtable de la ligne Abonnements}-{AAAAMM}",
   "amount": 5000,
   "currency": "XAF",
   "payment_plan": 12345,

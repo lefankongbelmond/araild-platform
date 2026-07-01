@@ -23,9 +23,9 @@ Base séparée de celle des boutiques (une seule base `ShopSnap_CM_Admin`, une l
 | `Notes` | Long text | Optionnel |
 
 ## Règles d'automatisation (voir `make/`)
-1. **Tous les jours**, un scénario planifié cherche les lignes où `Jours_Avant_Echeance <= 3` et `Statut_Abonnement = actif` → génère un nouveau lien de paiement Flutterwave → envoie un rappel WhatsApp (FR/EN).
-2. Si `Jours_Avant_Echeance < 0` (échéance dépassée) → `Statut_Abonnement = en_retard`, un 2ᵉ rappel plus insistant part.
-3. Si `Jours_Avant_Echeance < -5` sans paiement → `Statut_Abonnement = suspendu`.
+1. **Tous les jours**, un scénario planifié cherche les lignes `actif` ou `en_retard` à `Jours_Avant_Echeance <= 3` (le `en_retard` reste dans le lot pour l'étape 3, mais ne redéclenche pas de lien/rappel).
+2. Parmi ces lignes, seules celles encore `actif` génèrent un nouveau lien de paiement Flutterwave + un rappel WhatsApp (FR/EN) — un seul envoi par échéance, puisque la ligne passe à `en_retard` dès que `Jours_Avant_Echeance < 0`, ce qui arrête les envois suivants tant qu'elle reste dans cet état.
+3. Si `Jours_Avant_Echeance < -5` sans paiement (ligne `en_retard` depuis plus de 5 jours) → `Statut_Abonnement = suspendu`.
 4. Le webhook Flutterwave, à la confirmation d'un paiement, remet `Statut_Abonnement = actif` et met à jour `Date_Dernier_Paiement` + `Dernier_TX_REF`.
 
 ## Côté Glide (dans l'app de chaque boutique)
