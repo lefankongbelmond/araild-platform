@@ -15,6 +15,7 @@ App mobile no-code/low-code pour commerçantes camerounaises : Stock + Crédit C
 | `paiement/STRUCTURE_ABONNEMENTS.md` | Table Airtable "opérateur" `Abonnements` (facturation multi-boutiques, hors des 4 tables métier) |
 | `paiement/abonnements.csv` | Donnée de test pour la table `Abonnements` |
 | `paiement/GUIDE_CONFIG_FLUTTERWAVE.md` | Config compte, clés API, webhook, génération de lien de paiement |
+| `paiement/PAYMENT_PLAN_FLUTTERWAVE.md` | Détail du Payment Plan Flutterwave (auto-debit carte) — option secondaire pour les rares clientes qui paient par carte, en plus du flux Mobile Money |
 | `paiement/make/*.json` | 2 blueprints Make.com : génération du lien + rappel WhatsApp mensuel, et confirmation webhook Flutterwave |
 | `GUIDE_INSTALLATION.md` | Guide 5 étapes bilingue pour la commerçante + annexe technique pour l'installateur |
 

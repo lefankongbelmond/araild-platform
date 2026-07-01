@@ -19,6 +19,7 @@ Base séparée de celle des boutiques (une seule base `ShopSnap_CM_Admin`, une l
 | `Jours_Avant_Echeance` | Formula | `DATETIME_DIFF({Date_Prochaine_Echeance}, TODAY(), 'days')` |
 | `Lien_Paiement_Actuel` | URL | Régénéré à chaque cycle par le scénario "génération lien" |
 | `Dernier_TX_REF` | Single line text | Référence de transaction Flutterwave, pour éviter les doublons de webhook |
+| `Flutterwave_Subscription_ID` | Single line text | Optionnel — rempli seulement si la gérante paie par carte via le Payment Plan (voir `PAYMENT_PLAN_FLUTTERWAVE.md`). Vide pour les clientes Mobile Money. |
 | `Notes` | Long text | Optionnel |
 
 ## Règles d'automatisation (voir `make/`)
