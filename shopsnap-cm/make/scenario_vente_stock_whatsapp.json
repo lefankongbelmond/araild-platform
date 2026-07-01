@@ -1,0 +1,169 @@
+{
+  "name": "ShopSnap CM - Nouvelle Vente -> MAJ Stock -> Rappel WhatsApp",
+  "flow": [
+    {
+      "id": 1,
+      "module": "airtable:TriggerWatchRecords",
+      "version": 3,
+      "metadata": { "designer": { "x": 0, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_CONNECTION",
+        "base": "YOUR_AIRTABLE_BASE_ID",
+        "table": "Ventes",
+        "view": null,
+        "watchField": "Date_Vente"
+      }
+    },
+    {
+      "id": 2,
+      "module": "airtable:ActionGetRecord",
+      "version": 3,
+      "metadata": { "designer": { "x": 300, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_CONNECTION",
+        "base": "YOUR_AIRTABLE_BASE_ID",
+        "table": "Produits",
+        "id": "{{1.Produit}}"
+      },
+      "comment": "Recupere le Stock_Actuel courant du produit vendu"
+    },
+    {
+      "id": 3,
+      "module": "airtable:ActionUpdateRecord",
+      "version": 3,
+      "metadata": { "designer": { "x": 600, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_CONNECTION",
+        "base": "YOUR_AIRTABLE_BASE_ID",
+        "table": "Produits",
+        "id": "{{1.Produit}}",
+        "fields": {
+          "Stock_Actuel": "{{2.Stock_Actuel - 1.Quantite}}"
+        }
+      },
+      "comment": "Decremente le stock du montant vendu"
+    },
+    {
+      "id": 4,
+      "module": "builtin:BasicFeatureIterator",
+      "version": 1,
+      "metadata": { "designer": { "x": 900, "y": 0 }, "restore": {} },
+      "filter": {
+        "name": "Uniquement les ventes a credit",
+        "conditions": [
+          [
+            { "a": "{{1.Mode_Paiement}}", "o": "text:equal", "b": "credit" }
+          ]
+        ]
+      },
+      "comment": "Filtre Make (pas un module a proprement parler, place entre 3 et 5 dans le builder)"
+    },
+    {
+      "id": 5,
+      "module": "airtable:ActionGetRecord",
+      "version": 3,
+      "metadata": { "designer": { "x": 1200, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_CONNECTION",
+        "base": "YOUR_AIRTABLE_BASE_ID",
+        "table": "Clients",
+        "id": "{{1.Client}}"
+      },
+      "comment": "Recupere Nom_Client, WhatsApp, Langue_Preferee, Solde_Du_FCFA"
+    },
+    {
+      "id": 6,
+      "module": "builtin:Router",
+      "version": 1,
+      "metadata": { "designer": { "x": 1500, "y": 0 }, "restore": {} },
+      "routes": [
+        {
+          "id": "route_fr",
+          "flow": [
+            {
+              "id": 7,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "metadata": { "designer": { "x": 1800, "y": -150 }, "restore": {} },
+              "filter": {
+                "name": "Client francophone",
+                "conditions": [
+                  [
+                    { "a": "{{5.Langue_Preferee}}", "o": "text:equal", "b": "Français" }
+                  ]
+                ]
+              },
+              "parameters": {
+                "url": "https://live-mt-server.wati.io/api/v1/sendTemplateMessage",
+                "method": "POST",
+                "headers": [
+                  { "name": "Authorization", "value": "Bearer YOUR_WATI_API_KEY" },
+                  { "name": "Content-Type", "value": "application/json" }
+                ],
+                "qs": [ { "name": "whatsappNumber", "value": "{{5.WhatsApp}}" } ],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "data": "{\"template_name\":\"rappel_credit_fr\",\"broadcast_name\":\"rappel_credit_fr\",\"parameters\":[{\"name\":\"nom_client\",\"value\":\"{{5.Nom_Client}}\"},{\"name\":\"montant_du\",\"value\":\"{{5.Solde_Du_FCFA}}\"}]}"
+              }
+            }
+          ]
+        },
+        {
+          "id": "route_en",
+          "flow": [
+            {
+              "id": 8,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "metadata": { "designer": { "x": 1800, "y": 150 }, "restore": {} },
+              "filter": {
+                "name": "English speaking client",
+                "conditions": [
+                  [
+                    { "a": "{{5.Langue_Preferee}}", "o": "text:equal", "b": "English" }
+                  ]
+                ]
+              },
+              "parameters": {
+                "url": "https://live-mt-server.wati.io/api/v1/sendTemplateMessage",
+                "method": "POST",
+                "headers": [
+                  { "name": "Authorization", "value": "Bearer YOUR_WATI_API_KEY" },
+                  { "name": "Content-Type", "value": "application/json" }
+                ],
+                "qs": [ { "name": "whatsappNumber", "value": "{{5.WhatsApp}}" } ],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "data": "{\"template_name\":\"credit_reminder_en\",\"broadcast_name\":\"credit_reminder_en\",\"parameters\":[{\"name\":\"client_name\",\"value\":\"{{5.Nom_Client}}\"},{\"name\":\"amount_due\",\"value\":\"{{5.Solde_Du_FCFA}}\"}]}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": { "orphans": [] },
+    "zone": "eu2.make.com",
+    "notes": [
+      "Ce blueprint est un GABARIT structurel, pas un export verifie a l'identique depuis un compte Make reel.",
+      "A l'import (Scenarios > Create a new scenario > Import Blueprint), Make demandera de reconnecter chaque module Airtable et HTTP a vos propres comptes/API keys - c'est normal, les identifiants de connexion ne sont jamais exportables.",
+      "Remplacer YOUR_AIRTABLE_BASE_ID, YOUR_AIRTABLE_CONNECTION et YOUR_WATI_API_KEY avant import.",
+      "Les templates WATI 'rappel_credit_fr' et 'credit_reminder_en' doivent d'abord etre crees et approuves par Meta dans le tableau de bord WATI (Templates > Create Template), avec les variables {{1}} et {{2}} dans cet ordre.",
+      "Le filtre du module 4 (credit uniquement) et les filtres des routes 7/8 (langue) se recreent en cliquant sur l'icone entonnoir entre deux modules dans l'editeur Make - ils ne sont pas des modules independants."
+    ]
+  }
+}
