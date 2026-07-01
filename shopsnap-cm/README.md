@@ -2,6 +2,8 @@
 
 App mobile no-code/low-code pour commerçantes camerounaises : Stock + Crédit Clients + Caisse du Jour, bilingue Français/Anglais.
 
+👉 **Pour tout assembler dans le bon ordre, commence par `ASSEMBLAGE.md`** — c'est le runbook qui relie tous les fichiers ci-dessous en une seule séquence, avec un test de validation à chaque étape.
+
 ## Contenu de ce dossier
 
 | Chemin | Contenu |
@@ -18,6 +20,7 @@ App mobile no-code/low-code pour commerçantes camerounaises : Stock + Crédit C
 | `paiement/PAYMENT_PLAN_FLUTTERWAVE.md` | Détail du Payment Plan Flutterwave (auto-debit carte) — option secondaire pour les rares clientes qui paient par carte, en plus du flux Mobile Money |
 | `paiement/make/*.json` | 2 blueprints Make.com : génération du lien + rappel WhatsApp mensuel, et confirmation webhook Flutterwave |
 | `GUIDE_INSTALLATION.md` | Guide 5 étapes bilingue pour la commerçante + annexe technique pour l'installateur |
+| `ASSEMBLAGE.md` | Runbook d'assemblage complet, dans l'ordre exact, avec test de validation à chaque étape |
 
 ## Ce qui n'est PAS inclus
 Un lien d'app Glide déployé n'a pas pu être généré depuis cette session : cela nécessite un compte Glide et une connexion Airtable authentifiés que je n'ai pas. `glide/SCREENS.md` contient la spec complète pour qu'un développeur (ou vous, via l'interface Glide) construise l'app en ~45 minutes sans écrire de code. De même, aucun compte Flutterwave n'a été créé pour vous — `paiement/GUIDE_CONFIG_FLUTTERWAVE.md` donne la marche à suivre exacte.
