@@ -1,0 +1,135 @@
+{
+  "name": "ShopSnap CM - Abonnement - Webhook confirmation paiement Flutterwave",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "metadata": { "designer": { "x": 0, "y": 0 }, "restore": {} },
+      "parameters": {
+        "hook": "YOUR_MAKE_WEBHOOK_ID"
+      },
+      "comment": "URL generee par Make a la creation du module - a coller dans Flutterwave Settings > Webhooks"
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicFeatureIterator",
+      "version": 1,
+      "metadata": { "designer": { "x": 300, "y": 0 }, "restore": {} },
+      "filter": {
+        "name": "Signature webhook valide",
+        "conditions": [[
+          { "a": "{{1.headers.`verif-hash`}}", "o": "text:equal", "b": "YOUR_WEBHOOK_SECRET_HASH" }
+        ]]
+      },
+      "comment": "Rejette toute requete dont l'en-tete verif-hash ne correspond pas au secret configure dans Flutterwave. Sans ce filtre, n'importe qui peut falsifier une confirmation de paiement."
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicFeatureIterator",
+      "version": 1,
+      "metadata": { "designer": { "x": 600, "y": 0 }, "restore": {} },
+      "filter": {
+        "name": "Evenement de paiement reussi",
+        "conditions": [[
+          { "a": "{{1.data.status}}", "o": "text:equal", "b": "successful" }
+        ]]
+      }
+    },
+    {
+      "id": 4,
+      "module": "http:ActionGetData",
+      "version": 3,
+      "metadata": { "designer": { "x": 900, "y": 0 }, "restore": {} },
+      "parameters": {
+        "url": "https://api.flutterwave.com/v3/transactions/{{1.data.id}}/verify",
+        "method": "GET",
+        "headers": [
+          { "name": "Authorization", "value": "Bearer YOUR_FLUTTERWAVE_SECRET_KEY" }
+        ],
+        "parseResponse": true
+      },
+      "comment": "Ne jamais faire confiance au seul webhook : on revalide la transaction directement aupres de Flutterwave avant de mettre a jour Airtable"
+    },
+    {
+      "id": 5,
+      "module": "builtin:BasicFeatureIterator",
+      "version": 1,
+      "metadata": { "designer": { "x": 1200, "y": 0 }, "restore": {} },
+      "filter": {
+        "name": "Montant et devise corrects",
+        "conditions": [[
+          { "a": "{{4.data.status}}", "o": "text:equal", "b": "successful" },
+          { "a": "{{4.data.currency}}", "o": "text:equal", "b": "XAF" },
+          { "a": "{{4.data.amount}}", "o": "number:greaterEqual", "b": 5000 }
+        ]]
+      }
+    },
+    {
+      "id": 6,
+      "module": "airtable:ActionSearchRecords",
+      "version": 3,
+      "metadata": { "designer": { "x": 1500, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
+        "base": "YOUR_ADMIN_BASE_ID",
+        "table": "Abonnements",
+        "maxRecords": 1,
+        "filterByFormula": "{Nom_Boutique} = \"{{extractBoutiqueFromTxRef(4.data.tx_ref)}}\""
+      },
+      "comment": "tx_ref est au format shopsnap-{Nom_Boutique}-{AAAAMM} - extraire le nom de boutique cote Make avec les fonctions texte (split sur '-')"
+    },
+    {
+      "id": 7,
+      "module": "builtin:BasicFeatureIterator",
+      "version": 1,
+      "metadata": { "designer": { "x": 1800, "y": 0 }, "restore": {} },
+      "filter": {
+        "name": "Pas deja traite (evite les doublons de webhook)",
+        "conditions": [[
+          { "a": "{{6.Dernier_TX_REF}}", "o": "text:notequal", "b": "{{4.data.tx_ref}}" }
+        ]]
+      }
+    },
+    {
+      "id": 8,
+      "module": "airtable:ActionUpdateRecord",
+      "version": 3,
+      "metadata": { "designer": { "x": 2100, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
+        "base": "YOUR_ADMIN_BASE_ID",
+        "table": "Abonnements",
+        "id": "{{6.id}}",
+        "fields": {
+          "Statut_Abonnement": "actif",
+          "Date_Dernier_Paiement": "{{now}}",
+          "Dernier_TX_REF": "{{4.data.tx_ref}}"
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": { "orphans": [] },
+    "zone": "eu2.make.com",
+    "notes": [
+      "Gabarit structurel, a reconnecter (Airtable admin base) apres import.",
+      "Remplacer YOUR_MAKE_WEBHOOK_ID (genere automatiquement par Make, a copier dans le dashboard Flutterwave), YOUR_WEBHOOK_SECRET_HASH (le meme secret que celui saisi dans Flutterwave Settings > Webhooks), YOUR_FLUTTERWAVE_SECRET_KEY, YOUR_ADMIN_BASE_ID, YOUR_AIRTABLE_ADMIN_CONNECTION.",
+      "Les modules 2, 3, 5, 7 representent des FILTRES Make (l'icone entonnoir entre deux modules dans l'editeur), pas de vrais modules independants - a recreer via l'interface, pas en collant un module 'BasicFeatureIterator'.",
+      "La fonction extractBoutiqueFromTxRef n'existe pas nativement dans Make : dans l'editeur, remplacer par une combinaison des fonctions texte integrees, par exemple split(4.data.tx_ref; \"-\")[2] selon le nombre de tirets dans le nom de boutique - a ajuster si le nom de boutique contient lui-meme des tirets."
+    ]
+  }
+}

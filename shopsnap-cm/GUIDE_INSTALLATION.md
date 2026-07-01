@@ -28,8 +28,8 @@
 ---
 
 ## Abonnement / Subscription
-🇫🇷 5.000 FCFA/mois, paiement Orange Money ou MTN Money via le lien envoyé le jour de l'inscription puis chaque mois. Sans paiement, l'accès est suspendu (les données restent en sécurité, elles ne sont pas supprimées).
-🇬🇧 5,000 FCFA/month, pay via Orange Money or MTN Money through the link sent at signup and each month. Without payment, access is suspended (your data stays safe, it is not deleted).
+🇫🇷 5.000 FCFA/mois. Chaque mois, vous recevez un message WhatsApp avec un lien de paiement Orange Money ou MTN Money — un clic, votre code PIN, et c'est réglé (~10 secondes). Sans paiement 5 jours après l'échéance, l'accès est suspendu (les données restent en sécurité, elles ne sont pas supprimées).
+🇬🇧 5,000 FCFA/month. Each month you get a WhatsApp message with an Orange Money or MTN Money payment link — one tap, your PIN, done (~10 seconds). Without payment 5 days past due, access is suspended (your data stays safe, it is not deleted).
 
 ## Besoin d'aide ? / Need help?
 🇫🇷 Envoyez "AIDE" sur le numéro WhatsApp de support fourni par votre installateur.
@@ -42,4 +42,4 @@
 2. Après import, convertir les colonnes texte `Produit` et `Client` (dans `Ventes` et `Paiements_Credit`) en champs **Link to another record**.
 3. Connecter Glide à cette base Airtable (voir `glide/SCREENS.md`) et construire les 4 onglets.
 4. Importer `make/scenario_vente_stock_whatsapp.json` dans Make.com, reconnecter les comptes, créer les 2 templates WATI.
-5. Configurer Paystack ou Flutterwave pour le prélèvement récurrent 5.000 FCFA/mois (Mobile Money), lier le webhook de paiement à un champ `Statut_Abonnement` sur le User Profile Glide.
+5. Configurer Flutterwave (voir `paiement/GUIDE_CONFIG_FLUTTERWAVE.md`) : compte, base Airtable `Abonnements` séparée, les 2 scénarios Make de `paiement/make/`, templates WATI de rappel d'abonnement. Ajouter cette base comme 2ᵉ source Glide pour bloquer l'app en cas d'impayé (voir `paiement/STRUCTURE_ABONNEMENTS.md`).

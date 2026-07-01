@@ -1,0 +1,189 @@
+{
+  "name": "ShopSnap CM - Abonnement - Generation lien Flutterwave + rappel WhatsApp",
+  "flow": [
+    {
+      "id": 1,
+      "module": "builtin:BasicScheduler",
+      "version": 1,
+      "metadata": { "designer": { "x": 0, "y": 0 }, "restore": {} },
+      "parameters": {
+        "type": "daily",
+        "time": "08:00",
+        "timezone": "Africa/Douala"
+      },
+      "comment": "Se declenche chaque jour a 8h - heure locale Cameroun"
+    },
+    {
+      "id": 2,
+      "module": "airtable:ActionSearchRecords",
+      "version": 3,
+      "metadata": { "designer": { "x": 300, "y": 0 }, "restore": {} },
+      "parameters": {
+        "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
+        "base": "YOUR_ADMIN_BASE_ID",
+        "table": "Abonnements",
+        "filterByFormula": "AND({Statut_Abonnement} != 'resilie', {Jours_Avant_Echeance} <= 3)"
+      },
+      "comment": "Toutes les boutiques a moins de 3 jours de l'echeance (ou deja en retard)"
+    },
+    {
+      "id": 3,
+      "module": "builtin:Router",
+      "version": 1,
+      "metadata": { "designer": { "x": 600, "y": 0 }, "restore": {} },
+      "routes": [
+        {
+          "id": "route_a_generer_lien_et_relancer",
+          "flow": [
+            {
+              "id": 4,
+              "module": "http:ActionSendData",
+              "version": 3,
+              "metadata": { "designer": { "x": 900, "y": -250 }, "restore": {} },
+              "filter": {
+                "name": "Pas encore suspendu (>= -5 jours)",
+                "conditions": [[ { "a": "{{2.Jours_Avant_Echeance}}", "o": "number:greaterEqual", "b": -5 } ]]
+              },
+              "parameters": {
+                "url": "https://api.flutterwave.com/v3/payments",
+                "method": "POST",
+                "headers": [
+                  { "name": "Authorization", "value": "Bearer YOUR_FLUTTERWAVE_SECRET_KEY" },
+                  { "name": "Content-Type", "value": "application/json" }
+                ],
+                "bodyType": "raw",
+                "parseResponse": true,
+                "data": "{\"tx_ref\":\"shopsnap-{{2.Nom_Boutique}}-{{formatDate(now; 'YYYYMM')}}\",\"amount\":\"{{2.Montant_FCFA}}\",\"currency\":\"XAF\",\"redirect_url\":\"https://votre-page-de-confirmation.example\",\"customer\":{\"phonenumber\":\"{{2.Telephone_Gerante}}\",\"name\":\"{{2.Nom_Boutique}}\"},\"customizations\":{\"title\":\"Abonnement ShopSnap CM\",\"description\":\"Mensualite 5000 FCFA\"}}"
+              },
+              "comment": "Cree un lien de paiement Flutterwave unique pour ce cycle de facturation"
+            },
+            {
+              "id": 5,
+              "module": "airtable:ActionUpdateRecord",
+              "version": 3,
+              "metadata": { "designer": { "x": 1200, "y": -250 }, "restore": {} },
+              "parameters": {
+                "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
+                "base": "YOUR_ADMIN_BASE_ID",
+                "table": "Abonnements",
+                "id": "{{2.id}}",
+                "fields": {
+                  "Lien_Paiement_Actuel": "{{4.data.link}}",
+                  "Statut_Abonnement": "{{if(2.Jours_Avant_Echeance < 0; 'en_retard'; 2.Statut_Abonnement)}}"
+                }
+              }
+            },
+            {
+              "id": 6,
+              "module": "builtin:Router",
+              "version": 1,
+              "metadata": { "designer": { "x": 1500, "y": -250 }, "restore": {} },
+              "routes": [
+                {
+                  "id": "route_rappel_fr",
+                  "flow": [
+                    {
+                      "id": 7,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "metadata": { "designer": { "x": 1800, "y": -350 }, "restore": {} },
+                      "filter": {
+                        "name": "Gerante francophone",
+                        "conditions": [[ { "a": "{{2.Langue_Preferee}}", "o": "text:equal", "b": "Français" } ]]
+                      },
+                      "parameters": {
+                        "url": "https://live-mt-server.wati.io/api/v1/sendTemplateMessage",
+                        "method": "POST",
+                        "headers": [
+                          { "name": "Authorization", "value": "Bearer YOUR_WATI_API_KEY" },
+                          { "name": "Content-Type", "value": "application/json" }
+                        ],
+                        "qs": [ { "name": "whatsappNumber", "value": "{{2.WhatsApp_Gerante}}" } ],
+                        "bodyType": "raw",
+                        "parseResponse": true,
+                        "data": "{\"template_name\":\"rappel_abonnement_fr\",\"broadcast_name\":\"rappel_abonnement_fr\",\"parameters\":[{\"name\":\"nom_boutique\",\"value\":\"{{2.Nom_Boutique}}\"},{\"name\":\"lien_paiement\",\"value\":\"{{4.data.link}}\"}]}"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "route_rappel_en",
+                  "flow": [
+                    {
+                      "id": 8,
+                      "module": "http:ActionSendData",
+                      "version": 3,
+                      "metadata": { "designer": { "x": 1800, "y": -150 }, "restore": {} },
+                      "filter": {
+                        "name": "English speaking manager",
+                        "conditions": [[ { "a": "{{2.Langue_Preferee}}", "o": "text:equal", "b": "English" } ]]
+                      },
+                      "parameters": {
+                        "url": "https://live-mt-server.wati.io/api/v1/sendTemplateMessage",
+                        "method": "POST",
+                        "headers": [
+                          { "name": "Authorization", "value": "Bearer YOUR_WATI_API_KEY" },
+                          { "name": "Content-Type", "value": "application/json" }
+                        ],
+                        "qs": [ { "name": "whatsappNumber", "value": "{{2.WhatsApp_Gerante}}" } ],
+                        "bodyType": "raw",
+                        "parseResponse": true,
+                        "data": "{\"template_name\":\"subscription_reminder_en\",\"broadcast_name\":\"subscription_reminder_en\",\"parameters\":[{\"name\":\"shop_name\",\"value\":\"{{2.Nom_Boutique}}\"},{\"name\":\"payment_link\",\"value\":\"{{4.data.link}}\"}]}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "route_b_suspendre",
+          "flow": [
+            {
+              "id": 9,
+              "module": "airtable:ActionUpdateRecord",
+              "version": 3,
+              "metadata": { "designer": { "x": 900, "y": 250 }, "restore": {} },
+              "filter": {
+                "name": "Plus de 5 jours de retard - suspension",
+                "conditions": [[ { "a": "{{2.Jours_Avant_Echeance}}", "o": "number:less", "b": -5 } ]]
+              },
+              "parameters": {
+                "__IMPORTDATA_connection": "YOUR_AIRTABLE_ADMIN_CONNECTION",
+                "base": "YOUR_ADMIN_BASE_ID",
+                "table": "Abonnements",
+                "id": "{{2.id}}",
+                "fields": { "Statut_Abonnement": "suspendu" }
+              },
+              "comment": "L'app Glide de la boutique lit ce statut et affiche l'ecran de blocage"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": { "orphans": [] },
+    "zone": "eu2.make.com",
+    "notes": [
+      "Gabarit structurel, a reconnecter (Airtable admin base + WATI) apres import.",
+      "Remplacer YOUR_ADMIN_BASE_ID, YOUR_AIRTABLE_ADMIN_CONNECTION, YOUR_FLUTTERWAVE_SECRET_KEY, YOUR_WATI_API_KEY.",
+      "Creer d'abord les templates WATI 'rappel_abonnement_fr' et 'subscription_reminder_en' (approbation Meta requise) avant d'activer.",
+      "Le module 2 (Search Records) renvoie un tableau : Make itere automatiquement dessus, chaque iteration porte les references {{2.xxx}} d'une ligne Abonnements."
+    ]
+  }
+}
