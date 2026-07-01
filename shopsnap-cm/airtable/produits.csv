@@ -1,0 +1,11 @@
+Nom_Produit,Code_Barre,Categorie,Prix_Achat_FCFA,Prix_Vente_FCFA,Stock_Actuel,Seuil_Min,Actif
+Robe fleurie taille M,,friperie_femme,1500,3000,8,3,checked
+Jean homme taille 32,,friperie_homme,2000,4000,5,2,checked
+Veste blazer femme,,friperie_femme,3000,6000,4,2,checked
+T-shirt polo homme,,friperie_homme,1000,2500,12,4,checked
+Ensemble bébé 0-12 mois,,friperie_enfant,800,2000,10,3,checked
+Chaussures baskets homme,,friperie_homme,2500,5000,2,3,checked
+Sac à main femme,,friperie_femme,1500,3500,6,2,checked
+Manteau hiver enfant,,friperie_enfant,2000,4500,1,2,checked
+Chemise homme manches longues,,friperie_homme,1200,2800,9,3,checked
+Jupe longue femme,,friperie_femme,1000,2200,7,3,checked
