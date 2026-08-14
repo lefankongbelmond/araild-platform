@@ -25,7 +25,7 @@
         </div>
         <div class="text-center">
           {{-- QR encodes a signed verification URL — no medical data --}}
-          {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate(route('members.card.verify', ['t' => $token])) !!}
+          {!! \F9WebLtd\QrCode\Facades\QrCode::size(120)->generate(route('members.card.verify', ['t' => $token])) !!}
           <div class="mt-1 text-[10px] text-ink/40">{{ __('mxconnect.card.scan') }}</div>
         </div>
       </div>

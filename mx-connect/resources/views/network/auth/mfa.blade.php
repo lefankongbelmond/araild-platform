@@ -5,8 +5,8 @@
     @if ($mode === 'enroll')
       <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.mfa.enroll_help') }}</p>
       <div class="mt-4 rounded-lg border border-ink/10 bg-white p-4">
-        {{-- Render the otpauth:// URL as a QR via SimpleSoftwareIO\QrCode --}}
-        {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(180)->generate($qrUrl) !!}
+        {{-- Render the otpauth:// URL as a QR via F9WebLtd\QrCode --}}
+        {!! \F9WebLtd\QrCode\Facades\QrCode::size(180)->generate($qrUrl) !!}
       </div>
       <form method="POST" action="{{ route('mfa.confirm') }}" class="mt-4 space-y-3">
     @else
