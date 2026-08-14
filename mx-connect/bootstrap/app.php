@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,5 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Member PWA / Sanctum API (api/member/*) and webhooks expect JSON errors, not HTML pages.
+        $exceptions->shouldRenderJsonWhen(
+            fn (Request $request) => $request->is('api/*', 'webhooks/*') || $request->expectsJson(),
+        );
     })->create();
