@@ -1,0 +1,3 @@
+# MX-CONNECT scheduler — one line drives all periodic jobs (reminders, arrears sweep,
+# reconciliation retries, actuarial indicators, backups).
+* * * * * cd /var/www/mx-connect && php artisan schedule:run >> /dev/null 2>&1
