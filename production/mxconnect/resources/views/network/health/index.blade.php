@@ -6,7 +6,7 @@
     <div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ __('mxconnect.health.unreachable', ['n' => $unreachable]) }}</div>
   @endif
 
-  <div class="mt-6 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-6 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-mist text-left text-ink/60"><tr>
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.health.mutual') }}</th>

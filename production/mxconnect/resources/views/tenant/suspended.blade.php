@@ -1,0 +1,1 @@
+@include('errors.minimal-mx', ['icon' => '⏸', 'title' => 'Espace suspendu', 'text' => ($name ? $name . ' : ' : '') . $message . ' Pour toute question, contactez la direction de votre mutuelle.', 'retry' => 0, 'noRetry' => true])

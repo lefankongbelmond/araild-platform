@@ -1,7 +1,7 @@
 <x-layouts.network title="Réglages du réseau social">
   <h1 class="text-2xl font-semibold tracking-tight">Réglages du réseau social</h1>
   @if (session('success'))<div class="mt-4 rounded-md bg-pine/10 px-4 py-2 text-sm text-pine">{{ session('success') }}</div>@endif
-  <form method="POST" action="{{ route('network.social.settings.save') }}" class="mt-6 grid gap-6 lg:grid-cols-2">
+  <form method="POST" action="{{ route('network.social.settings.save') }}" class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
     @csrf
     <section class="rounded-lg border border-ink/10 bg-white p-5 text-sm">
       <h2 class="text-base font-semibold">Protection contre la surcharge</h2>
@@ -16,7 +16,7 @@
     <section class="rounded-lg border border-ink/10 bg-white p-5 text-sm">
       <h2 class="text-base font-semibold">Publications sponsorisées</h2>
       <label class="mt-3 flex items-start gap-2"><input type="checkbox" name="sponsor_enabled" value="1" @checked($sponsorEnabled)> <span>Autoriser la sponsorisation et la diffusion des campagnes</span></label>
-      <div class="mt-3 grid gap-3 sm:grid-cols-3">
+      <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label class="block font-medium">Devise<select name="currency_id" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2">@foreach ($currencies as $c)<option value="{{ $c->id }}" @selected($currency?->id === $c->id)>{{ $c->code }}</option>@endforeach</select></label>
         <label class="block font-medium">Prix pour 1 000 affichages<input name="cpm" value="{{ $cpm }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2" inputmode="decimal"></label>
         <label class="block font-medium">Budget minimum<input name="min_budget" value="{{ $minBudget }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2" inputmode="decimal"></label>

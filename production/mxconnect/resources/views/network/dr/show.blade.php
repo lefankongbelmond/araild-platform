@@ -8,7 +8,7 @@
     <span class="rounded-full px-3 py-1 text-sm {{ $tone }}">{{ __('mxconnect.dr.v_'.$v) }}</span>
   </div>
 
-  <div class="mt-6 grid gap-4 md:grid-cols-2">
+  <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
     <div class="rounded-lg border border-ink/10 bg-white p-4">
       <h2 class="font-medium">RTO — {{ __('mxconnect.dr.rto_label') }}</h2>
       <div class="mt-2 flex items-baseline gap-2">
@@ -26,7 +26,7 @@
   </div>
 
   <div class="mt-4 rounded-lg border border-ink/10 bg-white p-4">
-    <dl class="grid gap-2 sm:grid-cols-2 text-sm">
+    <dl class="grid grid-cols-1 gap-2 sm:grid-cols-2 text-sm">
       <div class="flex justify-between"><dt class="text-ink/50">{{ __('mxconnect.dr.date') }}</dt><dd>{{ $test->performed_on?->format('d/m/Y') }}</dd></div>
       <div class="flex justify-between"><dt class="text-ink/50">{{ __('mxconnect.dr.outcome') }}</dt><dd>{{ __('mxconnect.dr.o_'.$test->outcome) }}</dd></div>
       <div class="flex justify-between"><dt class="text-ink/50">{{ __('mxconnect.dr.by') }}</dt><dd>{{ $test->performed_by ?: '—' }}</dd></div>

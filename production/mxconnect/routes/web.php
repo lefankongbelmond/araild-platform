@@ -78,6 +78,9 @@ Route::middleware('auth:network')->group(function () {
         Route::post('mutuelles', [MutualController::class, 'store'])->name('mutuals.store');
         Route::post('mutuelles/{mutual}/agrement', [MutualController::class, 'approve'])->name('mutuals.approve');
         Route::post('mutuelles/{mutual}/suspension', [MutualController::class, 'suspend'])->name('mutuals.suspend');
+        Route::post('mutuelles/{mutual}/reactivation', [MutualController::class, 'reactivate'])->name('mutuals.reactivate');
+        Route::get('mutuelles/{mutual}', [MutualController::class, 'show'])->name('mutuals.show');
+        Route::post('mutuelles/{mutual}/administrateur', [MutualController::class, 'admin'])->name('mutuals.admin');
 
         // --- Phase 2 / Module 14: disaster-recovery drill log ---
         Route::get('pra', [DrTestController::class, 'index'])->name('dr.index');
@@ -136,6 +139,8 @@ Route::middleware('auth:network')->group(function () {
         Route::get('configuration/pays', [CountryController::class, 'index'])->name('config.countries');
         Route::post('configuration/pays', [CountryController::class, 'store'])->name('config.countries.store');
         Route::put('configuration/pays/{country}', [CountryController::class, 'update'])->name('config.countries.update');
+        Route::post('configuration/pays/catalogue', [CountryController::class, 'catalog'])->name('config.countries.catalog');
+        Route::post('configuration/pays/{country}/statut', [CountryController::class, 'toggle'])->name('config.countries.toggle');
 
         Route::get('configuration/prestataires-paiement', [PaymentProviderController::class, 'index'])->name('config.providers');
         Route::post('configuration/prestataires-paiement', [PaymentProviderController::class, 'store'])->name('config.providers.store');

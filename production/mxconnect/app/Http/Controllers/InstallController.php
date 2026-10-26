@@ -435,9 +435,9 @@ class InstallController extends Controller
             $c[] = ['Base centrale', false, 'connexion impossible : ' . $e->getMessage()];
         }
         $mode = config('mxconnect.tenant_db_mode');
-        $c[] = ['Mode des bases mutuelles', true, $mode === 'manual'
-            ? 'manual — chaque base est créée à l\'avance dans le panneau LWS'
-            : 'auto — l\'utilisateur MySQL doit pouvoir faire CREATE DATABASE (VPS)'];
+        $c[] = ['Création des mutuelles', true, in_array($mode, ['manual', 'prefix'], true)
+            ? $mode . ' — automatique : tables préfixées dans la base centrale, aucune base à créer dans le panneau LWS'
+            : 'auto — une base par mutuelle : l\'utilisateur MySQL doit pouvoir faire CREATE DATABASE (VPS). Sur LWS, mettre TENANT_DB_MODE=manual'];
         $c[] = ['Cache / sessions / file', true, config('cache.default') . ' / ' . config('session.driver') . ' / ' . config('queue.default')];
         $link = public_path('storage');
         $c[] = ['Lien public/storage', is_link($link) || is_dir($link), is_link($link) || is_dir($link) ? 'présent' : 'absent (créé à l\'installation)'];

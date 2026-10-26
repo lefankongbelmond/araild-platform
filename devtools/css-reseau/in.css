@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Champs de formulaire lisibles sur toutes les pages du réseau (2026-11-02). */
+@layer base {
+  input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]), select, textarea {
+    border-width: 1px; border-color: rgb(11 31 58 / .15); border-radius: .6rem; background-color: #fff;
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid rgb(10 95 181 / .25); outline-offset: 1px; }
+  input[type=checkbox], input[type=radio] { accent-color: #2E9E4F; }
+}

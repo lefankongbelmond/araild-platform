@@ -17,6 +17,7 @@ class Country extends Model implements Auditable
 
     public function defaultCurrency() { return $this->belongsTo(Currency::class, 'default_currency_id'); }
     public function defaultLocale()   { return $this->belongsTo(Locale::class, 'default_locale_id'); }
+    public function mutuals()         { return $this->hasMany(Mutual::class); }
     public function paymentProviders()
     {
         return $this->belongsToMany(PaymentProvider::class, 'country_payment_provider')->withPivot('active');

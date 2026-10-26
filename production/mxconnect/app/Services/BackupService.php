@@ -123,6 +123,11 @@ class BackupService
 
         $result = 1;
         $out = [];
+        // Mutuelle à tables préfixées : mysqldump exporterait toute la base centrale ;
+        // l'export PHP ne prend que les tables de la mutuelle.
+        if (($cfg['prefix'] ?? '') !== '') {
+            return $this->phpDump($connection, $path);
+        }
         if ($this->canExec()) {
             @exec($cmd, $out, $result);
         }
@@ -158,15 +163,19 @@ class BackupService
                 return false;
             }
 
-            fwrite($fh, "-- MX-CONNECT export PHP · base " . $db->getDatabaseName() . " · " . now()->toDateTimeString() . "\n");
+            fwrite($fh, "-- MX-CONNECT export PHP · base " . $db->getDatabaseName() . ($db->getTablePrefix() !== '' ? ' · tables ' . $db->getTablePrefix() . '*' : '') . " · " . now()->toDateTimeString() . "\n");
             fwrite($fh, "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
 
+            $prefix = $db->getTablePrefix();
             foreach ($db->select('SHOW FULL TABLES') as $row) {
                 $row = array_values((array) $row);
                 if (($row[1] ?? 'BASE TABLE') !== 'BASE TABLE') {
                     continue;
                 }
                 $table = $row[0];
+                if ($prefix !== '' && ! str_starts_with($table, $prefix)) {
+                    continue;   // tables d'une autre mutuelle ou du réseau : hors de cette sauvegarde
+                }
                 $create = array_values((array) $db->selectOne("SHOW CREATE TABLE `{$table}`"))[1];
                 fwrite($fh, "DROP TABLE IF EXISTS `{$table}`;\n{$create};\n");
 

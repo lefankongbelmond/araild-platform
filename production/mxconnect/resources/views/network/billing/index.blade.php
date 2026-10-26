@@ -1,5 +1,5 @@
 <x-layouts.network :title="__('mxconnect.billing.title')">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <div><h1 class="text-2xl font-semibold tracking-tight">{{ __('mxconnect.billing.title') }}</h1>
       <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.billing.sub') }}</p></div>
     <a href="{{ route('network.billing.plans') }}" class="text-sm text-pine hover:underline">{{ __('mxconnect.billing.plans') }} →</a>
@@ -23,7 +23,7 @@
 
   {{-- Subscriptions --}}
   <h2 class="mt-8 font-medium">{{ __('mxconnect.billing.subscriptions') }}</h2>
-  <div class="mt-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-2 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-mist text-left text-ink/60"><tr>
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.billing.mutual') }}</th>
@@ -55,7 +55,7 @@
 
   {{-- Invoices --}}
   <h2 class="mt-8 font-medium">{{ __('mxconnect.billing.invoices') }}</h2>
-  <div class="mt-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-2 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-mist text-left text-ink/60"><tr>
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.billing.number') }}</th>

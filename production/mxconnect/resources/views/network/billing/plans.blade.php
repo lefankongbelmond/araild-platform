@@ -1,12 +1,12 @@
 <x-layouts.network :title="__('mxconnect.billing.plans')">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <div><h1 class="text-2xl font-semibold tracking-tight">{{ __('mxconnect.billing.plans') }}</h1>
       <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.billing.plans_sub') }}</p></div>
     <a href="{{ route('network.billing.index') }}" class="text-sm text-pine hover:underline">{{ __('mxconnect.billing.title') }} →</a>
   </div>
 
-  <div class="mt-6 grid gap-6 lg:grid-cols-3">
-    <div class="lg:col-span-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
       <table class="w-full text-sm">
         <thead class="bg-mist text-left text-ink/60"><tr>
           <th class="px-4 py-2 font-medium">{{ __('mxconnect.billing.plan') }}</th>
@@ -41,7 +41,7 @@
       <input name="code" placeholder="{{ __('mxconnect.billing.code') }}" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
       <input name="name" placeholder="{{ __('mxconnect.billing.name') }}" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
       <div class="flex gap-2">
-        <input name="price" type="number" step="any" min="0" placeholder="{{ __('mxconnect.billing.price') }}" required class="flex-1 rounded-md border-ink/20 px-3 py-2 text-sm">
+        <input name="price" type="number" step="any" min="0" placeholder="{{ __('mxconnect.billing.price') }}" required class="min-w-0 flex-1 rounded-md border-ink/20 px-3 py-2 text-sm">
         <select name="currency_id" required class="rounded-md border-ink/20 px-3 py-2 text-sm">
           @foreach ($currencies as $c)<option value="{{ $c->id }}">{{ $c->code }}</option>@endforeach
         </select>

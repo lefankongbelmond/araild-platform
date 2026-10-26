@@ -20,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Noms d'index ≤ 64 caractères (tables préfixées des mutuelles, 2026-11-02).
+        $this->app->bind(\Illuminate\Database\Schema\Blueprint::class, \App\Database\ShortNameBlueprint::class);
+
         // Les routes Fortify (/login, /register…) ne sont pas utilisées : la
         // connexion passe par /reseau/connexion (réseau) et /connexion (mutuelle).
         // Laissées actives, elles renvoyaient une erreur 500 (aucune vue liée).

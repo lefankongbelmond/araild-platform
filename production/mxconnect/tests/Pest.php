@@ -75,17 +75,33 @@ function provisionTestMutual(): \App\Models\Central\Mutual
 {
     test()->seed(\Database\Seeders\ConfigReferenceSeeder::class);
     $c = config('database.connections.central');
-    $pdo = new PDO("mysql:host={$c['host']};port={$c['port']};dbname=mx_tests_tenant", $c['username'], $c['password']);
-    $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
-    foreach ($pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) {
-        $pdo->exec("DROP TABLE `{$t}`");
-    }
     $country = \App\Models\Central\Country::where('active', true)->firstOrFail();
-    $mutual = app(\App\Services\MutualProvisioningService::class)->create([
-        'name' => 'Mutuelle Équipe', 'slug' => 'equipe' . random_int(100, 999), 'country_id' => $country->id,
-        'currency_id' => $country->default_currency_id, 'locale_id' => $country->default_locale_id,
-        'db_name' => 'mx_tests_tenant', 'db_username' => $c['username'], 'db_password' => $c['password'],
-    ]);
+    $base = ['name' => 'Mutuelle Équipe', 'slug' => 'equipe' . random_int(100, 999), 'country_id' => $country->id,
+        'currency_id' => $country->default_currency_id, 'locale_id' => $country->default_locale_id];
+
+    // MX_TEST_STORAGE=prefix : la même suite sur une mutuelle à TABLES PRÉFIXÉES dans la base
+    // centrale (création automatique, 2026-11-02) ; sinon : base dédiée mx_tests_tenant.
+    if (getenv('MX_TEST_STORAGE') === 'prefix') {
+        config(['mxconnect.tenant_db_mode' => 'manual']);
+        $pdo = new PDO("mysql:host={$c['host']};port={$c['port']};dbname={$c['database']}", $c['username'], $c['password']);
+        $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+        foreach ($pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN) as $t) {
+            if (preg_match('/^mut\d+_/', $t)) {
+                $pdo->exec("DROP TABLE `{$t}`");   // tables d'une mutuelle d'un test précédent
+            }
+        }
+        $mutual = app(\App\Services\MutualProvisioningService::class)->create($base + ['storage' => 'auto']);
+        expect(\App\Support\TenantStorage::isPrefixed($mutual))->toBeTrue();
+    } else {
+        $pdo = new PDO("mysql:host={$c['host']};port={$c['port']};dbname=mx_tests_tenant", $c['username'], $c['password']);
+        $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+        foreach ($pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) {
+            $pdo->exec("DROP TABLE `{$t}`");
+        }
+        $mutual = app(\App\Services\MutualProvisioningService::class)->create($base + [
+            'db_name' => 'mx_tests_tenant', 'db_username' => $c['username'], 'db_password' => $c['password'],
+        ]);
+    }
     test()->mutual = $mutual;
     test()->host = 'http://' . $mutual->domains()->value('domain');
     staffUser('admin@equipe.test', ['mutual_admin']);

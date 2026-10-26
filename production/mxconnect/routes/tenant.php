@@ -39,6 +39,7 @@ Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    \App\Http\Middleware\EnsureMutualActive::class,   // mutuelle suspendue : espace fermé (2026-11-02)
 ])->group(function () {
 
     // --- Connexion du personnel de la mutuelle (guard 'web', base tenant) ---

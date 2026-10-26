@@ -133,4 +133,12 @@ $mutual->run(function () use ($csi) {
 });
 $note('Adhérent couvert : code MUT-LOCAL-001 (prestataire : Centre de santé local de Mvog-Ada)');
 
+// --- Lot 9 : super-admin du réseau (LOCAL) : mot de passe régénéré, double authentification à reconfigurer ---
+$sa = \App\Models\Central\NetworkUser::where('email', 'admin@mx-connect.com')->first();
+if ($sa) {
+    $pwd = Str::password(16, symbols: false);
+    $sa->forceFill(['password' => \Illuminate\Support\Facades\Hash::make($pwd), 'mfa_secret' => null, 'mfa_enabled' => false, 'active' => true])->save();
+    $note("Réseau http://m.araild.test:8080/reseau/connexion\n  admin@mx-connect.com / {$pwd}");
+}
+
 echo "Données locales prêtes. Comptes : production/mxconnect/storage/app/comptes-locaux.txt\n";

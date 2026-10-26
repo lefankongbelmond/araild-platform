@@ -28,7 +28,10 @@ class StoreMutualRequest extends FormRequest
             // Hébergement mutualisé (TENANT_DB_MODE=manual) : base créée à
             // l'avance dans le panneau LWS. Utilisateur/mot de passe facultatifs
             // (par défaut : ceux de la base centrale).
-            'db_name'     => [config('mxconnect.tenant_db_mode') === 'manual' ? 'required' : 'prohibited',
+            // Stockage (2026-11-02) : « auto » = tables créées automatiquement ; « existing » =
+            // base créée à l'avance dans le panneau (option avancée).
+            'storage'     => ['nullable', 'in:auto,existing'],
+            'db_name'     => [in_array(config('mxconnect.tenant_db_mode'), ['manual', 'prefix'], true) ? 'required_if:storage,existing' : 'prohibited',
                               'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_]+$/'],
             'db_username' => ['nullable', 'string', 'max:80'],
             'db_password' => ['nullable', 'string', 'max:190'],

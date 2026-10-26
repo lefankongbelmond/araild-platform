@@ -145,8 +145,11 @@ class BudgetController extends Controller
             ->join('accounting_days as d', 'd.id', '=', 'e.accounting_day_id')
             ->whereYear('d.day', $year)
             ->whereIn('e.status', ['validated', 'posted']);
-        $debits = (clone $base)->selectRaw('e.debit_account_id as a, sum(e.amount_minor) as s')->groupBy('e.debit_account_id')->pluck('s', 'a');
-        $credits = (clone $base)->selectRaw('e.credit_account_id as a, sum(e.amount_minor) as s')->groupBy('e.credit_account_id')->pluck('s', 'a');
+        // Colonnes passées par la grammaire : l'alias « e » reçoit le préfixe des tables de la
+        // mutuelle (mutuelles à tables préfixées), ce qu'une chaîne brute « e.… » ne ferait pas.
+        $g = DB::connection()->getQueryGrammar();
+        $debits = (clone $base)->selectRaw($g->wrap('e.debit_account_id') . ' as a, sum(' . $g->wrap('e.amount_minor') . ') as s')->groupBy('e.debit_account_id')->pluck('s', 'a');
+        $credits = (clone $base)->selectRaw($g->wrap('e.credit_account_id') . ' as a, sum(' . $g->wrap('e.amount_minor') . ') as s')->groupBy('e.credit_account_id')->pluck('s', 'a');
         $out = [];
         foreach (Account::whereIn('class', [6, 7])->get(['id', 'class']) as $a) {
             $d = (int) ($debits[$a->id] ?? 0); $c = (int) ($credits[$a->id] ?? 0);

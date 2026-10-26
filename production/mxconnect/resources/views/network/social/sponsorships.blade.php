@@ -16,7 +16,7 @@
           <b>SP-{{ $s->id }} · {{ $s->advertiser?->display_name }}@if($s->advertiser?->organisation) ({{ $s->advertiser->organisation }})@endif</b>
           <span class="text-xs text-ink/50">Demandée le {{ $s->created_at->format('d/m/Y H:i') }} · {{ $s->advertiser?->phone }}</span>
         </div>
-        <div class="mt-2 grid gap-1 text-ink/75 sm:grid-cols-2">
+        <div class="mt-2 grid grid-cols-1 gap-1 text-ink/75 sm:grid-cols-2">
           <span>Budget : <b>{{ $s->money($s->budget_minor) }}</b> ({{ number_format($s->max_impressions, 0, ',', ' ') }} affichages à {{ $s->money($s->cpm_minor) }} / 1 000)</span>
           <span>Période : {{ $s->starts_on->format('d/m/Y') }} → {{ $s->ends_on->format('d/m/Y') }}</span>
           <span>Ciblage : {{ $s->target_city ?: 'toutes villes' }} · {{ $s->target_interest ? (\App\Http\Controllers\Social\AccountController::INTERESTS[$s->target_interest] ?? $s->target_interest) : 'tous intérêts' }}</span>

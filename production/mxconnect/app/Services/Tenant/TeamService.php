@@ -138,7 +138,7 @@ class TeamService
     public static function hasProviderColumn(): bool
     {
         static $has = [];
-        $key = DB::connection()->getDatabaseName();
+        $key = DB::connection()->getDatabaseName() . '|' . DB::connection()->getTablePrefix();   // tables préfixées : une clé par mutuelle
 
         return $has[$key] ??= Schema::hasColumn('users', 'care_provider_id');
     }
@@ -146,7 +146,7 @@ class TeamService
     public static function hasTeamColumns(): bool
     {
         static $has = [];
-        $key = DB::connection()->getDatabaseName();
+        $key = DB::connection()->getDatabaseName() . '|' . DB::connection()->getTablePrefix();   // tables préfixées : une clé par mutuelle
 
         return $has[$key] ??= Schema::hasColumn('users', 'must_change_password');
     }

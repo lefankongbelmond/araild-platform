@@ -29,14 +29,16 @@ class TenancyServiceProvider extends ServiceProvider
 
     public function events(): array
     {
-        $autoDb = config('mxconnect.tenant_db_mode', 'auto') !== 'manual';
+        // auto : MX-CONNECT crée une base par mutuelle (VPS). manual / prefix (mutualisé) : pas de
+        // CREATE DATABASE ; tables préfixées dans la base centrale, ou base existante saisie.
+        $autoDb = config('mxconnect.tenant_db_mode', 'auto') === 'auto';
 
         return [
             Events\TenantCreated::class => [
                 JobPipeline::make(array_values(array_filter([
                     // Mode "manual" (hébergement mutualisé) : la base existe déjà,
                     // créée dans le panneau ; on ne fait que migrer + initialiser.
-                    $autoDb ? Jobs\CreateDatabase::class : null,
+                    $autoDb ? \App\Jobs\Tenancy\CreateTenantDatabase::class : null,   // jamais pour une mutuelle à préfixe
                     Jobs\MigrateDatabase::class,   // config('tenancy.migration_parameters')
                     Jobs\SeedDatabase::class,      // config('tenancy.seeder_parameters')
                 ])))->send(fn (Events\TenantCreated $event) => $event->tenant)
@@ -45,7 +47,7 @@ class TenancyServiceProvider extends ServiceProvider
 
             Events\TenantDeleted::class => $autoDb ? [
                 JobPipeline::make([
-                    Jobs\DeleteDatabase::class,
+                    \App\Jobs\Tenancy\DeleteTenantDatabase::class,   // préfixe : ses tables seulement
                 ])->send(fn (Events\TenantDeleted $event) => $event->tenant)
                   ->shouldBeQueued(false),
             ] : [],

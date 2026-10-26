@@ -19,8 +19,11 @@ return [
 
     // Mode de création des bases mutuelles :
     //   auto   : MX-CONNECT crée la base (VPS, utilisateur MySQL avec droit CREATE)
-    //   manual : la base est créée à l'avance dans le panneau d'hébergement
-    //            (hébergement mutualisé) ; on la saisit à la création de la mutuelle.
+    //   manual : hébergement mutualisé (LWS). Depuis le 2026-11-02, une nouvelle mutuelle est
+    //            créée AUTOMATIQUEMENT dans la base centrale, avec ses propres tables
+    //            préfixées (App\Support\TenantStorage) ; on peut encore saisir une base
+    //            créée dans le panneau (option avancée).
+    //   prefix : identique à manual (nom explicite).
     'tenant_db_mode' => env('TENANT_DB_MODE', 'auto'),
 
     // Racine web publique si elle n'est pas <appli>/public (mutualisé : htdocs/).
@@ -30,7 +33,7 @@ return [
     'contact_email' => env('MXCONNECT_CONTACT_EMAIL'),
 
     // Version des fichiers CSS/JS (force le rechargement après une mise à jour).
-    'asset_version' => '2026.11.01',
+    'asset_version' => '2026.11.02',
 
     // Réseau social : médias téléversés
     'social' => [

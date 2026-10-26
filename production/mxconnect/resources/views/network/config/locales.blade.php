@@ -2,8 +2,8 @@
   <a href="{{ route('network.config.index') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.config.title') }}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ __('mxconnect.config.locales') }}</h1>
 
-  <div class="mt-6 grid gap-6 md:grid-cols-3">
-    <div class="md:col-span-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+    <div class="md:col-span-2 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
       <table class="w-full text-sm">
         <thead class="bg-mist text-left text-ink/60"><tr>
           <th class="px-4 py-2 font-medium">{{ __('mxconnect.config.code') }}</th>

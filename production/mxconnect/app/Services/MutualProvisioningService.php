@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Central\Mutual;
+use App\Support\TenantStorage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -34,13 +35,17 @@ class MutualProvisioningService
         // provisioning, on nettoie explicitement (domaine + ligne + base).
         $id = $this->nextId();
 
-        // Hébergement mutualisé : base pré-créée dans le panneau, vérifiée AVANT
-        // toute écriture (accessible, vide, pas déjà utilisée).
+        // Stockage des données (2026-11-02) :
+        //  - VPS (mode auto) : base dédiée créée par MX-CONNECT (pipeline stancl) ;
+        //  - mutualisé, base saisie : base pré-créée dans le panneau, vérifiée AVANT toute écriture ;
+        //  - mutualisé, sans base saisie : tables préfixées créées AUTOMATIQUEMENT dans la base centrale.
         $dbFields = [];
         if ($this->manualMode()) {
-            $dbFields = $this->checkManualDatabase($data);
+            $dbFields = (($data['storage'] ?? null) !== 'auto' && trim((string) ($data['db_name'] ?? '')) !== '')
+                ? $this->checkManualDatabase($data)
+                : $this->prefixFields($id);
         }
-        unset($data['db_name'], $data['db_username'], $data['db_password']);
+        unset($data['db_name'], $data['db_username'], $data['db_password'], $data['storage']);
 
         try {
             /** @var Mutual $mutual */
@@ -87,9 +92,29 @@ class MutualProvisioningService
         return $id;
     }
 
+    /** Hébergement mutualisé (pas de CREATE DATABASE) : modes « manual » et « prefix ». */
     protected function manualMode(): bool
     {
-        return config('mxconnect.tenant_db_mode') === 'manual';
+        return in_array(config('mxconnect.tenant_db_mode'), ['manual', 'prefix'], true);
+    }
+
+    /**
+     * Tables préfixées dans la base centrale : rien à créer dans le panneau d'hébergement.
+     * stancl passe tenancy_db_prefix à la connexion « tenant » (préfixe de toutes les tables).
+     *
+     * @return array<string,string>
+     */
+    protected function prefixFields(string $id): array
+    {
+        $prefix = TenantStorage::prefixFor($id);
+        if (TenantStorage::tables($prefix)) {
+            throw new \RuntimeException("Des tables « {$prefix}… » existent déjà dans la base centrale (création interrompue ?). Contactez le support avant de recommencer.");
+        }
+
+        return [
+            'tenancy_db_name'   => config('database.connections.central.database'),
+            'tenancy_db_prefix' => $prefix,
+        ];
     }
 
     /**
@@ -157,7 +182,10 @@ class MutualProvisioningService
         try {
             $mutual = Mutual::find($id);
 
-            if ($this->manualMode()) {
+            if ($mutual && TenantStorage::isPrefixed($mutual)) {
+                // Tables préfixées : on supprime seulement les tables de CETTE mutuelle.
+                TenantStorage::dropTables(TenantStorage::prefix($mutual));
+            } elseif ($this->manualMode()) {
                 // Base pré-créée : on ne peut pas la supprimer, on la remet à vide.
                 if ($mutual) {
                     $cfg = $mutual->database();
@@ -219,5 +247,38 @@ class MutualProvisioningService
             'approved_at' => now()->toDateString(),
             'approved_by' => $networkUserId,
         ]);
+        $this->log($mutual, 'approved', $networkUserId);
+    }
+
+    /**
+     * Suspension (2026-11-02) : l'espace de la mutuelle est fermé (middleware
+     * EnsureMutualActive) ; les données sont conservées. Le motif est obligatoire.
+     */
+    public function suspend(Mutual $mutual, string $reason, int $networkUserId): void
+    {
+        $mutual->status = 'suspended';
+        $mutual->suspended_at = now()->toDateTimeString();
+        $mutual->suspension_reason = $reason;
+        $mutual->save();
+        $this->log($mutual, 'suspended', $networkUserId, $reason);
+    }
+
+    /** Réactivation : retour à « agréée » si la mutuelle l'avait été, sinon « en attente ». */
+    public function reactivate(Mutual $mutual, int $networkUserId): void
+    {
+        $mutual->status = $mutual->approved_at ? 'approved' : 'pending';
+        $mutual->suspended_at = null;
+        $mutual->suspension_reason = null;
+        $mutual->save();
+        $this->log($mutual, 'reactivated', $networkUserId);
+    }
+
+    /** Historique des changements d'état (dans les données de la mutuelle, 30 derniers). */
+    private function log(Mutual $mutual, string $action, int $by, ?string $note = null): void
+    {
+        $history = (array) ($mutual->status_history ?? []);
+        $history[] = ['at' => now()->toDateTimeString(), 'action' => $action, 'by' => $by, 'note' => $note];
+        $mutual->status_history = array_slice($history, -30);
+        $mutual->save();
     }
 }

@@ -28,6 +28,23 @@ class MutualPolicy
 
     public function suspend(NetworkUser $user, Mutual $mutual): bool
     {
-        return $user->hasRole('super_admin') && $mutual->status === 'approved';
+        return $user->hasRole('super_admin') && in_array($mutual->status, ['pending', 'approved'], true);
+    }
+
+    public function reactivate(NetworkUser $user, Mutual $mutual): bool
+    {
+        return $user->hasRole('super_admin') && $mutual->status === 'suspended';
+    }
+
+    /** Fiche d'une mutuelle : comme la liste. */
+    public function view(NetworkUser $user, Mutual $mutual): bool
+    {
+        return $this->viewAny($user);
+    }
+
+    /** Créer ou rétablir l'accès d'un administrateur de la mutuelle. */
+    public function manageAccess(NetworkUser $user, Mutual $mutual): bool
+    {
+        return $user->hasRole('super_admin');
     }
 }

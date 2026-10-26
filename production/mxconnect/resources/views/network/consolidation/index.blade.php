@@ -1,5 +1,5 @@
 <x-layouts.network :title="__('mxconnect.consolidation.title')">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">{{ __('mxconnect.consolidation.title') }}</h1>
       <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.consolidation.sub') }}</p>
@@ -19,7 +19,7 @@
   </div>
 
   {{-- Network-wide counts --}}
-  <div class="mt-6 grid gap-4 md:grid-cols-4">
+  <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
     <div class="rounded-lg border border-ink/10 bg-white p-4">
       <div class="text-sm text-ink/50">{{ __('mxconnect.consolidation.mutuals') }}</div>
       <div class="mt-1 text-2xl font-semibold text-pine">{{ $totals['reachable'] }}<span class="text-base text-ink/30"> / {{ $totals['mutuals'] }}</span></div>
@@ -40,11 +40,11 @@
 
   {{-- Financial totals per currency --}}
   <h2 class="mt-8 font-medium">{{ __('mxconnect.consolidation.by_currency') }}</h2>
-  <div class="mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+  <div class="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     @foreach ($totals['by_currency'] as $ccy => $b)
       @php $cur = $currencies[$ccy] ?? null; $band = $b['loss_ratio'] === null ? 'text-ink/40' : ($b['loss_ratio'] < 0.75 ? 'text-sage' : ($b['loss_ratio'] <= 1 ? 'text-clay' : 'text-clay')); @endphp
       <div class="rounded-lg border border-ink/10 bg-white p-4">
-        <div class="flex items-center justify-between"><h3 class="font-medium">{{ $ccy }}</h3>
+        <div class="flex flex-wrap items-center justify-between gap-3"><h3 class="font-medium">{{ $ccy }}</h3>
           <span class="text-xs {{ $band }}">S/P {{ $b['loss_ratio'] !== null ? number_format($b['loss_ratio']*100,1).'%' : '—' }}</span></div>
         <dl class="mt-2 space-y-1 text-sm">
           <div class="flex justify-between"><dt class="text-ink/50">{{ __('mxconnect.consolidation.premiums') }}</dt><dd class="font-medium text-sage">{{ $cur ? $cur->format($b['premiums']) : $b['premiums'] }}</dd></div>
@@ -57,7 +57,7 @@
 
   {{-- Per-mutual breakdown --}}
   <h2 class="mt-8 font-medium">{{ __('mxconnect.consolidation.per_mutual') }}</h2>
-  <div class="mt-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+  <div class="mt-2 relative min-w-0 overflow-x-auto rounded-lg border border-ink/10 bg-white">
     <table class="w-full text-sm">
       <thead class="bg-mist text-left text-ink/60"><tr>
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.consolidation.mutual') }}</th>
