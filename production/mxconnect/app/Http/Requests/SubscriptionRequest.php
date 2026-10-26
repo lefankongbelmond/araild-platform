@@ -10,7 +10,7 @@ class SubscriptionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('subscription.capture') ?? false;
+        return \App\Support\TenantAccess::can('subscriptions.store', $this->user());
     }
 
     public function rules(): array

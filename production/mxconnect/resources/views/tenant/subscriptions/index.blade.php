@@ -3,9 +3,9 @@
     <x-slot:title>{{ __('mxconnect.subscription.plural') }}</x-slot:title>
     <x-slot:actions>
 
-    @can('subscription.capture')
+    @if (\App\Support\TenantAccess::can('subscriptions.create'))
       <a href="{{ route('subscriptions.create') }}" class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">+ {{ __('mxconnect.subscription.new') }}</a>
-    @endcan
+    @endif
     </x-slot:actions>
   </x-tenant.hero>
 

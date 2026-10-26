@@ -22,7 +22,7 @@
           <div><dt class="text-ink/50">{{ __('mxconnect.member.group') }}</dt><dd>{{ $member->group?->name ?: '—' }}</dd></div>
           <div class="col-span-2"><dt class="text-ink/50">{{ __('mxconnect.member.address') }}</dt><dd>{{ $member->address ?: '—' }}</dd></div>
         </dl>
-        @if (auth()->user()?->hasAnyRole(['enrollment_agent','mutual_admin']))
+        @if (\App\Support\TenantAccess::can('members.update'))
         <div class="mt-4 flex gap-3">
           @if ($member->status->value === 'active')
             <form method="POST" action="{{ route('members.suspend', $member) }}">@csrf<button class="text-sm text-clay hover:underline">{{ __('mxconnect.member.suspend') }}</button></form>
@@ -44,7 +44,7 @@
                 <td class="py-2 text-ink/50">{{ __('mxconnect.relationship.'.$d->relationship) }}</td>
                 <td class="py-2 text-ink/50">{{ $d->birth_date?->format('d/m/Y') }}</td>
                 <td class="py-2 text-right">
-                  @if ($d->status !== 'removed' && auth()->user()?->hasAnyRole(['enrollment_agent','mutual_admin']))
+                  @if ($d->status !== 'removed' && \App\Support\TenantAccess::can('members.update'))
                     <form method="POST" action="{{ route('members.dependents.remove', [$member, $d]) }}">@csrf @method('DELETE')
                       <button class="text-xs text-clay hover:underline">{{ __('mxconnect.member.remove') }}</button></form>
                   @endif
@@ -59,7 +59,7 @@
     </div>
 
     {{-- Add dependent --}}
-    @if (auth()->user()?->hasAnyRole(['enrollment_agent','mutual_admin']))
+    @if (\App\Support\TenantAccess::can('members.update'))
     <form method="POST" action="{{ route('members.dependents.add', $member) }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">
       @csrf
       <h2 class="font-medium">{{ __('mxconnect.member.add_dependent') }}</h2>

@@ -108,4 +108,29 @@ if (! \App\Models\Social\Opportunity::where('mutual_id', $mutual->id)->exists())
         'contact_name' => 'Clarisse Local', 'contact_email' => 'clarisse@membre.test']);
 }
 
+// --- Lot 7 : un compte par rôle, un prestataire conventionné, un adhérent couvert ---
+foreach ([['tresorier', 'Trésor', 'Ier', 'treasurer_accountant'], ['auditeur', 'Audit', 'Eur', 'auditor'], ['gestionnaire', 'Gest', 'Ionnaire', 'benefits_manager'],
+          ['controleur', 'Contrôle', 'Eur', 'controller_validator'], ['agent', 'Paul', 'Agent', 'enrollment_agent']] as [$login, $first, $last, $role]) {
+    $note("  {$login}@mutueltest.test / " . $prov->createUser($mutual, "{$login}@mutueltest.test", $first, $last, $role));
+}
+$csi = \App\Models\Central\CareProvider::firstOrCreate(['name' => 'Centre de santé local de Mvog-Ada'],
+    ['type' => 'health_center', 'country_id' => $country->id, 'locality' => 'Yaoundé', 'active' => true, 'created_by_mutual' => (string) $mutual->id]);
+$note('  prestataire@mutueltest.test / ' . $prov->createUser($mutual, 'prestataire@mutueltest.test', 'Accueil', 'Mvog-Ada', 'provider'));
+$mutual->run(function () use ($csi) {
+    \App\Models\Tenant\ProviderConvention::firstOrCreate(['care_provider_id' => $csi->id], ['reference' => 'CONV-2026-01', 'starts_on' => '2026-01-01', 'active' => true]);
+    \App\Models\Tenant\User::where('email', 'prestataire@mutueltest.test')->update(['care_provider_id' => $csi->id]);
+    $g = \App\Models\Tenant\Guarantee::firstOrCreate(['code' => 'LOC-ESS'], ['name' => 'Essentielle (local)', 'status' => 'active']);
+    $v = \App\Models\Tenant\GuaranteeVersion::firstOrCreate(['guarantee_id' => $g->id, 'version_no' => 1], ['valid_from' => '2026-01-01', 'base_contribution_minor' => 1500,
+        'periodicity' => 'monthly', 'coverage_rate' => 80, 'copay_rate' => 20, 'observation_days' => 0]);
+    $m = \App\Models\Tenant\Member::firstOrCreate(['member_code' => 'MUT-LOCAL-001'], ['first_name' => 'Awa', 'last_name' => 'Nkolo', 'birth_date' => '1990-04-02',
+        'sex' => 'F', 'status' => 'active', 'joined_at' => '2026-01-01']);
+    \App\Models\Tenant\Subscription::firstOrCreate(['member_id' => $m->id, 'guarantee_version_id' => $v->id], ['contribution_minor' => 1500, 'effective_date' => '2026-01-01',
+        'observation_ends_on' => '2026-01-01', 'status' => 'validated', 'captured_by' => 1]);
+    \App\Models\Tenant\ActType::firstOrCreate(['code' => 'LOC-CONS'], ['label' => 'Consultation de médecine générale', 'category' => 'consultation']);
+    // Comptes LOCAUX prêts pour le parcours navigateur : mot de passe déjà choisi, double authentification à (re)configurer.
+    \App\Models\Tenant\User::where('email', 'like', '%@mutueltest.test')->update(['must_change_password' => false,
+        'two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null]);
+});
+$note('Adhérent couvert : code MUT-LOCAL-001 (prestataire : Centre de santé local de Mvog-Ada)');
+
 echo "Données locales prêtes. Comptes : production/mxconnect/storage/app/comptes-locaux.txt\n";

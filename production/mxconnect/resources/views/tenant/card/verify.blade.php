@@ -23,6 +23,11 @@
         </ul>
       </div>
     @endif
+    @if (! empty($declareUrl))
+      <a href="{{ $declareUrl }}" class="mt-4 inline-block rounded-xl bg-pine px-5 py-3 text-sm font-semibold text-white">Déclarer une prise en charge</a>
+    @elseif (auth('web')->user()?->hasRole('provider'))
+      <a href="{{ route('portal.index') }}" class="mt-4 inline-block text-sm text-pine underline">Retour au portail prestataire</a>
+    @endif
     <p class="mt-4 text-xs text-ink/40">{{ __('mxconnect.card.no_medical') }}</p>
   </div>
 </body>

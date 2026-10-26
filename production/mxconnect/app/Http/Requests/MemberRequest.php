@@ -10,7 +10,7 @@ class MemberRequest extends FormRequest
     public function authorize(): bool
     {
         // Enrollment agents and mutual admins may capture members.
-        return $this->user()?->hasAnyRole(['enrollment_agent', 'mutual_admin']) ?? false;
+        return \App\Support\TenantAccess::can('members.store', $this->user());
     }
 
     public function rules(): array

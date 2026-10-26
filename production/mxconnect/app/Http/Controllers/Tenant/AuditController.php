@@ -14,7 +14,7 @@ class AuditController extends Controller
 {
     public function index(Request $request)
     {
-        abort_unless($request->user()->hasAnyRole(['mutual_admin', 'controller_validator', 'security_admin']), 403);
+        \App\Support\TenantAccess::authorize();
 
         $type = $request->get('type');
 

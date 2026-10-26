@@ -55,7 +55,36 @@ Route::middleware([
     });
 
     // Mutual back-office (roles resolved inside the tenant DB).
-    Route::middleware(['auth:web', 'mfa', \App\Http\Middleware\TenantAccountGuard::class])->group(function () {
+    // Ordre : compte désactivé / mot de passe provisoire, puis double authentification, puis
+    // matrice des droits (2026-10-31) : TenantRouteAccess applique App\Support\TenantAccess à CHAQUE route.
+    Route::middleware(['auth:web', \App\Http\Middleware\TenantAccountGuard::class, 'mfa', \App\Http\Middleware\TenantRouteAccess::class])->group(function () {
+
+        // --- Signaler un incident ou un risque (tout le personnel) ---
+        Route::get('signaler', [\App\Http\Controllers\Tenant\SignalController::class, 'create'])->name('signal.create');
+
+        // --- Prestataires conventionnés (registre) ---
+        Route::prefix('parametres/prestataires')->name('providers.')->controller(\App\Http\Controllers\Tenant\ProviderController::class)
+            ->whereNumber('convention')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('ajouter', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('{convention}', 'show')->name('show');
+                Route::get('{convention}/modifier', 'edit')->name('edit');
+                Route::post('{convention}/modifier', 'update')->name('update');
+                Route::post('{convention}/activation', 'toggle')->name('toggle');
+            });
+
+        // --- Portail des prestataires de soins (rôle « provider » uniquement) ---
+        Route::prefix('prestataire')->name('portal.')->controller(\App\Http\Controllers\Tenant\ProviderPortalController::class)
+            ->whereNumber(['check', 'claim'])->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('verifier', 'verify')->name('verify')->middleware('throttle:30,1');
+                Route::get('declarer/{check}', 'declare')->name('declare');
+                Route::post('declarer/{check}', 'storeDeclaration')->name('declare.store');
+                Route::get('prises-en-charge', 'claims')->name('claims');
+                Route::get('factures', 'invoices')->name('invoices');
+                Route::post('factures/{claim}', 'requestPayment')->name('invoices.store');
+            });
 
         // --- Mon mot de passe + Équipe et rôles (2026-10-30) ---
         Route::get('mon-mot-de-passe', [\App\Http\Controllers\Tenant\AccountController::class, 'edit'])->name('account.password');

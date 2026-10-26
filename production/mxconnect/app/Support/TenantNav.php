@@ -3,9 +3,9 @@
 namespace App\Support;
 
 /**
- * Navigation du back-office des mutuelles ET règles d'accès au menu, en un seul
- * endroit : utilisé par le menu (layout « tenant ») et par la page « Rôles et droits »,
- * qui affiche donc exactement ce que le code applique.
+ * Navigation du back-office des mutuelles. Les droits viennent de la matrice
+ * App\Support\TenantAccess (appliquée aussi à chaque route) : le menu et la page
+ * « Rôles et droits » affichent donc exactement ce que le code applique.
  */
 class TenantNav
 {
@@ -17,39 +17,29 @@ class TenantNav
         'treasurer_accountant' => 'Trésorier-comptable',
         'community_manager'    => 'Chargé de communication',
         'provider'             => 'Prestataire de soins',
+        'auditor'              => 'Auditeur / contrôle interne',
     ];
 
     public const ROLE_DESCRIPTIONS = [
         'mutual_admin'         => 'Pilote la mutuelle : tous les écrans, l’équipe et les rôles, les décisions finales.',
         'enrollment_agent'     => 'Saisit les adhésions et les souscriptions ; instruit les adhésions en ligne.',
         'controller_validator' => 'Valide ce que d’autres ont saisi (adhésions, prestations) : contrôle « 4 yeux ».',
-        'benefits_manager'     => 'Saisit les prestations et les prises en charge.',
-        'treasurer_accountant' => 'Trésorerie, cotisations, comptabilité SYSCOHADA, budget.',
-        'community_manager'    => 'Page publique, publications, groupes et messages du réseau social.',
-        'provider'             => 'Prestataire de soins conventionné (accès limité).',
+        'benefits_manager'     => 'Saisit les recours et les prestations (données de santé) ; prépare la facturation.',
+        'treasurer_accountant' => 'Cotisations, paiements, trésorerie, comptabilité SYSCOHADA, budget. Voit les montants des recours, pas leur détail médical.',
+        'community_manager'    => 'Page publique, publications, groupes, projets et messages du réseau social.',
+        'provider'             => 'Prestataire de soins conventionné : uniquement son portail (vérifier les droits, déclarer ses prises en charge, suivre ses factures).',
+        'auditor'              => 'Lecture seule : finances, registres, journal d’audit. Aucune donnée de santé, aucune saisie. Ne se cumule avec aucun autre rôle.',
     ];
-
-    /** Rubriques réservées à certains rôles (les autres sont visibles par toute l'équipe). */
-    public static function roles(): array
-    {
-        return [
-            'social-presence.index'      => ['mutual_admin', 'community_manager'],
-            'online-adhesions.index'     => ['mutual_admin', 'enrollment_agent', 'controller_validator'],
-            'engagement.index'           => \App\Http\Controllers\Tenant\EngagementController::ROLES,
-            'conversations.index'        => ['mutual_admin', 'community_manager', 'enrollment_agent'],
-            'cards.index'                => \App\Http\Controllers\Tenant\MemberCardController::ROLES,
-            'member-notifications.index' => \App\Http\Controllers\Tenant\MemberNotificationController::ROLES,
-            'billing.dashboard'          => \App\Http\Controllers\Tenant\BillingController::ROLES,
-            'billing.quote'              => \App\Http\Controllers\Tenant\BillingController::QUOTE_ROLES,
-            'budget.index'               => \App\Http\Controllers\Tenant\BudgetController::ROLES,
-            'team.index'                 => \App\Http\Controllers\Tenant\TeamController::ROLES,
-        ];
-    }
 
     /** Menu regroupé par domaine : route => [libellé ou clé de traduction, icône]. */
     public static function groups(): array
     {
         return [
+            'Portail prestataire' => [
+                'portal.index'    => ['Vérifier les droits', 'shield'],
+                'portal.claims'   => ['Mes prises en charge', 'clipboard'],
+                'portal.invoices' => ['Mes factures', 'receipt'],
+            ],
             'Gestion des adhérents' => [
                 'members.index'       => ['mxconnect.member.plural', 'users'],
                 'cards.index'         => ['Cartes de membre', 'card'],
@@ -73,6 +63,7 @@ class TenantNav
                 'risks.index'         => ['mxconnect.risk.nav', 'alert'],
                 'incidents.index'     => ['mxconnect.incident.nav', 'zap'],
                 'complaints.index'    => ['mxconnect.complaint.nav', 'inbox'],
+                'signal.create'       => ['Signaler un incident', 'alert'],
             ],
             'Réseau social' => [
                 'social-presence.index'  => ['mxconnect.social.nav', 'globe'],
@@ -82,6 +73,7 @@ class TenantNav
             ],
             'Paramètres' => [
                 'team.index'       => ['Équipe et rôles', 'lock'],
+                'providers.index'  => ['Prestataires conventionnés', 'stethoscope'],
                 'guarantees.index' => ['mxconnect.guarantee.plural', 'heart'],
                 'antennas.index'   => ['mxconnect.param.antennas', 'pin'],
                 'act-types.index'  => ['mxconnect.param.act_types', 'stethoscope'],
@@ -90,11 +82,9 @@ class TenantNav
         ];
     }
 
-    /** Une rubrique est-elle accessible à ce rôle (selon les règles du menu) ? */
+    /** Une rubrique est-elle accessible à ce rôle ? (matrice TenantAccess) */
     public static function allows(string $route, string $role): bool
     {
-        $rules = self::roles();
-
-        return ! isset($rules[$route]) || in_array($role, $rules[$route], true);
+        return TenantAccess::allows($route, $role);
     }
 }

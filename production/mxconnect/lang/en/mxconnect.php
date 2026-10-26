@@ -233,6 +233,7 @@ return [
         'observation_period' => 'Observation period ongoing',
         'act_excluded' => 'Act not covered',
         'provider_not_authorised' => 'Provider not in network',
+        'unknown_member' => 'No member with this code or card',
     ],
 
     'contribution' => [

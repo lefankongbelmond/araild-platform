@@ -35,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Back-office des mutuelles : @acces('nom.de.route') … @endacces (matrice App\Support\TenantAccess).
+        \Illuminate\Support\Facades\Blade::if('acces', fn (string $route) => \App\Support\TenantAccess::can($route));
+
         // Strict model behaviour outside production. Lazy-loading prevention (the
         // aggressive N+1 catcher) is opt-in via config so it doesn't break views
         // during normal runs; the low-risk checks stay on in dev/CI.

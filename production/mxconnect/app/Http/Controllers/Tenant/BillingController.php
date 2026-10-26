@@ -26,8 +26,7 @@ class BillingController extends Controller
 {
     use MutualContext;
 
-    public const ROLES = ['mutual_admin', 'treasurer_accountant', 'benefits_manager', 'controller_validator'];
-    public const QUOTE_ROLES = ['mutual_admin', 'treasurer_accountant', 'benefits_manager', 'controller_validator', 'enrollment_agent', 'provider'];
+    // Droits : matrice App\Support\TenantAccess (« billing.* »).
 
     public const RIGHTS = [
         'member_inactive'         => 'Adhérent non actif (suspendu, radié ou parti).',
@@ -40,7 +39,7 @@ class BillingController extends Controller
 
     public function dashboard(Request $request)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         $year = (int) $request->get('annee', now()->year);
         $currency = $this->currency();
 
@@ -77,7 +76,7 @@ class BillingController extends Controller
     /** Calculateur de quote-part : formulaire. */
     public function quote(Request $request)
     {
-        $this->requireRoles($request, self::QUOTE_ROLES);
+        \App\Support\TenantAccess::authorize();
 
         return view('tenant.billing.quote', $this->quoteData() + ['result' => null]);
     }
@@ -85,7 +84,7 @@ class BillingController extends Controller
     /** Calculateur de quote-part : calcul (simulation, aucune écriture). */
     public function computeQuote(Request $request, ClaimAssessmentService $assessment, RightsVerificationService $rights)
     {
-        $this->requireRoles($request, self::QUOTE_ROLES);
+        \App\Support\TenantAccess::authorize();
         $data = $request->validate([
             'member_code'  => ['nullable', 'string', 'max:40'],
             'guarantee_id' => ['nullable', 'integer'],

@@ -233,6 +233,7 @@ return [
         'observation_period' => 'Période d’observation en cours',
         'act_excluded' => 'Acte non couvert',
         'provider_not_authorised' => 'Prestataire non conventionné',
+        'unknown_member' => 'Aucun adhérent avec ce code ou cette carte',
     ],
 
     'contribution' => [

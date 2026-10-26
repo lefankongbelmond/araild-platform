@@ -28,14 +28,17 @@ class TeamController extends Controller
         $users = User::query()->with('roles')->when($role, fn ($q) => $q->role($role))
             ->orderByDesc('active')->orderBy('first_name')->orderBy('last_name')->get();
 
-        return view('tenant.team.index', ['users' => $users, 'role' => $role, 'me' => $request->user()]);
+        $providerIds = $users->pluck('care_provider_id')->filter()->unique();
+        $providerNames = $providerIds->isEmpty() ? collect() : \App\Models\Central\CareProvider::on('central')->whereIn('id', $providerIds)->pluck('name', 'id');
+
+        return view('tenant.team.index', ['users' => $users, 'role' => $role, 'me' => $request->user(), 'providerNames' => $providerNames]);
     }
 
     public function create(Request $request)
     {
         $this->authorizeAdmin($request);
 
-        return view('tenant.team.form', ['member' => new User(), 'antennas' => $this->antennas(), 'current' => []]);
+        return view('tenant.team.form', ['member' => new User(), 'antennas' => $this->antennas(), 'current' => [], 'providers' => $this->providers()]);
     }
 
     public function store(Request $request)
@@ -53,7 +56,7 @@ class TeamController extends Controller
         $this->authorizeAdmin($request);
         $member = User::with('roles')->findOrFail($user);
 
-        return view('tenant.team.form', ['member' => $member, 'antennas' => $this->antennas(), 'current' => $member->getRoleNames()->all()]);
+        return view('tenant.team.form', ['member' => $member, 'antennas' => $this->antennas(), 'current' => $member->getRoleNames()->all(), 'providers' => $this->providers()]);
     }
 
     public function update(Request $request, int $user)
@@ -99,11 +102,10 @@ class TeamController extends Controller
     public function roles(Request $request)
     {
         $this->authorizeAdmin($request);
-        $permissions = Role::where('guard_name', 'web')->with('permissions')->get()
-            ->mapWithKeys(fn ($r) => [$r->name => $r->permissions->pluck('name')->all()]);
-        $counts = collect(TenantNav::ROLE_LABELS)->map(fn ($l, $r) => User::role($r)->where('active', true)->count());
+        $existing = Role::where('guard_name', 'web')->pluck('name')->all();
+        $counts = collect(TenantNav::ROLE_LABELS)->map(fn ($l, $r) => in_array($r, $existing, true) ? User::role($r)->where('active', true)->count() : 0);
 
-        return view('tenant.team.roles', ['groups' => TenantNav::groups(), 'permissions' => $permissions, 'counts' => $counts]);
+        return view('tenant.team.roles', ['groups' => TenantNav::groups(), 'counts' => $counts]);
     }
 
     // ---
@@ -118,12 +120,24 @@ class TeamController extends Controller
             'antenna_id' => ['nullable', 'integer', Rule::exists('antennas', 'id')],
             'roles'      => ['required', 'array'],
             'roles.*'    => [Rule::in(config('mxconnect.mutual_roles', []))],
+            'care_provider_id' => ['nullable', 'integer'],
         ];
     }
 
     private function messages(): array
     {
         return ['roles.required' => 'Choisissez au moins un rôle.', 'email.prohibited' => 'L’adresse e-mail d’un compte ne se modifie pas : créez un nouveau compte.'];
+    }
+
+    /** Prestataires conventionnés (pour rattacher un compte « Prestataire de soins »). */
+    private function providers(): \Illuminate\Support\Collection
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('provider_conventions')) {
+            return collect();
+        }
+        $ids = \App\Models\Tenant\ProviderConvention::pluck('care_provider_id');
+
+        return \App\Models\Central\CareProvider::on('central')->whereIn('id', $ids)->orderBy('name')->pluck('name', 'id');
     }
 
     private function antennas()

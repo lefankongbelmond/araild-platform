@@ -26,13 +26,13 @@
   </div>
 
   <div class="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-    <x-tenant.panel :title="'Cotisations ' . $year . ' : appelées et encaissées'" icon="chart">
+    <x-tenant.panel :title="'Cotisations ' . $year . ' : appelées et encaissées'" icon="chart" class="min-w-0">
       <x-slot:aside>
         <span class="inline-flex items-center gap-1.5 text-xs text-ink/60"><span class="h-2.5 w-2.5 rounded-sm bg-brand-100 ring-1 ring-brand-500/40"></span>Appelées</span>
         <span class="inline-flex items-center gap-1.5 text-xs text-ink/60"><span class="h-2.5 w-2.5 rounded-sm bg-leaf-500"></span>Encaissées</span>
       </x-slot:aside>
-      <div class="px-5 pb-5 pt-6 sm:px-6">
-        <div class="flex h-56 items-end gap-2 sm:gap-3" role="img" aria-label="Cotisations appelées et encaissées par mois">
+      <div class="overflow-x-auto px-5 pb-5 pt-6 sm:px-6">
+        <div class="flex h-56 items-end gap-2 sm:gap-3" style="min-width:420px" role="img" aria-label="Cotisations appelées et encaissées par mois">
           @foreach ($months as $m => $v)
             <div class="flex h-full flex-1 flex-col items-center justify-end gap-1">
               <div class="flex h-full w-full items-end justify-center gap-0.5">

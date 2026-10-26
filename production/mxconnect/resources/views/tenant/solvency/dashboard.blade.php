@@ -38,10 +38,10 @@
   </div>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
-    <div class="lg:col-span-2 rounded-lg border border-ink/10 bg-white p-4">
+    <div class="min-w-0 lg:col-span-2 rounded-lg border border-ink/10 bg-white p-4">
       <h2 class="font-medium">{{ __('mxconnect.solvency.monthly') }} {{ $year }}</h2>
       @php $max = max(1, collect($series)->flatMap(fn($s)=>[$s['premiums'],$s['claims']])->max()); @endphp
-      <div class="mt-4 flex items-end gap-2 h-40">
+      <div class="overflow-x-auto"><div class="mt-4 flex items-end gap-2 h-40" style="min-width:420px">
         @foreach ($series as $s)
           <div class="flex-1 flex flex-col items-center gap-1">
             <div class="flex items-end gap-0.5 h-32">
@@ -51,7 +51,7 @@
             <div class="text-[10px] text-ink/50">{{ str_pad($s['month'],2,'0',STR_PAD_LEFT) }}</div>
           </div>
         @endforeach
-      </div>
+      </div></div>
       <div class="mt-2 flex gap-4 text-xs text-ink/50">
         <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded bg-sage"></span>{{ __('mxconnect.solvency.premiums') }}</span>
         <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded bg-clay"></span>{{ __('mxconnect.solvency.claims') }}</span>

@@ -36,7 +36,7 @@
             <td class="px-4 py-3 text-ink/60">{{ __('mxconnect.alert.code_'.($a->details['code'] ?? 'unknown')) }}</td>
             <td class="px-4 py-3 text-ink/50">{{ $a->created_at?->format('d/m/Y H:i') }}</td>
             <td class="px-4 py-3 text-right">
-              @if (auth()->user()?->hasAnyRole(['controller_validator','mutual_admin','security_admin']))
+              @if (\App\Support\TenantAccess::can('alerts.clear'))
                 <form method="POST" action="{{ route('alerts.clear', $a) }}">@csrf<button class="text-xs text-pine hover:underline">{{ __('mxconnect.alert.clear') }}</button></form>
               @endif
             </td>

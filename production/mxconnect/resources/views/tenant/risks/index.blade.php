@@ -4,7 +4,7 @@
     <x-slot:subtitle>{{ __('mxconnect.risk.sub') }}</x-slot:subtitle>
   </x-tenant.hero>
 
-  <div class="mt-4 flex gap-2 text-sm">
+  <div class="mt-4 flex flex-wrap gap-2 text-sm">
     <a href="{{ route('risks.index') }}" class="rounded-md px-3 py-1.5 {{ !$status ? 'bg-pine text-white' : 'bg-white border border-ink/10 text-ink/70' }}">{{ __('mxconnect.all') }}</a>
     @foreach (['open','mitigating','closed'] as $st)
       <a href="{{ route('risks.index', ['status'=>$st]) }}" class="rounded-md px-3 py-1.5 {{ $status===$st ? 'bg-pine text-white' : 'bg-white border border-ink/10 text-ink/70' }}">{{ __('mxconnect.risk.st_'.$st) }}</a>

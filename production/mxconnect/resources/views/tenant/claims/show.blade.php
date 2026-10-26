@@ -1,10 +1,12 @@
+@php $health = \App\Support\TenantAccess::can('capacite.donnees-sante'); @endphp
 <x-layouts.tenant :title="__('mxconnect.claim.title')">
   <a href="{{ route('claims.index') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.back') }}</a>
 
   <div class="mt-2 flex items-start justify-between">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">{{ $claim->member->last_name }} {{ $claim->member->first_name }}</h1>
-      <p class="mt-1 text-sm text-ink/50">{{ __('mxconnect.claim.opened_on') }} {{ $claim->opened_on?->format('d/m/Y') }} · {{ $claim->reason }}</p>
+      <p class="mt-1 text-sm text-ink/50">{{ __('mxconnect.claim.opened_on') }} {{ $claim->opened_on?->format('d/m/Y') }}@if ($health && $claim->reason) · {{ $claim->reason }}@endif</p>
+      @unless ($health)<p class="mt-1 text-xs text-ink/45">Vue « montants » : le détail médical (motif, actes) est réservé aux gestionnaires des prestations, au contrôleur et à l’administrateur.</p>@endunless
     </div>
     <span class="rounded-full border px-3 py-1 text-sm {{ $claim->status === 'open' ? 'border-pine/30 text-pine' : 'border-ink/20 text-ink/50' }}">{{ __('mxconnect.claim.status_'.$claim->status) }}</span>
   </div>
@@ -21,10 +23,10 @@
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
     {{-- Prestations --}}
-    <div class="lg:col-span-2 space-y-6">
+    <div class="min-w-0 lg:col-span-2 space-y-6">
       <div class="rounded-lg border border-ink/10 bg-white p-4">
         <h2 class="font-medium">{{ __('mxconnect.claim.prestations') }}</h2>
-        <table class="mt-3 w-full text-sm">
+        <div class="mt-3 overflow-x-auto"><table class="w-full text-sm">
           <thead class="text-left text-ink/50"><tr>
             <th class="py-1">{{ __('mxconnect.prestation.act') }}</th>
             <th class="py-1">{{ __('mxconnect.prestation.provider') }}</th>
@@ -38,7 +40,8 @@
             @forelse ($claim->prestations as $p)
               @php $pb = ['captured'=>'clay','validated'=>'pine','rejected'=>'ink/40','controlled'=>'sage'][$p->status] ?? 'ink/50'; @endphp
               <tr>
-                <td class="py-2">{{ $p->actType?->label }}
+                <td class="py-2">{{ $health ? $p->actType?->label : 'Prestation n° ' . $p->id }}
+                  @if ($p->source === 'provider')<span class="ml-1 rounded bg-mist px-1 text-[10px] text-ink/60">portail</span>@endif
                   @if (($alerts[$p->id] ?? collect())->isNotEmpty())
                     <span class="ml-1 rounded bg-clay/10 px-1 text-[10px] text-clay">⚠ {{ $alerts[$p->id]->count() }}</span>
                   @endif
@@ -49,7 +52,9 @@
                 <td class="py-2 font-medium">{{ $currency->format($p->mutual_part_minor) }}</td>
                 <td class="py-2 text-{{ $pb }}">{{ __('mxconnect.prestation.status_'.$p->status) }}</td>
                 <td class="py-2 text-right">
-                  @if ($p->status === 'captured' && auth()->user()?->hasAnyRole(['controller_validator','mutual_admin']))
+                  @if ($p->status === 'captured' && $p->isCapturedBy(auth()->user()))
+                    <span class="text-xs text-ink/45" title="Contrôle « 4 yeux »">Votre saisie : à valider par une autre personne</span>
+                  @elseif ($p->status === 'captured' && \App\Support\TenantAccess::can('claims.prestations.validate'))
                     <form method="POST" action="{{ route('claims.prestations.validate', [$claim, $p]) }}" class="inline">@csrf<button class="text-xs text-pine hover:underline">{{ __('mxconnect.prestation.validate') }}</button></form>
                     <form method="POST" action="{{ route('claims.prestations.reject', [$claim, $p]) }}" class="inline">@csrf<button class="ml-2 text-xs text-clay hover:underline">{{ __('mxconnect.prestation.reject') }}</button></form>
                   @endif
@@ -59,11 +64,11 @@
               <tr><td colspan="7" class="py-6 text-center text-ink/40">{{ __('mxconnect.prestation.empty') }}</td></tr>
             @endforelse
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {{-- Add prestation --}}
-      @if ($claim->status === 'open' && auth()->user()?->hasAnyRole(['benefits_manager','controller_validator','mutual_admin']))
+      @if ($claim->status === 'open' && \App\Support\TenantAccess::can('claims.prestations.store'))
       <form method="POST" action="{{ route('claims.prestations.store', $claim) }}" class="rounded-lg border border-ink/10 bg-white p-4">
         @csrf
         <h2 class="font-medium">{{ __('mxconnect.prestation.add') }}</h2>
@@ -98,7 +103,7 @@
         @if ($claim->mutualTotalMinor() > 0)
           {{-- Reimbursement path --}}
           @if (! $claim->reimbursement)
-            @if (auth()->user()?->hasAnyRole(['controller_validator','mutual_admin','treasurer_accountant']))
+            @if (\App\Support\TenantAccess::can('claims.reimbursement.request'))
             <form method="POST" action="{{ route('claims.reimbursement.request', $claim) }}" class="mt-3">@csrf
               <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.settlement.request_reimbursement') }}</button>
             </form>
@@ -106,7 +111,7 @@
           @else
             <div class="mt-3 rounded-md bg-mist px-3 py-2 text-sm">
               {{ __('mxconnect.settlement.reimbursement') }}: <b>{{ __('mxconnect.settlement.status_'.$claim->reimbursement->status) }}</b>
-              @if ($claim->reimbursement->status !== 'paid' && auth()->user()?->hasRole('treasurer_accountant'))
+              @if ($claim->reimbursement->status !== 'paid' && \App\Support\TenantAccess::can('claims.reimbursement.pay'))
                 <form method="POST" action="{{ route('claims.reimbursement.pay', [$claim, $claim->reimbursement]) }}" class="mt-2">@csrf
                   <button class="w-full rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-white">{{ __('mxconnect.settlement.pay') }}</button>
                 </form>
@@ -115,7 +120,7 @@
           @endif
 
           {{-- Tiers payant path --}}
-          @if (auth()->user()?->hasAnyRole(['benefits_manager','controller_validator','mutual_admin']))
+          @if (\App\Support\TenantAccess::can('claims.invoice.create'))
           <form method="POST" action="{{ route('claims.invoice.create', $claim) }}" class="mt-4 border-t border-ink/10 pt-3">@csrf
             <select name="provider_id" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
               <option value="">{{ __('mxconnect.prestation.provider') }}…</option>
@@ -128,7 +133,7 @@
           @foreach ($claim->invoices as $inv)
             <div class="mt-2 rounded-md bg-mist px-3 py-2 text-sm">
               {{ __('mxconnect.settlement.invoice') }} #{{ $inv->id }}: <b>{{ __('mxconnect.settlement.status_'.$inv->status) }}</b> — {{ $currency->format($inv->amount_minor) }}
-              @if ($inv->status !== 'paid' && auth()->user()?->hasRole('treasurer_accountant'))
+              @if ($inv->status !== 'paid' && \App\Support\TenantAccess::can('claims.invoice.pay'))
                 <form method="POST" action="{{ route('claims.invoice.pay', [$claim, $inv]) }}" class="mt-1">@csrf<button class="w-full rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-white">{{ __('mxconnect.settlement.pay') }}</button></form>
               @endif
             </div>
@@ -136,7 +141,7 @@
         @endif
       </div>
 
-      @if ($claim->status === 'open' && auth()->user()?->hasAnyRole(['controller_validator','mutual_admin']))
+      @if ($claim->status === 'open' && \App\Support\TenantAccess::can('claims.close'))
       <form method="POST" action="{{ route('claims.close', $claim) }}">@csrf
         <button class="w-full rounded-md border border-ink/20 px-4 py-2 text-sm text-ink/60 hover:bg-ink/5">{{ __('mxconnect.claim.close') }}</button>
       </form>

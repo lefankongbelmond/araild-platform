@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::guard('web')->check()) {
-            return redirect()->route('members.index');
+            return redirect(\App\Support\TenantAccess::home(Auth::guard('web')->user()));
         }
 
         return view('tenant.auth.login');
@@ -46,7 +46,7 @@ class AuthController extends Controller
             Auth::guard('web')->user()->forceFill(['last_login_at' => now()])->saveQuietly();
         }
 
-        return redirect()->intended(route('members.index'));
+        return redirect()->intended(\App\Support\TenantAccess::home(Auth::guard('web')->user()));
     }
 
     public function logout(Request $request)
@@ -86,7 +86,7 @@ class AuthController extends Controller
         $user->forceFill(['two_factor_confirmed_at' => now()])->save();
         $request->session()->put('mfa_passed', true);
 
-        return redirect()->intended(route('members.index'));
+        return redirect()->intended(\App\Support\TenantAccess::home(Auth::guard('web')->user()));
     }
 
     public function challenge()
@@ -105,6 +105,6 @@ class AuthController extends Controller
 
         $request->session()->put('mfa_passed', true);
 
-        return redirect()->intended(route('members.index'));
+        return redirect()->intended(\App\Support\TenantAccess::home(Auth::guard('web')->user()));
     }
 }

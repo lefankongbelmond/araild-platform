@@ -35,6 +35,6 @@ class AccountController extends Controller
         $user->forceFill(['password' => $request->input('password')] + (TeamService::hasTeamColumns() ? ['must_change_password' => false] : []))->save();
         $request->session()->regenerate();
 
-        return redirect()->route('members.index')->with('success', 'Votre mot de passe a été changé.');
+        return redirect(\App\Support\TenantAccess::home($request->user()))->with('success', 'Votre mot de passe a été changé.');
     }
 }

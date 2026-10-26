@@ -54,7 +54,7 @@
       @if ($unposted > 0)
       <div class="rounded-lg border border-clay/30 bg-clay/5 p-4">
         <p class="text-sm text-clay">{{ __('mxconnect.treasury.unposted', ['n' => $unposted]) }}</p>
-        @if (auth()->user()?->hasAnyRole(['treasurer_accountant','mutual_admin']))
+        @if (\App\Support\TenantAccess::can('accounting.post-treasury'))
         <form method="POST" action="{{ route('accounting.post-treasury') }}" class="mt-2">@csrf
           <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">{{ __('mxconnect.accounting.post_now') }}</button>
         </form>

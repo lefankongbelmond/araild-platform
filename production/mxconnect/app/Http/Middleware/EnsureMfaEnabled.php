@@ -36,6 +36,13 @@ class EnsureMfaEnabled
         // Routes MFA propres au contexte : sous-domaine mutuelle -> tenant.mfa.*
         $prefix = (function_exists('tenancy') && tenancy()->initialized) ? 'tenant.mfa.' : 'mfa.';
 
+        // 1re connexion du personnel d'une mutuelle : remplacer d'abord le mot de passe provisoire,
+        // puis configurer la double authentification (exigée de tous depuis le 2026-10-31).
+        if (! $mfaConfigured && ($user->must_change_password ?? false)
+            && $request->routeIs('account.password', 'account.password.update')) {
+            return $next($request);
+        }
+
         if (! $mfaConfigured) {
             return redirect()->route($prefix . 'enroll')
                 ->with('warning', __('mxconnect.mfa.enroll_required'));

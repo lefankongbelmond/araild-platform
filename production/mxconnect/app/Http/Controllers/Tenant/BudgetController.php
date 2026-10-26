@@ -20,11 +20,11 @@ class BudgetController extends Controller
 {
     use MutualContext;
 
-    public const ROLES = ['mutual_admin', 'treasurer_accountant'];
+    // Droits : matrice App\Support\TenantAccess (lecture : admin, contrôleur, trésorier, auditeur ; saisie : trésorier ; adoption : admin).
 
     public function index(Request $request)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         $year = max(2000, min(2100, (int) $request->get('annee', now()->year)));
         $budget = Budget::with(['lines.account'])->where('year', $year)->first();
         $realized = $this->realized($year);
@@ -52,7 +52,7 @@ class BudgetController extends Controller
 
     public function create(Request $request)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         $data = $request->validate([
             'year'    => ['required', 'integer', 'min:2000', 'max:2100', Rule::unique('budgets', 'year')],
             'prefill' => ['nullable', 'in:accounts,previous'],
@@ -75,7 +75,7 @@ class BudgetController extends Controller
 
     public function storeLine(Request $request, Budget $budget)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         abort_if($budget->isAdopted(), 422, 'Budget adopté : il n’est plus modifiable.');
         $data = $request->validate([
             'kind'       => ['required', 'in:income,expense'],
@@ -96,7 +96,7 @@ class BudgetController extends Controller
 
     public function updateLines(Request $request, Budget $budget)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         abort_if($budget->isAdopted(), 422, 'Budget adopté : il n’est plus modifiable.');
         $currency = $this->currency();
         foreach ((array) $request->input('amounts', []) as $id => $raw) {
@@ -114,7 +114,7 @@ class BudgetController extends Controller
 
     public function destroyLine(Request $request, Budget $budget, BudgetLine $line)
     {
-        $this->requireRoles($request, self::ROLES);
+        \App\Support\TenantAccess::authorize();
         abort_if($budget->isAdopted() || $line->budget_id !== $budget->id, 422);
         $line->delete();
 

@@ -15,7 +15,7 @@ class SolvencyController extends Controller
 {
     public function dashboard(Request $request, ActuarialService $act)
     {
-        abort_unless($request->user()->hasAnyRole(['mutual_admin', 'treasurer_accountant', 'controller_validator']), 403);
+        \App\Support\TenantAccess::authorize();
 
         $year = (int) $request->get('year', now()->year);
         $ratio = $act->lossRatio($year);

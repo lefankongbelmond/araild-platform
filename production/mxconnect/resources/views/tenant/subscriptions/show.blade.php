@@ -45,7 +45,7 @@
     <div class="rounded-lg border border-clay/30 bg-clay/5 p-4 self-start">
       <h2 class="font-medium text-ink">{{ __('mxconnect.subscription.pending_validation') }}</h2>
       <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.subscription.validation_help') }}</p>
-      @can('subscription.validate')
+      @if (\App\Support\TenantAccess::can('subscriptions.validate'))
         <form method="POST" action="{{ route('subscriptions.validate', $s) }}" class="mt-3">
           @csrf
           <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.subscription.validate_action') }}</button>
@@ -53,7 +53,7 @@
         <p class="mt-2 text-xs text-ink/40">{{ __('mxconnect.subscription.self_validate_note') }}</p>
       @else
         <p class="mt-3 text-xs text-ink/40">{{ __('mxconnect.subscription.checker_only') }}</p>
-      @endcan
+      @endif
     </div>
     @endif
   </div>

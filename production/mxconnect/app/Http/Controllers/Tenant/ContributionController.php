@@ -33,7 +33,7 @@ class ContributionController extends Controller
     /** Record a cash / group payment (treasurer) — Mobile Money goes through Module 8. */
     public function recordPayment(Request $request, ContributionSchedule $schedule, ReceiptService $receipts)
     {
-        abort_unless($request->user()->can('subscription.validate') || $request->user()->hasRole('treasurer_accountant'), 403);
+        \App\Support\TenantAccess::authorize();   // trésorier-comptable
         abort_if($schedule->status === 'paid', 422);
 
         $request->validate(['mode' => ['required', 'in:cash,group']]);

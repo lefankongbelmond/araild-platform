@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
  *  - rôles pris dans la liste officielle (config mxconnect.mutual_roles) ;
  *  - contrôle « 4 yeux » : jamais deux rôles incompatibles sur la même personne
  *    (config mxconnect.incompatible_role_pairs) ;
+ *  - l'auditeur et le prestataire ne cumulent aucun autre rôle (config mxconnect.exclusive_roles) ;
  *  - il reste toujours au moins UN administrateur actif ;
  *  - mot de passe provisoire affiché une seule fois, à changer à la 1re connexion ;
  *  - aucun mot de passe n'est envoyé par e-mail.
@@ -25,6 +26,12 @@ class TeamService
         $roles = array_values(array_intersect(config('mxconnect.mutual_roles', []), $roles));
         if (! $roles) {
             throw ValidationException::withMessages(['roles' => 'Choisissez au moins un rôle.']);
+        }
+        foreach (config('mxconnect.exclusive_roles', []) as $x) {
+            if (in_array($x, $roles, true) && count($roles) > 1) {
+                $lx = \App\Support\TenantNav::ROLE_LABELS[$x] ?? $x;
+                throw ValidationException::withMessages(['roles' => "Le rôle « {$lx} » ne se cumule avec aucun autre rôle."]);
+            }
         }
         foreach (config('mxconnect.incompatible_role_pairs', []) as [$a, $b]) {
             if (in_array($a, $roles, true) && in_array($b, $roles, true)) {
@@ -52,7 +59,8 @@ class TeamService
                 'first_name' => trim($data['first_name']), 'last_name' => trim($data['last_name']), 'email' => $email,
                 'phone' => $data['phone'] ?? null, 'antenna_id' => $data['antenna_id'] ?? null,
                 'password' => $password, 'active' => true,
-            ] + (self::hasTeamColumns() ? ['must_change_password' => true] : []));
+            ] + (self::hasTeamColumns() ? ['must_change_password' => true] : [])
+              + (self::hasProviderColumn() ? ['care_provider_id' => self::providerFor($roles, $data)] : []));
             $user->syncRoles($roles);
 
             return $user;
@@ -69,7 +77,8 @@ class TeamService
         }
         DB::transaction(function () use ($user, $data, $roles) {
             $user->update(['first_name' => trim($data['first_name']), 'last_name' => trim($data['last_name']),
-                'phone' => $data['phone'] ?? null, 'antenna_id' => $data['antenna_id'] ?? null]);
+                'phone' => $data['phone'] ?? null, 'antenna_id' => $data['antenna_id'] ?? null]
+                + (self::hasProviderColumn() ? ['care_provider_id' => self::providerFor($roles, $data)] : []));
             $user->syncRoles($roles);
         });
 
@@ -107,6 +116,31 @@ class TeamService
     public static function temporaryPassword(): string
     {
         return Str::password(14, symbols: false);
+    }
+
+    /**
+     * Compte « Prestataire de soins » : il doit représenter un prestataire conventionné
+     * par la mutuelle ; les autres rôles n'en représentent aucun.
+     */
+    public static function providerFor(array $roles, array $data): ?int
+    {
+        if (! in_array('provider', $roles, true)) {
+            return null;
+        }
+        $id = (int) ($data['care_provider_id'] ?? 0);
+        if (! $id || ! \App\Models\Tenant\ProviderConvention::where('care_provider_id', $id)->exists()) {
+            throw ValidationException::withMessages(['care_provider_id' => 'Choisissez le prestataire conventionné que cette personne représente (Paramètres → Prestataires conventionnés).']);
+        }
+
+        return $id;
+    }
+
+    public static function hasProviderColumn(): bool
+    {
+        static $has = [];
+        $key = DB::connection()->getDatabaseName();
+
+        return $has[$key] ??= Schema::hasColumn('users', 'care_provider_id');
     }
 
     public static function hasTeamColumns(): bool

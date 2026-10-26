@@ -9,7 +9,7 @@ class CareClaimRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['benefits_manager', 'controller_validator', 'mutual_admin']) ?? false;
+        return \App\Support\TenantAccess::can('claims.store', $this->user());
     }
 
     public function rules(): array

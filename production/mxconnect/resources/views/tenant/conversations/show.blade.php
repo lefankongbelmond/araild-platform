@@ -2,7 +2,7 @@
   <a href="{{ route('conversations.index') }}" class="text-sm text-pine hover:underline">← Messagerie</a>
   <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
     <div><h1 class="text-xl font-semibold tracking-tight">{{ $c->subject }}</h1>
-      <p class="text-sm text-ink/60">Avec {{ $c->account?->name }}@if($c->adhesion && auth()->user()->hasAnyRole(\App\Http\Controllers\Tenant\OnlineAdhesionController::ROLES)) · <a class="text-pine underline" href="{{ route('online-adhesions.show', $c->adhesion->reference) }}">dossier {{ $c->adhesion->reference }}</a>@endif</p></div>
+      <p class="text-sm text-ink/60">Avec {{ $c->account?->name }}@if($c->adhesion && \App\Support\TenantAccess::can('online-adhesions.show')) · <a class="text-pine underline" href="{{ route('online-adhesions.show', $c->adhesion->reference) }}">dossier {{ $c->adhesion->reference }}</a>@endif</p></div>
     <form method="POST" action="{{ route('conversations.toggle', $c->id) }}">@csrf<button class="rounded-md border border-ink/15 bg-white px-3 py-1.5 text-sm">{{ $c->status === 'open' ? 'Clore' : 'Rouvrir' }}</button></form>
   </div>
   <div class="mt-6 max-w-3xl space-y-3">

@@ -14,7 +14,7 @@ class ComplaintController extends Controller
 {
     private function authorizeGov(Request $request): void
     {
-        abort_unless($request->user()->hasAnyRole(['mutual_admin', 'controller_validator', 'enrollment_agent']), 403);
+        \App\Support\TenantAccess::authorize();
     }
 
     public function index(Request $request)

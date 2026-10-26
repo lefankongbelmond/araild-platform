@@ -64,3 +64,60 @@ function pdf(string $name = 'cv.pdf'): UploadedFile
     return UploadedFile::fake()->createWithContent($name, "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF");
 }
 
+
+// --- Aides communes aux tests du back-office : VRAIE base de mutuelle (mx_tests_tenant) ---
+
+/**
+ * Provisionne la mutuelle de test dans une base vide (comme une base créée dans le panneau LWS)
+ * avec un administrateur qui a déjà choisi son mot de passe et activé la double authentification.
+ */
+function provisionTestMutual(): \App\Models\Central\Mutual
+{
+    test()->seed(\Database\Seeders\ConfigReferenceSeeder::class);
+    $c = config('database.connections.central');
+    $pdo = new PDO("mysql:host={$c['host']};port={$c['port']};dbname=mx_tests_tenant", $c['username'], $c['password']);
+    $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+    foreach ($pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) {
+        $pdo->exec("DROP TABLE `{$t}`");
+    }
+    $country = \App\Models\Central\Country::where('active', true)->firstOrFail();
+    $mutual = app(\App\Services\MutualProvisioningService::class)->create([
+        'name' => 'Mutuelle Équipe', 'slug' => 'equipe' . random_int(100, 999), 'country_id' => $country->id,
+        'currency_id' => $country->default_currency_id, 'locale_id' => $country->default_locale_id,
+        'db_name' => 'mx_tests_tenant', 'db_username' => $c['username'], 'db_password' => $c['password'],
+    ]);
+    test()->mutual = $mutual;
+    test()->host = 'http://' . $mutual->domains()->value('domain');
+    staffUser('admin@equipe.test', ['mutual_admin']);
+
+    return $mutual;
+}
+
+/** Membre du personnel prêt à l'emploi : mot de passe choisi, double authentification active. */
+function staffUser(string $email, array $roles, array $extra = []): \App\Models\Tenant\User
+{
+    return test()->mutual->run(function () use ($email, $roles, $extra) {
+        $u = \App\Models\Tenant\User::create($extra + ['first_name' => ucfirst(strtok($email, '@')), 'last_name' => 'Test', 'email' => $email,
+            'password' => 'MotDePasse-Test-2026', 'active' => true, 'must_change_password' => false, 'two_factor_confirmed_at' => now()]);
+        $u->syncRoles($roles);
+
+        return $u;
+    });
+}
+
+/** Utilisateur de la mutuelle de test (chargé dans la base de la mutuelle). */
+function tenantUser(string $email): \App\Models\Tenant\User
+{
+    return test()->mutual->run(fn () => \App\Models\Tenant\User::with('roles')->where('email', $email)->firstOrFail());
+}
+
+/** Requêtes au nom d'un membre du personnel, double authentification passée. */
+function as_(string $email): \Illuminate\Foundation\Testing\TestCase
+{
+    return test()->actingAs(tenantUser($email), 'web')->withSession(['mfa_passed' => true]);
+}
+
+function asAdmin(): \Illuminate\Foundation\Testing\TestCase
+{
+    return as_('admin@equipe.test');
+}

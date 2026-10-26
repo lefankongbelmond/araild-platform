@@ -35,7 +35,7 @@
       </table>
     </div>
 
-    @if (auth()->user()?->hasRole('treasurer_accountant'))
+    @if (\App\Support\TenantAccess::can('treasury.movements.store'))
     <form method="POST" action="{{ route('treasury.movements.store') }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">
       @csrf
       <h2 class="font-medium">{{ __('mxconnect.treasury.manual') }}</h2>

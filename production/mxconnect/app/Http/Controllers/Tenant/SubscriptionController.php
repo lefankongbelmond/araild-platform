@@ -77,7 +77,7 @@ class SubscriptionController extends Controller
      */
     public function validateSubscription(Request $request, Subscription $subscription, ScheduleGenerationService $scheduler)
     {
-        abort_unless($request->user()->can('subscription.validate'), 403);
+        \App\Support\TenantAccess::authorize();   // administrateur ou contrôleur-validateur
         abort_unless($subscription->status->value === 'captured', 422);
 
         // Maker-checker: capturer cannot validate their own capture.
@@ -121,14 +121,31 @@ class SubscriptionController extends Controller
         $subscription = $member?->subscriptions()->where('status', 'validated')->latest('effective_date')->first();
         $guaranteeId = $subscription?->guaranteeVersion?->guarantee_id;
 
+        // Prestataire connecté (portail) : contrôle aussi son appartenance au réseau de la garantie,
+        // journalise la vérification et propose de déclarer la prise en charge.
+        $staff = auth('web')->user();
+        $providerId = null;
+        if ($staff && $staff->hasRole('provider') && $staff->care_provider_id
+            && \App\Models\Tenant\ProviderConvention::forProvider($staff->care_provider_id)?->inForce()) {
+            $providerId = $staff->care_provider_id;
+        }
+
         $verdict = ($member && $guaranteeId)
-            ? $rights->verify($member, $guaranteeId, now()->toDateString())
+            ? $rights->verify($member, $guaranteeId, now()->toDateString(), null, $providerId)
             : ['ok' => false, 'reasons' => ['no_active_guarantee']];
+
+        $declareUrl = null;
+        if ($providerId && $member) {
+            $check = \App\Models\Tenant\RightsCheck::create(['user_id' => $staff->id, 'care_provider_id' => $providerId, 'member_id' => $member->id,
+                'ok' => $verdict['ok'], 'reasons' => $verdict['reasons'], 'created_at' => now()]);
+            $declareUrl = $verdict['ok'] ? route('portal.declare', $check->id) : null;
+        }
 
         return view('tenant.card.verify', [
             'ok'      => $verdict['ok'],
             'reasons' => $verdict['reasons'],
             'member'  => $member,
+            'declareUrl' => $declareUrl,
         ]);
     }
 

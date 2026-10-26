@@ -87,7 +87,7 @@
 
       <section class="rounded-lg border border-ink/10 bg-white p-5 text-sm">
         <h2 class="font-semibold">Échanges</h2>
-        @if ($r->conversation && \Illuminate\Support\Facades\Route::has('conversations.show') && auth()->user()->hasAnyRole(\App\Http\Controllers\Tenant\ConversationController::ROLES))
+        @if ($r->conversation && \Illuminate\Support\Facades\Route::has('conversations.show') && \App\Support\TenantAccess::can('conversations.show'))
           <a class="mt-2 inline-block text-pine hover:underline" href="{{ route('conversations.show', $r->conversation->id) }}">Ouvrir la conversation avec le demandeur</a>
         @else
           <p class="mt-2 text-ink/55">Pas encore de conversation. Utilisez « Demander un complément » pour solliciter le demandeur.</p>

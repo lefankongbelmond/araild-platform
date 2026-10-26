@@ -58,7 +58,7 @@ class CareClaimController extends Controller
             'alerts'    => $alerts,
             'providers' => $providers,
             'actTypes'  => \App\Models\Tenant\ActType::orderBy('label')->get(),
-            'careProviders' => CareProvider::on('central')->where('active', true)->orderBy('name')->get(),
+            'careProviders' => $this->careProviders(),
             'currency'  => $this->currency(),
         ]);
     }
@@ -68,6 +68,20 @@ class CareClaimController extends Controller
         abort_unless(request()->user()->hasAnyRole(['controller_validator', 'mutual_admin']), 403);
         $claim->update(['status' => 'closed']);
         return back()->with('success', __('mxconnect.claim.closed'));
+    }
+
+    /**
+     * Prestataires proposés à la saisie : ceux conventionnés par la mutuelle (convention
+     * active) ; tant qu'aucune convention n'est enregistrée, tout le registre actif (comme avant).
+     */
+    private function careProviders()
+    {
+        $conventioned = \Illuminate\Support\Facades\Schema::hasTable('provider_conventions')
+            ? \App\Models\Tenant\ProviderConvention::where('active', true)->pluck('care_provider_id') : collect();
+
+        return CareProvider::on('central')->where('active', true)
+            ->when($conventioned->isNotEmpty(), fn ($q) => $q->whereIn('id', $conventioned))
+            ->orderBy('name')->get();
     }
 
     private function currency(): Currency

@@ -16,8 +16,7 @@
           $navAlerts = [];   // tables pas encore migrées : aucune alerte plutôt qu'une erreur
       }
   }
-  // Règles d'accès et menu : définis une seule fois (App\Support\TenantNav), aussi utilisés par « Rôles et droits ».
-  $navRoles = \App\Support\TenantNav::roles();
+  // Menu (App\Support\TenantNav) filtré par la matrice des droits (App\Support\TenantAccess), aussi appliquée à chaque route.
   $navGroups = \App\Support\TenantNav::groups();
   $icons = [
       'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -103,7 +102,7 @@
       <nav class="px-3 py-4 space-y-5 text-[13.5px]">
         @foreach ($navGroups as $groupLabel => $items)
           @php
-            $visible = collect($items)->filter(fn ($v, $r) => Route::has($r) && (! isset($navRoles[$r]) || auth()->user()?->hasAnyRole($navRoles[$r])));
+            $visible = collect($items)->filter(fn ($v, $r) => Route::has($r) && \App\Support\TenantAccess::can($r));
           @endphp
           @if ($visible->isNotEmpty())
             <div>
@@ -138,7 +137,7 @@
         <div class="flex h-16 items-center gap-3 px-4 sm:px-6">
           <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="Ouvrir le menu">{!! $svg('menu', 22) !!}</label>
           @if ($showNav)
-            @if (Route::has('members.index'))
+            @if (Route::has('members.index') && \App\Support\TenantAccess::can('members.index'))
               <form action="{{ route('members.index') }}" method="GET" role="search" class="relative hidden max-w-md flex-1 sm:block">
                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">{!! $svg('search', 18) !!}</span>
                 <label for="mx-tsearch" class="sr-only">Rechercher un adhérent</label>

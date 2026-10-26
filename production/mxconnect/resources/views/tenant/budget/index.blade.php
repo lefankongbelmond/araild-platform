@@ -2,6 +2,8 @@
   $fmt = fn ($minor) => $currency->format((int) $minor);
   $raw = fn ($minor) => number_format(((int) $minor) / (10 ** $currency->minor_unit), $currency->minor_unit, ',', ' ');
   $locked = $budget?->isAdopted();
+  // Saisie : trésorier-comptable ; adoption : administrateur ; lecture : contrôleur, auditeur (matrice des droits).
+  $edit = ! $locked && \App\Support\TenantAccess::can('budget.lines.update');
   $f = 'h-10 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100';
   $bar = fn ($rate) => $rate === null ? 'bg-ink/10' : ($rate > 100 ? 'bg-gradient-to-r from-rose-500 to-red-600' : ($rate >= 80 ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-leaf-500 to-leaf-600'));
 @endphp
@@ -20,7 +22,9 @@
     </x-slot:actions>
   </x-tenant.hero>
 
-  @if (! $budget)
+  @if (! $budget && ! \App\Support\TenantAccess::can('budget.create'))
+    <x-tenant.panel class="mt-5"><p class="p-6 text-sm text-ink/60 sm:p-8">Aucun budget pour {{ $year }}. Le budget est préparé par le trésorier-comptable, puis adopté par l’administrateur.</p></x-tenant.panel>
+  @elseif (! $budget)
     <x-tenant.panel class="mt-5">
       <form method="POST" action="{{ route('budget.create') }}" class="grid gap-5 p-6 md:grid-cols-[1fr_auto] md:items-end sm:p-8">
         @csrf
@@ -67,7 +71,7 @@
                     <td class="py-3 pl-6 pr-3">@if($l->account)<span class="inline-flex rounded-lg bg-brand-50 px-2 py-0.5 font-mono text-xs font-semibold text-brand-700 ring-1 ring-brand-100">{{ $l->account->number }}</span>@else<span class="text-xs text-ink/40">hors plan</span>@endif</td>
                     <td class="px-3 py-3 font-medium text-[#0B1F3A]">{{ $l->label }}</td>
                     <td class="px-3 py-3 text-right">
-                      @if ($locked)<b class="tabular-nums">{{ $raw($l->amount_minor) }}</b>
+                      @if (! $edit)<b class="tabular-nums">{{ $raw($l->amount_minor) }}</b>
                       @else<input name="amounts[{{ $l->id }}]" value="{{ $raw($l->amount_minor) }}" inputmode="decimal" class="{{ $f }} w-36 text-right tabular-nums" aria-label="Montant prévu {{ $l->label }}">@endif
                     </td>
                     <td class="whitespace-nowrap px-3 py-3 text-right tabular-nums">{{ $row['realized'] === null ? '—' : $fmt($row['realized']) }}</td>
@@ -77,9 +81,9 @@
                       @else<span class="text-xs text-ink/40">{{ $l->account ? 'Montant prévu à 0' : 'Non rattaché à un compte' }}</span>@endif
                     </td>
                     <td class="py-3 pl-3 pr-6 text-right">
-                      @unless ($locked)
+                      @if ($edit)
                         <button form="del-{{ $l->id }}" class="grid h-9 w-9 place-items-center rounded-lg text-clay hover:bg-clay/10" title="Supprimer la ligne" aria-label="Supprimer {{ $l->label }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                      @endunless
+                      @endif
                     </td>
                   </tr>
                 @empty
@@ -92,20 +96,23 @@
       @endforeach
       <x-tenant.panel title="Notes et justification" icon="file">
         <div class="p-5 sm:p-6">
-          @if ($locked)<p class="whitespace-pre-line text-sm text-ink/70">{{ $budget->notes ?: '—' }}</p>
+          @if (! $edit)<p class="whitespace-pre-line text-sm text-ink/70">{{ $budget->notes ?: '—' }}</p>
           @else<textarea name="notes" rows="3" maxlength="2000" class="w-full rounded-xl border border-ink/10 px-3.5 py-2.5 text-sm" placeholder="Hypothèses retenues, décisions du conseil d’administration…">{{ $budget->notes }}</textarea>@endif
         </div>
       </x-tenant.panel>
-      @unless ($locked)
+      @if ($edit)
         <div class="flex justify-end"><button class="inline-flex h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-leaf-600 px-6 text-sm font-bold text-white shadow-lg shadow-leaf-500/25">Enregistrer les montants</button></div>
-      @endunless
+      @endif
     </form>
     @unless ($locked)
+      @if ($edit)
       @foreach ($rows as $list) @foreach ($list as $row)
         <form id="del-{{ $row['line']->id }}" method="POST" action="{{ route('budget.lines.destroy', [$budget, $row['line']]) }}" onsubmit="return confirm('Supprimer cette ligne du budget ?')">@csrf @method('DELETE')</form>
       @endforeach @endforeach
+      @endif
 
       <div class="mt-5 grid gap-5 lg:grid-cols-2">
+        @if ($edit)
         <x-tenant.panel title="Ajouter une ligne" icon="plus">
           <form method="POST" action="{{ route('budget.lines.store', $budget) }}" class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
             @csrf
@@ -122,7 +129,8 @@
             <button class="h-11 rounded-xl bg-[#0B1F3A] text-sm font-bold text-white hover:bg-brand-700 sm:col-span-2">Ajouter la ligne</button>
           </form>
         </x-tenant.panel>
-        @if (auth()->user()?->hasRole('mutual_admin'))
+        @endif
+        @if (\App\Support\TenantAccess::can('budget.adopt'))
           <x-tenant.panel title="Adopter le budget" icon="check">
             <form method="POST" action="{{ route('budget.adopt', $budget) }}" class="space-y-3 p-5 sm:p-6" onsubmit="return confirm('Adopter le budget ? Il ne sera plus modifiable.')">
               @csrf

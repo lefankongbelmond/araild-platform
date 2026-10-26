@@ -5,31 +5,12 @@
  * de mutuelle (mx_tests_tenant, provisionnée comme sur LWS : mode manuel, base vide).
  */
 
-use App\Models\Central\Country;
-use App\Models\Central\Mutual;
 use App\Models\Tenant\User;
 use App\Services\MutualProvisioningService;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\ConfigReferenceSeeder::class);
-    $c = config('database.connections.central');
-    // Base de mutuelle vide (comme une base créée dans le panneau LWS).
-    $pdo = new PDO("mysql:host={$c['host']};port={$c['port']};dbname=mx_tests_tenant", $c['username'], $c['password']);
-    $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
-    foreach ($pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) {
-        $pdo->exec("DROP TABLE `{$t}`");
-    }
-    $country = Country::where('active', true)->firstOrFail();
-    $this->mutual = app(MutualProvisioningService::class)->create([
-        'name' => 'Mutuelle Équipe', 'slug' => 'equipe' . random_int(100, 999), 'country_id' => $country->id,
-        'currency_id' => $country->default_currency_id, 'locale_id' => $country->default_locale_id,
-        'db_name' => 'mx_tests_tenant', 'db_username' => $c['username'], 'db_password' => $c['password'],
-    ]);
-    $this->host = 'http://' . $this->mutual->domains()->value('domain');
-    $this->mutual->run(fn () => app(MutualProvisioningService::class)->createUser($this->mutual, 'admin@equipe.test', 'Ada', 'Admin', 'mutual_admin', 'MotDePasse-Admin-2026'));
-    // L'administrateur a déjà choisi son mot de passe et activé la double authentification.
-    $this->mutual->run(fn () => User::where('email', 'admin@equipe.test')->update(['must_change_password' => false, 'two_factor_confirmed_at' => now()]));
+    provisionTestMutual();   // tests/Pest.php : vraie base de mutuelle + administrateur
 });
 
 afterEach(function () {
@@ -37,17 +18,6 @@ afterEach(function () {
         tenancy()->end();
     }
 });
-
-/** Utilisateur de la mutuelle de test (chargé dans la base de la mutuelle). */
-function tenantUser(string $email): User
-{
-    return test()->mutual->run(fn () => User::with('roles')->where('email', $email)->firstOrFail());
-}
-
-function asAdmin(): \Illuminate\Foundation\Testing\TestCase
-{
-    return test()->actingAs(tenantUser('admin@equipe.test'), 'web')->withSession(['mfa_passed' => true]);
-}
 
 it('ajoute une personne avec un mot de passe provisoire affiché une fois, à changer à la 1re connexion', function () {
     $res = asAdmin()->post($this->host . '/equipe', [
@@ -109,11 +79,14 @@ it('réserve « Équipe et rôles » à l’administrateur et affiche des droits
     asAdmin()->post($this->host . '/equipe', ['first_name' => 'Cm', 'last_name' => 'Com', 'email' => 'cm2@equipe.test', 'roles' => ['community_manager']]);
     $cm = tenantUser('cm2@equipe.test');
     $this->mutual->run(fn () => User::whereKey($cm->id)->update(['must_change_password' => false]));
-    $this->actingAs(tenantUser('cm2@equipe.test'), 'web')->get($this->host . '/equipe')->assertForbidden();
+    // Depuis le 2026-10-31, la double authentification est exigée de tout le personnel.
+    $this->actingAs(tenantUser('cm2@equipe.test'), 'web')->get($this->host . '/equipe')->assertRedirect($this->host . '/mfa/activation');
+    $this->mutual->run(fn () => User::whereKey($cm->id)->update(['two_factor_confirmed_at' => now()]));
+    $this->actingAs(tenantUser('cm2@equipe.test'), 'web')->withSession(['mfa_passed' => true])->get($this->host . '/equipe')->assertForbidden();
 
     asAdmin()->get($this->host . '/equipe')->assertOk()->assertSee('cm2@equipe.test')->assertSee('Chargé de communication');
     asAdmin()->get($this->host . '/equipe/roles-et-droits')->assertOk()
-        ->assertSee('Valider une souscription')          // permission réelle du contrôleur-validateur
+        ->assertSee('Valider ou rejeter')                // lu dans la matrice des droits
         ->assertSee('Agent d’adhésion ≠ Contrôleur-validateur', false);
 });
 

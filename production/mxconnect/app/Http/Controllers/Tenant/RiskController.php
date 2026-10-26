@@ -15,7 +15,7 @@ class RiskController extends Controller
 
     private function authorizeGov(Request $request): void
     {
-        abort_unless($request->user()->hasAnyRole(['mutual_admin', 'controller_validator', 'security_admin']), 403);
+        \App\Support\TenantAccess::authorize();   // matrice des droits (signaler : tout le personnel)
     }
 
     public function index(Request $request)
@@ -43,6 +43,9 @@ class RiskController extends Controller
             'owner_role'  => ['nullable', 'string', 'max:60'],
             'review_on'   => ['nullable', 'date'],
         ]);
+
+        // Signalement : l'auteur est joint (les registres n'ont pas de colonne « déclarant »).
+        $data['description'] = trim(($data['description'] ?? '') . "\n\n— Signalé par " . $request->user()->name . ' le ' . now()->format('d/m/Y H:i') . '.');
 
         Risk::create($data + [
             'ref'       => 'RSK-' . now()->format('y') . '-' . strtoupper(Str::random(4)),

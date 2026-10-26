@@ -27,7 +27,14 @@ class User extends Authenticatable implements Auditable
         'two_factor_confirmed_at' => 'datetime',
         'must_change_password' => 'boolean',
         'last_login_at' => 'datetime',
+        'care_provider_id' => 'integer',
     ];
+
+    /** Prestataire de soins représenté (comptes au rôle « provider », registre central). */
+    public function careProvider(): ?\App\Models\Central\CareProvider
+    {
+        return $this->care_provider_id ? \App\Models\Central\CareProvider::on('central')->find($this->care_provider_id) : null;
+    }
 
     public function getNameAttribute(): string
     {

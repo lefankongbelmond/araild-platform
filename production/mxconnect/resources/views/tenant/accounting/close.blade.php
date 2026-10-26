@@ -6,7 +6,7 @@
   </x-tenant.hero>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
-    @if (auth()->user()?->hasRole('treasurer_accountant'))
+    @if (\App\Support\TenantAccess::can('accounting.close'))
     <form method="POST" action="{{ route('accounting.close') }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">
       @csrf
       <div>

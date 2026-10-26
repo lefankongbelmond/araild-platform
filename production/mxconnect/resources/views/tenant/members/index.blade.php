@@ -4,7 +4,7 @@
     <x-slot:subtitle>{{ __('mxconnect.member.sub') }}</x-slot:subtitle>
     <x-slot:actions>
 
-    @if (auth()->user()?->hasAnyRole(['enrollment_agent','mutual_admin']))
+    @if (\App\Support\TenantAccess::can('members.create'))
       <a href="{{ route('members.import.form') }}" class="rounded-md border border-ink/20 px-4 py-2 text-sm font-medium text-ink hover:bg-ink/5 transition">{{ __('mxconnect.import.title') }}</a>
       <a href="{{ route('members.create') }}" class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">+ {{ __('mxconnect.member.new') }}</a>
     @endif
