@@ -140,4 +140,27 @@ return [
             . "connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'",
     ],
 
+
+    // --- Social network layer (public, central) ---
+    'social' => [
+        // Filterable intervention domains. Stored as these slugs on organizations,
+        // labelled via lang mxconnect.social.domains.*. Adding one = config + label.
+        'domains' => [
+            'sante', 'protection_sociale', 'education', 'agriculture',
+            'environnement', 'entrepreneuriat', 'solidarite',
+        ],
+        'opportunity_kinds' => [
+            'appel_partenariat', 'besoin_equipement', 'recherche_competences', 'appel_benevoles', 'autre',
+        ],
+        // Upload limits for post media (nginx client_max_body_size is 20M).
+        'media' => [
+            'max_files'     => 4,
+            'image_max_kb'  => 5120,
+            'video_max_kb'  => 20480,
+        ],
+        'feed_page_size' => 15,
+        // Slugs that would shadow fixed routes (organisations/creer, ...).
+        'reserved_slugs' => ['creer', 'modifier', 'suivre', 'soutenir', 'je-m-engage', 'projets'],
+    ],
+
 ];

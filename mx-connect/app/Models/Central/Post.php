@@ -5,11 +5,13 @@ namespace App\Models\Central;
 use App\Enums\PostStatus;
 use App\Enums\PostType;
 use App\Enums\PostVisibility;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use OwenIt\Auditing\Contracts\Auditable;
 
@@ -80,5 +82,59 @@ class Post extends Model implements Auditable
     public function likedBy(int $publicAccountId): bool
     {
         return $this->likes()->where('public_account_id', $publicAccountId)->exists();
+    }
+
+    /**
+     * Server-side visibility rule, used by every read path (feed, permalink, likes,
+     * comments): published only; an org-authored post needs its organization to be
+     * published unless the viewer manages it; "followers" posts are limited to the
+     * author, the organization's followers and its managers.
+     */
+    public function scopeVisibleTo(Builder $query, ?PublicAccount $viewer): Builder
+    {
+        $managed = $viewer ? $viewer->managedOrganizations()->pluck('organizations.id') : collect();
+        $followed = $viewer ? $viewer->follows()->pluck('organizations.id') : collect();
+
+        return $query
+            ->where('posts.status', PostStatus::Published->value)
+            ->where(function (Builder $q) use ($managed) {
+                $q->whereNull('posts.organization_id')
+                    ->orWhereHas('organization', fn (Builder $o) => $o->published())
+                    ->orWhereIn('posts.organization_id', $managed);
+            })
+            ->where(function (Builder $q) use ($viewer, $managed, $followed) {
+                $q->where('posts.visibility', PostVisibility::Public->value);
+                if ($viewer) {
+                    $q->orWhere('posts.public_account_id', $viewer->getKey())
+                        ->orWhereIn('posts.organization_id', $managed->merge($followed));
+                }
+            });
+    }
+
+    public function isVisibleTo(?PublicAccount $viewer): bool
+    {
+        return static::query()->whereKey($this->getKey())->visibleTo($viewer)->exists();
+    }
+
+    /** "Je m'engage" only makes sense on an organization's call to action or project. */
+    public function offersEngagement(): bool
+    {
+        return $this->organization_id !== null
+            && ($this->project_id !== null || in_array($this->type, [PostType::Event, PostType::Opportunity], true));
+    }
+
+    /** "Soutenir ou devenir partenaire": opportunities, results and project posts. */
+    public function offersSupport(): bool
+    {
+        return $this->organization_id !== null
+            && ($this->project_id !== null || in_array($this->type, [PostType::Opportunity, PostType::Result], true));
+    }
+
+    /** @return list<array{url: string, type: string}> */
+    public function mediaItems(): array
+    {
+        return collect($this->media ?? [])
+            ->map(fn (array $m) => ['url' => Storage::disk('public')->url($m['path']), 'type' => $m['type']])
+            ->all();
     }
 }

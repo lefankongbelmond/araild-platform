@@ -22,7 +22,8 @@ return [
         // Central (network) database — mutuals registry, payment ledger,
         // directory, billing, config reference tables.
         'central' => [
-            'driver' => 'mysql',
+            // Overridable so the test suite can run on in-memory SQLite (phpunit.xml).
+            'driver' => env('DB_CENTRAL_DRIVER', 'mysql'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),

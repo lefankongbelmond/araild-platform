@@ -5,6 +5,7 @@ namespace App\Models\Central;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -13,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class PublicAccount extends Authenticatable
 {
-    use HasApiTokens;
+    use HasApiTokens, Notifiable;
 
     protected $connection = 'central';
     protected $guarded = [];
@@ -57,5 +58,22 @@ class PublicAccount extends Authenticatable
     public function supportOffers(): HasMany
     {
         return $this->hasMany(SupportOffer::class);
+    }
+
+    /** @return array<int, string> organization id => manager role, for rendering per-post controls */
+    public function organizationRoles(): array
+    {
+        return $this->managedOrganizations()->pluck('organization_managers.role', 'organizations.id')->all();
+    }
+
+    /** Name shown on public content. The phone/e-mail are never displayed publicly. */
+    public function displayName(): string
+    {
+        return trim($this->first_name.' '.$this->last_name);
+    }
+
+    public function initials(): string
+    {
+        return mb_strtoupper(mb_substr($this->first_name, 0, 1).mb_substr($this->last_name, 0, 1));
     }
 }

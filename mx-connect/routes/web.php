@@ -16,6 +16,7 @@ use App\Http\Controllers\Network\CurrencyController;
 use App\Http\Controllers\Network\LocaleController;
 use App\Http\Controllers\Network\CountryController;
 use App\Http\Controllers\Network\PaymentProviderController;
+use App\Http\Controllers\Social;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,7 +24,67 @@ use Illuminate\Support\Facades\Route;
  | Tenant routes live in routes/tenant.php (mapped by TenancyServiceProvider).
  */
 
-Route::get('/', fn () => view('welcome'))->name('home');
+/*
+ | Social network layer (public, central) — Module 1 to 5. Read pages are public;
+ | every write goes through `auth:member` (public accounts) and is re-checked in the
+ | Social services. Fixed paths (…/creer) are declared before the {slug} routes.
+ */
+Route::get('/', [Social\HomeController::class, 'index'])->name('home');
+Route::get('fil', [Social\FeedController::class, 'index'])->name('feed');
+Route::get('decouvrir', [Social\DiscoverController::class, 'index'])->name('discover');
+
+Route::middleware('guest:member')->group(function () {
+    Route::get('connexion', [Social\AuthController::class, 'showLogin'])->name('login');
+    Route::post('connexion', [Social\AuthController::class, 'login'])->middleware('throttle:login');
+    Route::get('inscription', [Social\AuthController::class, 'showRegister'])->name('register');
+    Route::post('inscription', [Social\AuthController::class, 'register'])->middleware('throttle:login');
+});
+
+Route::middleware('auth:member')->group(function () {
+    Route::post('deconnexion', [Social\AuthController::class, 'logout'])->name('logout');
+
+    Route::middleware('throttle:social-write')->group(function () {
+        Route::post('publications', [Social\FeedController::class, 'store'])->name('posts.store');
+        Route::delete('publications/{post}', [Social\FeedController::class, 'destroy'])->name('posts.destroy');
+        Route::post('publications/{post}/jaime', [Social\FeedController::class, 'like'])->name('posts.like');
+        Route::post('publications/{post}/commentaires', [Social\FeedController::class, 'comment'])->name('posts.comments.store');
+        Route::delete('commentaires/{comment}', [Social\FeedController::class, 'destroyComment'])->name('comments.destroy');
+
+        Route::post('organisations', [Social\OrganizationController::class, 'store'])->name('organizations.store');
+        Route::put('organisations/{organization:slug}', [Social\OrganizationController::class, 'update'])->name('organizations.update');
+        Route::post('organisations/{organization:slug}/suivre', [Social\OrganizationController::class, 'follow'])->name('organizations.follow');
+        Route::delete('organisations/{organization:slug}/suivre', [Social\OrganizationController::class, 'unfollow'])->name('organizations.unfollow');
+        Route::post('organisations/{organization:slug}/je-m-engage', [Social\RequestController::class, 'engage'])->name('organizations.engage');
+        Route::post('organisations/{organization:slug}/soutenir', [Social\RequestController::class, 'support'])->name('organizations.support');
+        Route::post('organisations/{organization:slug}/projets', [Social\ProjectController::class, 'store'])->name('projects.store');
+
+        Route::put('projets/{project:slug}', [Social\ProjectController::class, 'update'])->name('projects.update');
+        Route::post('projets/{project:slug}/indicateurs', [Social\ProjectController::class, 'storeIndicator'])->name('projects.indicators.store');
+        Route::post('projets/{project:slug}/actualites', [Social\ProjectController::class, 'storeUpdate'])->name('projects.updates.store');
+
+        Route::post('mon-espace/demandes/{kind}/{id}/retrait', [Social\MySpaceController::class, 'withdraw'])
+            ->whereIn('kind', ['engagement', 'support'])->whereNumber('id')->name('my.requests.withdraw');
+        Route::post('mon-espace/organisations/{organization:slug}/demandes/{kind}/{id}', [Social\MySpaceController::class, 'respond'])
+            ->whereIn('kind', ['engagement', 'support'])->whereNumber('id')->name('my.organizations.respond');
+    });
+
+    Route::get('organisations/creer', [Social\OrganizationController::class, 'create'])->name('organizations.create');
+    Route::get('organisations/{organization:slug}/modifier', [Social\OrganizationController::class, 'edit'])->name('organizations.edit');
+    Route::get('organisations/{organization:slug}/je-m-engage', [Social\RequestController::class, 'engageForm'])->name('organizations.engage.form');
+    Route::get('organisations/{organization:slug}/soutenir', [Social\RequestController::class, 'supportForm'])->name('organizations.support.form');
+    Route::get('organisations/{organization:slug}/projets/creer', [Social\ProjectController::class, 'create'])->name('projects.create');
+    Route::get('projets/{project:slug}/modifier', [Social\ProjectController::class, 'edit'])->name('projects.edit');
+
+    Route::get('mon-espace/demandes', [Social\MySpaceController::class, 'requests'])->name('my.requests');
+    Route::get('mon-espace/organisations', [Social\MySpaceController::class, 'organizations'])->name('my.organizations');
+    Route::get('mon-espace/organisations/{organization:slug}/demandes', [Social\MySpaceController::class, 'inbox'])->name('my.organizations.inbox');
+    Route::get('mon-espace/notifications', [Social\MySpaceController::class, 'notifications'])->name('my.notifications');
+    Route::post('mon-espace/notifications/lues', [Social\MySpaceController::class, 'markNotificationsRead'])->name('my.notifications.read');
+});
+
+Route::get('publications/{post}', [Social\FeedController::class, 'show'])->whereNumber('post')->name('posts.show');
+Route::get('organisations/{organization:slug}', [Social\OrganizationController::class, 'show'])->name('organizations.show');
+Route::get('projets/{project:slug}', [Social\ProjectController::class, 'show'])->name('projects.show');
 
 // --- Network authentication ---
 Route::middleware('guest:network')->group(function () {

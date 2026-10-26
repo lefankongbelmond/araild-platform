@@ -3,10 +3,12 @@
 namespace App\Models\Central;
 
 use App\Enums\ProjectStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use OwenIt\Auditing\Contracts\Auditable;
 
@@ -54,5 +56,21 @@ class Project extends Model implements Auditable
     public function supportOffers(): HasMany
     {
         return $this->hasMany(SupportOffer::class);
+    }
+
+    /** A project inherits its organization's visibility (draft/suspended → managers only). */
+    public function isVisibleTo(?PublicAccount $viewer): bool
+    {
+        return $this->organization->isVisibleTo($viewer);
+    }
+
+    public function scopeOfPublishedOrganizations(Builder $query): Builder
+    {
+        return $query->whereHas('organization', fn (Builder $o) => $o->published());
+    }
+
+    public function coverUrl(): ?string
+    {
+        return $this->cover_path ? Storage::disk('public')->url($this->cover_path) : null;
     }
 }

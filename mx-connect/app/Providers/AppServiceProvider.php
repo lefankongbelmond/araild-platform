@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Fortify;
 
 /**
  * Application-level bindings and, importantly for Phase 3, the named rate limiters
@@ -18,6 +19,14 @@ use Illuminate\Support\ServiceProvider;
  */
 class AppServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        // Only Fortify's TwoFactorAuthenticatable trait is used (MFA has its own
+        // controllers). Its auto-registered /login, /register, /user/* … routes were
+        // unconfigured (500 on submit), exposed, and shadowed the app's own route names.
+        Fortify::ignoreRoutes();
+    }
+
     public function boot(): void
     {
         // Strict model behaviour outside production. Lazy-loading prevention (the
@@ -63,6 +72,12 @@ class AppServiceProvider extends ServiceProvider
         // Interactive logins: throttle brute force by IP.
         RateLimiter::for('login', function (Request $request) {
             return [Limit::perMinute(10)->by('login:'.$request->ip())];
+        });
+
+        // Social writes (posts, likes, comments, engagement/support requests): per account.
+        RateLimiter::for('social-write', function (Request $request) {
+            $key = $request->user('member')?->getAuthIdentifier() ?: $request->ip();
+            return [Limit::perMinute(30)->by('social-write:'.$key)];
         });
     }
 }

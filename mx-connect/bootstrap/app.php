@@ -32,6 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Request correlation id + log context, as early as possible.
         $middleware->prepend(App\Http\Middleware\RequestContext::class);
 
+        // Network back-office guests go to the network login; everyone else to the
+        // public-account login (route 'login').
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('reseau/*')
+            ? route('network.login')
+            : route('login'));
+
         // Bearer-token APIs and aggregator webhooks are stateless — exempt from CSRF.
         $middleware->validateCsrfTokens(except: [
             'api/member/*',       // member PWA (Sanctum)
