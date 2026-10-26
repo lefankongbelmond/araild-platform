@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string("tags")->nullable();
             $table->timestamps();
             $table->index(["user_id", "user_type"]);
-            $table->index(["auditable_type", "auditable_id"]);
+            // $table->morphs('auditable') above already creates the (auditable_type,
+            // auditable_id) index — a second explicit one collides on it (duplicate
+            // index name), which only surfaces when the migration actually runs.
         });
     }
 

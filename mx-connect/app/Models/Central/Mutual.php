@@ -4,6 +4,7 @@ namespace App\Models\Central;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
@@ -49,5 +50,11 @@ class Mutual extends BaseTenant implements TenantWithDatabase
     public function paymentConfigs(): HasMany
     {
         return $this->hasMany(MutualPaymentConfig::class, 'mutual_id');
+    }
+
+    /** Optional public social-network profile (not every mutual has published one yet). */
+    public function organization(): HasOne
+    {
+        return $this->hasOne(Organization::class, 'mutual_id');
     }
 }
