@@ -56,7 +56,7 @@ class PostController extends SocialController
             'video_duration' => ['nullable', 'numeric', 'min:0', 'max:86400'],
             'video_width'    => ['nullable', 'integer', 'min:1', 'max:8000'],
             'video_height'   => ['nullable', 'integer', 'min:1', 'max:8000'],
-        ], [
+        ] + \App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_POST) + \App\Services\Social\PollService::rules(), \App\Services\Social\DocumentService::messages() + [
             'body.max'        => 'Le texte ne doit pas dépasser 5 000 caractères.',
             'type.in'         => 'Type de publication non disponible.',
             'images.max'      => 'Maximum :max images par publication.',
@@ -71,6 +71,16 @@ class PostController extends SocialController
             abort_unless($page, 403, 'Vous ne gérez pas cette page.');
         }
 
+        // Documents PDF publics : réservés aux publications signées par une page (jamais sur un profil personnel).
+        $documents = $request->file('documents', []);
+        if ($documents && ! $page) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['documents' => 'Les documents PDF se publient au nom d’une page (choisissez « Publier en tant que »).']);
+        }
+        \App\Services\Social\DocumentService::requireConsent($request);
+        if (count(\App\Services\Social\PollService::options($data)) === 1) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['poll_options' => 'Un sondage demande au moins deux choix différents.']);
+        }
+
         $images = $request->file('images', []);
         $video = null;
         if (! empty($data['video_upload'])) {
@@ -82,6 +92,9 @@ class PostController extends SocialController
             ], (bool) ($data['reel'] ?? false));
         }
         $type = $video && ! empty($data['reel']) ? 'reel' : ($data['type'] ?? 'texte');
+        if ($documents && $type === 'texte') {
+            $type = 'document';
+        }
 
         try {
             $post = $this->posts->create(
@@ -92,6 +105,15 @@ class PostController extends SocialController
             if ($video) {
                 app(\App\Services\Social\MediaService::class)->delete($video['path'], $video['thumb_path']);
             }
+            throw $e;
+        }
+        try {
+            if ($documents) {
+                app(\App\Services\Social\DocumentService::class)->store($page, $documents, $data['document_titles'] ?? [], ['post_id' => $post->id], $viewer);
+            }
+            app(\App\Services\Social\PollService::class)->attach($post, $data);
+        } catch (\Throwable $e) {
+            $this->posts->delete($post->fresh(['media', 'documents']));   // rien de publié à moitié
             throw $e;
         }
         $url = $type === 'reel' ? route('social.reels', ['r' => $post->id])

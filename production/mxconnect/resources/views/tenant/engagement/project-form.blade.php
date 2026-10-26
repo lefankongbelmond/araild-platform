@@ -81,6 +81,24 @@
       </form>
     </section>
 
+    <section id="documents" class="mt-6 max-w-3xl space-y-3 rounded-lg border border-ink/10 bg-white p-5 text-sm">
+      <h2 class="font-semibold">Documents du projet (PDF publics)</h2>
+      <p class="text-xs text-ink/45">Rapports, comptes rendus, affiches : publics, ils aident le réseau à vérifier vos résultats. {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun, 10 par projet.</p>
+      @if ($errors->docs->any())<div class="rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-clay">{{ $errors->docs->first() }}</div>@endif
+      <ul class="divide-y divide-ink/5">
+        @foreach ($project->documents as $d)
+          <li class="flex flex-wrap items-center justify-between gap-3 py-2"><span>{{ $d->title }} <span class="text-xs text-ink/45">({{ $d->sizeLabel() }} · {{ $d->downloads_count }} téléchargement(s))</span></span>
+            <form method="POST" action="{{ route('engagement.documents.destroy', [$project->id, $d->id]) }}" onsubmit="return confirm('Supprimer ce document ?')">@csrf<button class="text-clay hover:underline">Supprimer</button></form></li>
+        @endforeach
+      </ul>
+      <form method="POST" action="{{ route('engagement.documents.store', $project->id) }}" enctype="multipart/form-data" class="space-y-3">@csrf
+        <label class="block font-medium">Titre (facultatif)<input name="document_titles[0]" maxlength="180" class="{{ $field }}"></label>
+        <input type="file" name="documents[]" accept="application/pdf" required class="block text-xs">
+        <label class="flex items-start gap-2"><input type="checkbox" name="documents_public" value="1" class="mt-1" required> <span>Ce document est public et ne contient aucune donnée médicale ou personnelle d’adhérent.</span></label>
+        <button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-navy">Ajouter le document</button>
+      </form>
+    </section>
+
     <section id="actualites" class="mt-6 max-w-3xl space-y-3 rounded-lg border border-ink/10 bg-white p-5 text-sm">
       <h2 class="font-semibold">Actualités d’avancement</h2>
       @if ($errors->progress->any())<div class="rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-clay">{{ $errors->progress->first() }}</div>@endif

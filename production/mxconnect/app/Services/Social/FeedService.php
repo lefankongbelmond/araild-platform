@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class FeedService
 {
-    public const WITH = ['mutual.profile', 'account', 'media', 'group', 'mentions.mutual', 'shared.mutual.profile', 'shared.account', 'shared.media', 'shared.group', 'shared.mentions.mutual', 'project', 'opportunity'];
+    public const WITH = ['mutual.profile', 'account', 'media', 'group', 'mentions.mutual', 'shared.mutual.profile', 'shared.account', 'shared.media', 'shared.group', 'shared.mentions.mutual', 'project', 'opportunity', 'documents', 'poll.options'];
 
     /** Accueil : toutes les publications visibles, sauf organisations masquées ; prioritaires en tête du jour. */
     public function home(?PublicAccount $viewer, array $filters = []): CursorPaginator
@@ -135,7 +135,7 @@ class FeedService
      */
     public function viewerState(?PublicAccount $viewer, iterable $posts): array
     {
-        $state = ['reactions' => [], 'saved' => [], 'follows' => []];
+        $state = ['reactions' => [], 'saved' => [], 'follows' => [], 'votes' => []];
         if (! $viewer) {
             return $state;
         }
@@ -144,6 +144,10 @@ class FeedService
         if ($ids) {
             $state['reactions'] = Reaction::where('public_account_id', $viewer->id)->whereIn('post_id', $ids)->pluck('type', 'post_id')->all();
             $state['saved'] = SavedPost::where('public_account_id', $viewer->id)->whereIn('post_id', $ids)->pluck('post_id')->flip()->map(fn () => true)->all();
+            // Choix de ce compte dans les sondages affichés (pour montrer « votre vote »).
+            $state['votes'] = \App\Models\Social\PollVote::query()->join('social_polls', 'social_polls.id', '=', 'social_poll_votes.poll_id')
+                ->where('social_poll_votes.public_account_id', $viewer->id)->whereIn('social_polls.post_id', $ids)
+                ->pluck('social_poll_votes.option_id', 'social_polls.post_id')->all();
         }
         $state['follows'] = Follow::where('public_account_id', $viewer->id)->pluck('mutual_id')->flip()->map(fn () => true)->all();
 

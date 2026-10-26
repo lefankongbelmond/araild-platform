@@ -124,6 +124,18 @@
     </div>
   @endif
 
+  @if ($post->poll)
+    @include('social.partials.poll', ['poll' => $post->poll, 'post' => $post, 'myVote' => $state['votes'][$post->id] ?? null])
+  @endif
+
+  @if ($post->documents->isNotEmpty())
+    <div class="mx-docs">
+      @foreach ($post->documents as $doc)
+        <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">PDF · {{ $doc->sizeLabel() }}</span></span><x-mx.icon name="download" :size="18"/></a>
+      @endforeach
+    </div>
+  @endif
+
   @if ($post->shared_post_id)
     <div class="mx-shared">
       @if ($post->shared && ! $post->shared->trashed() && $post->shared->status === 'published')

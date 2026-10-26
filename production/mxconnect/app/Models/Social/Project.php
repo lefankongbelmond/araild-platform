@@ -34,6 +34,7 @@ class Project extends Model
     public function indicators() { return $this->hasMany(ProjectIndicator::class, 'project_id')->orderBy('position')->orderBy('id'); }
     public function updates()    { return $this->hasMany(ProjectUpdate::class, 'project_id')->latest(); }
     public function opportunities() { return $this->hasMany(Opportunity::class, 'project_id'); }
+    public function documents() { return $this->hasMany(Document::class, 'project_id')->latest('id'); }
 
     /** Projets visibles publiquement (page non suspendue). */
     public function scopePublic(Builder $q): Builder

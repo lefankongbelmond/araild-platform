@@ -30,11 +30,12 @@ return [
     'contact_email' => env('MXCONNECT_CONTACT_EMAIL'),
 
     // Version des fichiers CSS/JS (force le rechargement après une mise à jour).
-    'asset_version' => '2026.10.28',
+    'asset_version' => '2026.10.29',
 
     // Réseau social : médias téléversés
     'social' => [
         'max_upload_kb'   => (int) env('MXCONNECT_SOCIAL_MAX_KB', 6144),   // 6 Mo par image
+        'document_max_kb' => (int) env('MXCONNECT_DOCUMENT_MAX_KB', 10240), // 10 Mo par document PDF public
         'max_images'      => (int) env('MXCONNECT_SOCIAL_MAX_IMAGES', 6),
         'image_max_side'  => 1600,
         'thumb_max_side'  => 640,

@@ -97,7 +97,7 @@ class EngagementController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
 
-        return view('tenant.engagement.project-form', ['mutual' => $mutual, 'project' => $this->project($mutual, $project)->load(['indicators', 'updates'])]);
+        return view('tenant.engagement.project-form', ['mutual' => $mutual, 'project' => $this->project($mutual, $project)->load(['indicators', 'updates', 'documents'])]);
     }
 
     public function updateProject(Request $request, int $project)
@@ -156,6 +156,30 @@ class EngagementController extends Controller
         $this->projects->addUpdate($p, $data['update_title'], $data['update_body'], (bool) ($data['announce'] ?? false), $mutual, null, $request->user()->id, $request->user()->name);
 
         return redirect()->to(route('engagement.projects.edit', $p->id) . '#actualites')->with('success', 'Actualité du projet publiée.');
+    }
+
+    public function storeDocuments(Request $request, int $project)
+    {
+        $mutual = $this->authorizeMutual($request);
+        $p = $this->project($mutual, $project);
+        $data = $request->validateWithBag('docs', array_merge(\App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_PROJECT), ['documents' => ['required', 'array', 'max:5']]),
+            \App\Services\Social\DocumentService::messages() + ['documents.required' => 'Choisissez au moins un fichier PDF.']);
+        \App\Services\Social\DocumentService::requireConsent($request, 'docs');
+        if ($p->documents()->count() + count($data['documents']) > \App\Services\Social\DocumentService::MAX_PER_PROJECT) {
+            return back()->withErrors(['documents' => \App\Services\Social\DocumentService::MAX_PER_PROJECT . ' documents maximum par projet.'], 'docs');
+        }
+        app(\App\Services\Social\DocumentService::class)->store($mutual, $data['documents'], $data['document_titles'] ?? [], ['project_id' => $p->id], null, $request->user()->id);
+
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', 'Document(s) ajouté(s) au projet.');
+    }
+
+    public function destroyDocument(Request $request, int $project, int $document)
+    {
+        $mutual = $this->authorizeMutual($request);
+        $p = $this->project($mutual, $project);
+        app(\App\Services\Social\DocumentService::class)->delete(\App\Models\Social\Document::where('project_id', $p->id)->findOrFail($document));
+
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', 'Document supprimé.');
     }
 
     // --- Opportunités ---

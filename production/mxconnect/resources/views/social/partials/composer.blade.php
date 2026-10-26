@@ -56,12 +56,39 @@
     @endunless
 
     <div class="mx-stack" style="gap:4px" data-composer-errors>
-      @foreach (['body', 'type', 'images', 'images.*', 'video', 'as'] as $field)
+      @foreach (['body', 'type', 'images', 'images.*', 'video', 'as', 'documents', 'documents.*', 'documents_public', 'poll_options', 'poll_options.*'] as $field)
         @error($field)<p class="mx-error">{{ $message }}</p>@enderror
       @endforeach
     </div>
     <div class="mx-progress" hidden data-progress role="progressbar" aria-label="Envoi de la publication" aria-valuemin="0" aria-valuemax="100"><span></span></div>
     <div class="mx-composer__more">
+      @unless ($inGroupComposer)
+        <div class="mx-composer__extras">
+          <details class="mx-extra" @if(old('poll_options.0')) open @endif>
+            <summary class="mx-tool"><x-mx.icon name="chart" :size="16"/> Sondage</summary>
+            <div class="mx-extra__body">
+              <p class="mx-xs mx-muted">Votre texte sert de question. 2 à 4 choix ; les résultats sont anonymes.</p>
+              @for ($i = 0; $i < 4; $i++)
+                <label class="mx-sr" for="poll-{{ $i }}">Choix {{ $i + 1 }}</label>
+                <input class="mx-input" id="poll-{{ $i }}" name="poll_options[]" maxlength="120" value="{{ old('poll_options.' . $i) }}" placeholder="Choix {{ $i + 1 }}{{ $i < 2 ? '' : ' (facultatif)' }}">
+              @endfor
+              <label class="mx-small" for="poll-days">Durée</label>
+              <select class="mx-select" id="poll-days" name="poll_days">@foreach (\App\Models\Social\Poll::DURATIONS as $d => $l)<option value="{{ $d }}" @selected((int) old('poll_days', 7) === $d)>{{ $l }}</option>@endforeach</select>
+            </div>
+          </details>
+          @if ($composerPage || $myPages->isNotEmpty())
+            <details class="mx-extra" @if($errors->has('documents') || $errors->has('documents.*') || $errors->has('documents_public')) open @endif>
+              <summary class="mx-tool"><x-mx.icon name="file" :size="16"/> Document PDF</summary>
+              <div class="mx-extra__body">
+                <p class="mx-xs mx-muted">Réservé aux publications d’une page{{ $composerPage ? '' : ' (choisissez « Page : … » dans « Publier en tant que »)' }}. PDF uniquement, 3 maximum, {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun.</p>
+                <input type="file" name="documents[]" accept="application/pdf" multiple aria-label="Documents PDF">
+                <label class="mx-check mx-small"><input type="checkbox" name="documents_public" value="1"> <span>Ces documents sont publics et ne contiennent aucune donnée médicale ou personnelle.</span></label>
+              </div>
+            </details>
+          @endif
+        </div>
+      @endunless
+
       <div class="mx-composer__tools">
         <div class="mx-row mx-row--wrap" style="gap:6px">
           <button type="button" class="mx-tool mx-tool--icon" data-emoji-btn aria-label="Ajouter un emoji" title="Emoji"><x-mx.icon name="smile" :size="18"/></button>

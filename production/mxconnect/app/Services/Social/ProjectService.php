@@ -174,6 +174,9 @@ class ProjectService
 
     public function deleteProject(Project $project): void
     {
+        foreach ($project->documents as $doc) {
+            app(DocumentService::class)->delete($doc);
+        }
         $cover = $project->cover_path;
         $project->update(['cover_path' => null]);
         $project->delete();

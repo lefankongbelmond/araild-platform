@@ -118,6 +118,8 @@ Route::middleware([
                 Route::post('projets/{project}/resultats/{indicator}', 'updateIndicator')->name('indicators.update');
                 Route::post('projets/{project}/resultats/{indicator}/supprimer', 'destroyIndicator')->name('indicators.destroy');
                 Route::post('projets/{project}/actualites', 'storeUpdate')->name('updates.store');
+                Route::post('projets/{project}/documents', 'storeDocuments')->name('documents.store');
+                Route::post('projets/{project}/documents/{document}/supprimer', 'destroyDocument')->name('documents.destroy')->whereNumber('document');
                 Route::get('opportunites/creer', 'createOpportunity')->name('opportunities.create');
                 Route::post('opportunites', 'storeOpportunity')->name('opportunities.store');
                 Route::get('opportunites/{opportunity}/modifier', 'editOpportunity')->name('opportunities.edit');

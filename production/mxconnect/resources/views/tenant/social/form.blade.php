@@ -37,6 +37,17 @@
       <p class="mt-1 text-xs text-ink/45">Les métadonnées des photos (position GPS, appareil) sont supprimées automatiquement. N'utilisez une photo de personne qu'avec son accord.</p>
     </div>
 
+    <div class="text-sm">
+      <div class="font-medium">Documents PDF publics (rapport, affiche, compte rendu — 3 maximum, {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun)</div>
+      @if ($editing && $post->documents->isNotEmpty())
+        <ul class="mt-2 space-y-1">@foreach ($post->documents as $d)<li class="text-ink/70">{{ $d->title }} <span class="text-xs text-ink/45">({{ $d->sizeLabel() }})</span></li>@endforeach</ul>
+        <p class="mt-1 text-xs text-ink/45">Pour changer les documents, supprimez la publication et publiez-la à nouveau.</p>
+      @elseif (! $editing)
+        <input type="file" name="documents[]" multiple accept="application/pdf" class="mt-2 block text-xs">
+        <label class="mt-2 flex items-start gap-2 text-xs"><input type="checkbox" name="documents_public" value="1" class="mt-0.5"> <span>Les documents joints sont publics et ne contiennent aucune donnée médicale ou personnelle d’adhérent.</span></label>
+      @endif
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-2">
       <label class="block text-sm font-medium">Visibilité
         <select name="visibility" class="{{ $field }}"><option value="public" @selected(old('visibility', $post->visibility) === 'public')>Public — tout le monde</option><option value="followers" @selected(old('visibility', $post->visibility) === 'followers')>Abonnés uniquement</option></select></label>

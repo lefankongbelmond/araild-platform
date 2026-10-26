@@ -123,13 +123,15 @@ class PostService
 
     public function delete(Post $post): void
     {
-        $paths = $post->media->flatMap(fn ($m) => [$m->path, $m->thumb_path])->push($post->link_image_path)->all();
+        $paths = $post->media->flatMap(fn ($m) => [$m->path, $m->thumb_path])->push($post->link_image_path)
+            ->merge($post->documents->pluck('path'))->all();
         $mutualId = $post->mutual_id;
         DB::connection('central')->transaction(function () use ($post) {
             if ($post->shared_post_id) {
                 Post::whereKey($post->shared_post_id)->where('shares_count', '>', 0)->decrement('shares_count');
             }
             $post->media()->delete();
+            $post->documents()->delete();
             $post->delete();
         });
         $this->media->delete(...$paths);

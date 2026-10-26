@@ -14,6 +14,7 @@ Le dossier `mx-connect/` de ce dépôt **n'est pas** le code de production.
 - Conséquence : **ne rien livrer en production depuis `mx-connect/` tel quel.** Toute évolution repart de `production/`.
 - **Lot 3 (26/10/2026, VERSION 2026.10.26) est fait dans `production/`** : projets à résultats déclarés/vérifiés, emplois et opportunités (recherche `/opportunites`), demandes « Je m'engage » / « Soutenir ou devenir partenaire » / candidatures (CV PDF privé), pour les mutuelles ET les pages des membres ; back-office « Réseau social → Projets et opportunités » ; réseau « Projets et offres ». Livrable courant : `livraisons/mxconnect-maj-20261027.zip` (VERSION 2026.10.27, cumulatif : Lot 3 + correctif du service worker qui resservait l’ancien CSS) + `LISEZMOI-20261027.md` / `LISEZMOI-20261026.md`. Le 27/10, l’utilisateur signalait « rien n’a changé » après déploiement du 26/10 : non encore confirmé installé. **Changer `VERSION` dans `sw-social.js` à chaque livraison.**
 - **Lot 4 (28/10/2026, VERSION 2026.10.28)** : fonctionnalités et **design du Lot 2 portés en production, palette Lot 2 choisie par le fondateur** (navy `#0B2559`, vert d'action `#2E9E4F`, bleu info `#2F6FDB`, orange soutien `#E07B24` ; dans `css/mx-social.css`, `--mx-blue` = couleur d'action, désormais verte). Domaines d'intervention (`App\Support\SocialDomains`, colonne `domains` sur profils et projets), `/decouvrir`, accueil Lot 2 sur `/communaute` (la page `/` reste inchangée), en-tête de profil Suivre/Je m'engage/Soutenir, tuiles d'action dans le fil, page projet (avancement %, bénéficiaires, partenaires, publications liées), tendances de la semaine. Livrable courant : `livraisons/mxconnect-maj-20261028.zip` (cumulatif) + `LISEZMOI-20261028.md`. Non confirmé installé.
+- **Lot 5 (29/10/2026, VERSION 2026.10.29)** : documents PDF publics (publications au nom d'une page, back-office, projets ; vrai PDF contrôlé, téléchargement forcé + CSP sandbox via `/documents/{id}`, jamais via `/media`, jamais sur un profil personnel) et sondages (2–4 choix, durée, vote unique modifiable, résultats anonymes). Contrôle « Envoi de fichiers » ajouté à `/_installation`. Livrable courant : `livraisons/mxconnect-maj-20261029.zip` (cumulatif) + `LISEZMOI-20261029.md`. Non confirmé installé.
 - `production/mxconnect/composer.json` + `composer.lock` (fournis le 26/10, = Laravel 13.25), `tests/` (Pest, 20 tests Lot 3) et `phpunit.xml` sont dans le dépôt mais **exclus du ZIP**. Copie fidèle LWS exécutable : `devtools/copie-lws/` (voir son LISEZMOI).
 - Le site n'est pas joignable depuis les sessions cloud tant que `m.araild.com` n'est pas dans les domaines autorisés de l'environnement.
 
@@ -69,7 +70,7 @@ Back-office mutuelles : CSS compilé `css/mx-tenant.css` (plus de Tailwind CDN).
 - `index.php` racine détecte `mxconnect/VERSION` : à la 1re visite après MAJ, il purge les caches (config/routes/vues/OPcache), applique les migrations centrales + tenants et lance les conversions par lots. → **Incrémenter `VERSION` à chaque livraison.**
 - `/_installation?token=<INSTALL_TOKEN>` (≥ 24 car.) : contrôles, adresse du site, SMTP, appliquer la MAJ, voir les 6 dernières erreurs (secrets masqués), réinitialiser la MFA d'un admin réseau, données de démo, Terminer (vide le jeton → 404).
 - Tester sur une copie fidèle du site LWS (Apache, `RewriteBase /`, PHP 8.4, fonctions système désactivées, symlinks refusés) + navigateur réel 320/360/768/1366 px, aucune erreur JS, aucun défilement horizontal.
-- Suites de non-régression actuelles : réseau 59 + 41 + 47 + 38 (+40 navigateur), back-office mutuelles 24, e-mails 16, accueil 19, médicaments 20, gestion avancée 49, Pest 37. Lot 3 + 4 : Pest 28 (dans `production/mxconnect/tests`, aides communes dans `tests/Pest.php`), navigateur 137 affichages + 1 parcours complet.
+- Suites de non-régression actuelles : réseau 59 + 41 + 47 + 38 (+40 navigateur), back-office mutuelles 24, e-mails 16, accueil 19, médicaments 20, gestion avancée 49, Pest 37. Lots 3 à 5 : Pest 36 (dans `production/mxconnect/tests`, aides communes dans `tests/Pest.php`), navigateur 137 affichages + 1 parcours complet.
 
 ## 5. Leçons multi-tenant (à relire avant de toucher à la tenancy)
 
@@ -102,7 +103,6 @@ Palette réseau : « Premium » jusqu'au 27/10 ; **depuis le 28/10, palette Lot 
 
 - SMS (choix fournisseur Orange/MTN/agrégateur), vérification téléphone par SMS.
 - Paiement en ligne (Mobile Money) — jamais simulé.
-- Documents PDF dans les publications.
 - Registre des fournisseurs, pages Factures / Rapports / Rôles & droits (absentes volontairement du menu).
 - Taux de change / sélecteur de devise d'affichage.
 - Transcodage vidéo (impossible sur mutualisé ; HEVC iPhone → réglage « Le plus compatible »).

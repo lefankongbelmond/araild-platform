@@ -96,6 +96,24 @@
       </form>
     </section>
 
+    <section class="mx-card mx-card__pad mx-stack" id="documents">
+      <h2 class="mx-card__title">Documents du projet</h2>
+      <p class="mx-small mx-muted">Rapports d’activité, comptes rendus, affiches… Ils sont <b>publics</b> et aident l’administration du réseau à vérifier vos résultats. PDF uniquement, {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun, 10 par projet.</p>
+      @if ($errors->docs->any())<div class="mx-alert mx-alert--err" role="alert">{{ $errors->docs->first() }}</div>@endif
+      @foreach ($project->documents as $d)
+        <div class="mx-row mx-between" style="gap:10px;border-top:1px solid var(--mx-border);padding-top:8px">
+          <a href="{{ $d->url() }}" style="min-width:0"><x-mx.icon name="file" :size="16"/> {{ $d->title }} <span class="mx-xs mx-muted">({{ $d->sizeLabel() }} · {{ $d->downloads_count }} téléchargement(s))</span></a>
+          <form method="POST" action="{{ route('social.manage.document.destroy', [$page->slug, $project->id, $d->id]) }}" data-confirm="Supprimer ce document ?">@csrf<button class="mx-iconbtn" aria-label="Supprimer le document"><x-mx.icon name="trash" :size="16"/></button></form>
+        </div>
+      @endforeach
+      <form method="POST" action="{{ route('social.manage.document.store', [$page->slug, $project->id]) }}" enctype="multipart/form-data" class="mx-stack" style="gap:8px;border-top:1px solid var(--mx-border);padding-top:10px">@csrf
+        <div class="mx-field"><label class="mx-label" for="doc-title">Titre (facultatif, sinon le nom du fichier)</label><input class="mx-input" id="doc-title" name="document_titles[0]" maxlength="180" placeholder="Ex. : Rapport d’activité septembre 2026"></div>
+        <input type="file" name="documents[]" accept="application/pdf" required aria-label="Fichier PDF">
+        <label class="mx-check mx-small"><input type="checkbox" name="documents_public" value="1" required> <span>Ce document est public et ne contient aucune donnée médicale ou personnelle.</span></label>
+        <div><button class="mx-btn mx-btn--soft mx-btn--sm"><x-mx.icon name="plus" :size="14"/> Ajouter le document</button></div>
+      </form>
+    </section>
+
     <section class="mx-card mx-card__pad mx-stack" id="actualites">
       <h2 class="mx-card__title">Actualités d’avancement</h2>
       @if ($errors->progress->any())<div class="mx-alert mx-alert--err" role="alert">{{ $errors->progress->first() }}</div>@endif

@@ -189,6 +189,7 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
     Route::get('groupes/{group}', [Social\GroupController::class, 'show'])->name('group');
     // Projets (résultats) et emplois / opportunités publiés par les pages
     Route::get('decouvrir', [Social\DiscoverController::class, 'index'])->name('discover');
+    Route::get('documents/{document}', [Social\DocumentController::class, 'download'])->name('document')->whereNumber('document')->middleware('throttle:social-actions');
     Route::get('projets', [Social\ProjectController::class, 'index'])->name('projects');
     Route::get('projets/{project}', [Social\ProjectController::class, 'show'])->name('project');
     Route::get('opportunites', [Social\OpportunityController::class, 'index'])->name('opportunities');
@@ -258,6 +259,8 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
             Route::post('projets/{project}/resultats/{indicator}/supprimer', 'destroyIndicator')->name('indicator.destroy');
             Route::post('projets/{project}/actualites', 'storeUpdate')->name('update.store')->middleware('throttle:social-publish');
             Route::post('projets/{project}/actualites/{update}/supprimer', 'destroyUpdate')->name('update.destroy');
+            Route::post('projets/{project}/documents', 'storeDocuments')->name('document.store')->middleware('throttle:social-upload');
+            Route::post('projets/{project}/documents/{document}/supprimer', 'destroyDocument')->name('document.destroy')->whereNumber('document');
             Route::get('opportunites', 'opportunities')->name('opportunities');
             Route::get('opportunites/creer', 'createOpportunity')->name('opportunity.create');
             Route::post('opportunites', 'storeOpportunity')->name('opportunity.store')->middleware('throttle:social-publish');
@@ -292,6 +295,7 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
             Route::post('publications', [Social\PostController::class, 'store'])->name('post.store')->middleware('throttle:social-publish');
             Route::delete('publications/{post}', [Social\PostController::class, 'destroy'])->name('post.destroy');
             Route::post('publications/{post}/reaction', [Social\PostController::class, 'react'])->name('post.react');
+            Route::post('publications/{post}/sondage', [Social\PollController::class, 'vote'])->name('poll.vote');
             Route::post('publications/{post}/enregistrer', [Social\PostController::class, 'save'])->name('post.save');
             Route::post('publications/{post}/partager', [Social\PostController::class, 'share'])->name('post.share')->middleware('throttle:social-publish');
             Route::post('publications/{post}/signaler', [Social\PostController::class, 'report'])->name('post.report')->middleware('throttle:social-report');

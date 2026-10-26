@@ -416,6 +416,13 @@ class InstallController extends Controller
         foreach (['pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'xmlwriter', 'dom', 'ctype', 'fileinfo', 'bcmath', 'intl', 'zip', 'gd', 'curl'] as $ext) {
             $c[] = ["Extension $ext", extension_loaded($ext), extension_loaded($ext) ? 'chargée' : 'MANQUANTE — à activer dans le panneau (Configuration PHP)'];
         }
+        // Envoi de fichiers : les documents PDF publics vont jusqu'à document_max_kb (10 Mo par défaut).
+        $bytes = function (string $v): int { $n = (int) $v; return match (strtolower(substr(trim($v), -1))) { 'g' => $n * 1073741824, 'm' => $n * 1048576, 'k' => $n * 1024, default => $n }; };
+        $need = (int) config('mxconnect.social.document_max_kb', 10240) * 1024;
+        $upload = min($bytes((string) ini_get('upload_max_filesize')), $bytes((string) ini_get('post_max_size')));
+        $c[] = ['Envoi de fichiers (documents PDF)', $upload >= $need,
+            'upload_max_filesize ' . ini_get('upload_max_filesize') . ' · post_max_size ' . ini_get('post_max_size')
+            . ($upload >= $need ? '' : ' — augmenter à ' . round($need / 1048576) . 'M ou plus dans le panneau (Configuration PHP)')];
         $c[] = ['Clé APP_KEY', filled(config('app.key')), filled(config('app.key')) ? 'définie' : 'à générer (bouton ci-dessous)'];
         $c[] = ['APP_DEBUG désactivé', ! config('app.debug'), config('app.debug') ? 'mettre APP_DEBUG=false en production' : 'OK'];
         foreach ([storage_path(), storage_path('framework/cache'), storage_path('framework/sessions'), storage_path('framework/views'), storage_path('logs'), base_path('bootstrap/cache')] as $dir) {

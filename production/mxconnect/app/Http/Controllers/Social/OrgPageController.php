@@ -111,6 +111,7 @@ class OrgPageController extends SocialController
             ->merge(\App\Models\Social\Post::withTrashed()->whereIn('id', $postIds)->pluck('link_image_path'))
             ->push($mutual->profile?->logo_path, $mutual->profile?->cover_path)
             ->merge(\App\Models\Social\Project::withTrashed()->where('mutual_id', $mutual->id)->pluck('cover_path'))
+            ->merge(\App\Models\Social\Document::where('mutual_id', $mutual->id)->pluck('path'))
             ->filter()->all();
         $name = $mutual->name;
         Mutual::withoutEvents(fn () => $mutual->delete());   // suppression en cascade (profil, publications, abonnés, projets, offres, demandes)

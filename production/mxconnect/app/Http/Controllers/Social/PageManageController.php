@@ -59,7 +59,7 @@ class PageManageController extends SocialController
     public function editProject(string $slug, int $project)
     {
         $page = $this->page($slug);
-        $p = $this->project($page, $project)->load(['indicators', 'updates']);
+        $p = $this->project($page, $project)->load(['indicators', 'updates', 'documents']);
 
         return view('social.manage.project-form', $this->common($page, 'projets') + ['project' => $p]);
     }
@@ -131,6 +131,30 @@ class PageManageController extends SocialController
         ProjectUpdate::where('project_id', $p->id)->findOrFail($update)->delete();
 
         return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#actualites')->with('ok', 'Actualité supprimée.');
+    }
+
+    public function storeDocuments(Request $request, string $slug, int $project)
+    {
+        $page = $this->page($slug);
+        $p = $this->project($page, $project);
+        $data = $request->validateWithBag('docs', array_merge(\App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_PROJECT), ['documents' => ['required', 'array', 'max:5']]),
+            \App\Services\Social\DocumentService::messages() + ['documents.required' => 'Choisissez au moins un fichier PDF.']);
+        \App\Services\Social\DocumentService::requireConsent($request, 'docs');
+        if ($p->documents()->count() + count($data['documents']) > \App\Services\Social\DocumentService::MAX_PER_PROJECT) {
+            return back()->withErrors(['documents' => \App\Services\Social\DocumentService::MAX_PER_PROJECT . ' documents maximum par projet.'], 'docs');
+        }
+        app(\App\Services\Social\DocumentService::class)->store($page, $data['documents'], $data['document_titles'] ?? [], ['project_id' => $p->id], $this->viewer());
+
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', 'Document(s) ajouté(s) au projet.');
+    }
+
+    public function destroyDocument(string $slug, int $project, int $document)
+    {
+        $page = $this->page($slug);
+        $p = $this->project($page, $project);
+        app(\App\Services\Social\DocumentService::class)->delete(\App\Models\Social\Document::where('project_id', $p->id)->findOrFail($document));
+
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', 'Document supprimé.');
     }
 
     // --- Opportunités ---

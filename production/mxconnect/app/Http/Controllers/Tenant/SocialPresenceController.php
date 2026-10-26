@@ -25,8 +25,8 @@ use Illuminate\Validation\Rule;
 class SocialPresenceController extends Controller
 {
     public const ROLES = ['mutual_admin', 'community_manager'];
-    /** Types proposés aux mutuelles (« document » : en attente du dépôt de fichiers). */
-    public const POST_TYPES = ['annonce', 'campagne', 'activite', 'evenement', 'offre', 'texte', 'lien'];
+    /** Types proposés aux mutuelles (« document » : publication avec PDF publics joints). */
+    public const POST_TYPES = ['annonce', 'campagne', 'activite', 'evenement', 'offre', 'document', 'texte', 'lien'];
 
     public function __construct(private PostService $posts, private MediaService $media, private FeedService $feed) {}
 
@@ -156,9 +156,20 @@ class SocialPresenceController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
         $data = $this->validatePost($request);
+        $docs = $request->validate(\App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_POST), \App\Services\Social\DocumentService::messages());
+        \App\Services\Social\DocumentService::requireConsent($request);
 
         $post = $this->posts->create($data, $request->file('images', []), null, $mutual,
             $request->user()->id, $request->user()->name);
+        if ($request->hasFile('documents')) {
+            try {
+                app(\App\Services\Social\DocumentService::class)->store($mutual, $request->file('documents'), $docs['document_titles'] ?? [],
+                    ['post_id' => $post->id], null, $request->user()->id);
+            } catch (\Throwable $e) {
+                $this->posts->delete($post->fresh(['media', 'documents']));
+                throw $e;
+            }
+        }
 
         return redirect()->route('social-presence.index')->with('success',
             $post->status === 'published' ? 'Publication en ligne.' : 'Brouillon enregistré.');
@@ -168,7 +179,7 @@ class SocialPresenceController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
 
-        return view('tenant.social.form', ['post' => $this->ownPost($mutual, $post)->load('media')]);
+        return view('tenant.social.form', ['post' => $this->ownPost($mutual, $post)->load(['media', 'documents'])]);
     }
 
     public function update(Request $request, int $post)

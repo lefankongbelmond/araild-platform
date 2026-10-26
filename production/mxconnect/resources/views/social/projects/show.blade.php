@@ -124,6 +124,16 @@
             <p class="mx-xs mx-muted">MX-CONNECT ne collecte aucun fonds : un soutien financier se convient directement avec l’organisation.</p>@endif
         </section>
       @endif
+      @if ($project->documents->isNotEmpty())
+        <section class="mx-card mx-stack" style="gap:0">
+          <div class="mx-card__head"><h2 class="mx-card__title"><x-mx.icon name="file" :size="18"/> Documents</h2></div>
+          <div class="mx-docs" style="padding-top:12px">
+            @foreach ($project->documents as $doc)
+              <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">PDF · {{ $doc->sizeLabel() }}</span></span><x-mx.icon name="download" :size="18"/></a>
+            @endforeach
+          </div>
+        </section>
+      @endif
       <section class="mx-card mx-card__pad mx-stack" style="gap:10px">
         <h2 class="mx-card__title">Publications liées</h2>
         @forelse ($related as $rp)

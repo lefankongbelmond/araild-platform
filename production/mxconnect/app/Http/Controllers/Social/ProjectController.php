@@ -42,7 +42,7 @@ class ProjectController extends SocialController
     public function show(Project $project)
     {
         $viewer = $this->viewer();
-        $project->load(['mutual.profile', 'mutual.country', 'indicators', 'updates']);
+        $project->load(['mutual.profile', 'mutual.country', 'indicators', 'updates', 'documents']);
         $canManage = PageService::canPublish($viewer, $project->mutual);
         // Brouillon ou projet masqué : visible seulement par les gestionnaires de la page.
         abort_unless($project->isPublic() || $canManage, 404);

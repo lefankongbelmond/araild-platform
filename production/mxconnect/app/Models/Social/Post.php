@@ -67,6 +67,8 @@ class Post extends Model
     public function group()   { return $this->belongsTo(Group::class, 'group_id'); }
     public function mentions(){ return $this->hasMany(Mention::class, 'post_id'); }
     public function project() { return $this->belongsTo(Project::class, 'project_id'); }
+    public function documents() { return $this->hasMany(Document::class, 'post_id')->orderBy('id'); }
+    public function poll() { return $this->hasOne(Poll::class, 'post_id'); }
     public function opportunity() { return $this->belongsTo(Opportunity::class, 'opportunity_id'); }
 
     /** Ce compte peut-il gérer (supprimer) cette publication ? Auteur, ou propriétaire de la page qui l'a publiée. */
