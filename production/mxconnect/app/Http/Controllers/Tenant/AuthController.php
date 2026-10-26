@@ -42,6 +42,9 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
         $request->session()->put('mfa_passed', false);
+        if (\App\Services\Tenant\TeamService::hasTeamColumns()) {
+            Auth::guard('web')->user()->forceFill(['last_login_at' => now()])->saveQuietly();
+        }
 
         return redirect()->intended(route('members.index'));
     }

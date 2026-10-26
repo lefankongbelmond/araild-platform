@@ -201,6 +201,9 @@ class MutualProvisioningService
                 'active'     => true,
             ]);
             $user->deleted_at = null;
+            if (\App\Services\Tenant\TeamService::hasTeamColumns()) {
+                $user->must_change_password = true;   // mot de passe affiché une fois : à remplacer à la 1re connexion
+            }
             $user->save();
             $user->syncRoles([$role]);
         });

@@ -16,56 +16,9 @@
           $navAlerts = [];   // tables pas encore migrées : aucune alerte plutôt qu'une erreur
       }
   }
-  $navRoles = [
-      'social-presence.index'  => ['mutual_admin', 'community_manager'],
-      'online-adhesions.index' => ['mutual_admin', 'enrollment_agent', 'controller_validator'],
-      'engagement.index'       => \App\Http\Controllers\Tenant\EngagementController::ROLES,
-      'conversations.index'    => ['mutual_admin', 'community_manager', 'enrollment_agent'],
-      'cards.index'            => \App\Http\Controllers\Tenant\MemberCardController::ROLES,
-      'member-notifications.index' => \App\Http\Controllers\Tenant\MemberNotificationController::ROLES,
-      'billing.dashboard'      => \App\Http\Controllers\Tenant\BillingController::ROLES,
-      'billing.quote'          => \App\Http\Controllers\Tenant\BillingController::QUOTE_ROLES,
-      'budget.index'           => \App\Http\Controllers\Tenant\BudgetController::ROLES,
-  ];
-  // Navigation regroupée par domaine (mêmes pages et mêmes droits qu'avant).
-  $navGroups = [
-      'Gestion des adhérents' => [
-          'members.index'       => ['mxconnect.member.plural', 'users'],
-          'cards.index'         => ['Cartes de membre', 'card'],
-          'member-notifications.index' => ['Notifications aux membres', 'send'],
-          'subscriptions.index' => ['mxconnect.subscription.plural', 'file'],
-          'claims.index'        => ['mxconnect.claim.plural', 'clipboard'],
-          'alerts.index'        => ['mxconnect.alert.plural', 'bell'],
-      ],
-      'Facturation et finances' => [
-          'billing.dashboard'   => ['Facturation', 'receipt'],
-          'billing.quote'       => ['Calcul de quote-part', 'calculator'],
-          'contributions.index' => ['mxconnect.contribution.plural', 'coins'],
-          'budget.index'        => ['Budget', 'pie'],
-          'treasury.dashboard'  => ['mxconnect.treasury.title', 'wallet'],
-          'accounting.journal'  => ['mxconnect.accounting.journal', 'book'],
-          'solvency.dashboard'  => ['mxconnect.solvency.nav', 'chart'],
-      ],
-      'Conformité et qualité' => [
-          'audit.index'         => ['mxconnect.audit.title', 'history'],
-          'quality.index'       => ['mxconnect.quality.nav', 'shield'],
-          'risks.index'         => ['mxconnect.risk.nav', 'alert'],
-          'incidents.index'     => ['mxconnect.incident.nav', 'zap'],
-          'complaints.index'    => ['mxconnect.complaint.nav', 'inbox'],
-      ],
-      'Réseau social' => [
-          'social-presence.index'  => ['mxconnect.social.nav', 'globe'],
-          'online-adhesions.index' => ['mxconnect.social.adhesions_nav', 'user-plus'],
-          'engagement.index'       => ['mxconnect.social.engagement_nav', 'clipboard'],
-          'conversations.index'    => ['mxconnect.social.messages_nav', 'message'],
-      ],
-      'Paramètres' => [
-          'guarantees.index' => ['mxconnect.guarantee.plural', 'heart'],
-          'antennas.index'   => ['mxconnect.param.antennas', 'pin'],
-          'act-types.index'  => ['mxconnect.param.act_types', 'stethoscope'],
-          'medicines.index'  => ['mxconnect.param.medicines', 'pill'],
-      ],
-  ];
+  // Règles d'accès et menu : définis une seule fois (App\Support\TenantNav), aussi utilisés par « Rôles et droits ».
+  $navRoles = \App\Support\TenantNav::roles();
+  $navGroups = \App\Support\TenantNav::groups();
   $icons = [
       'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
       'file' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
@@ -107,8 +60,7 @@
   $user = auth()->user();
   // Navigation affichée seulement une fois la connexion complète (double authentification comprise).
   $showNav = $user && ! request()->routeIs('tenant.mfa.*');
-  $roleLabels = ['mutual_admin' => 'Administrateur', 'community_manager' => 'Chargé de communication', 'enrollment_agent' => 'Agent d’adhésion',
-      'controller_validator' => 'Contrôleur-validateur', 'benefits_manager' => 'Gestionnaire des prestations', 'treasurer_accountant' => 'Trésorier-comptable', 'provider' => 'Prestataire de soins'];
+  $roleLabels = \App\Support\TenantNav::ROLE_LABELS;
   $roleName = $user && method_exists($user, 'getRoleNames') ? ($roleLabels[$user->getRoleNames()->first()] ?? ucfirst(str_replace('_', ' ', (string) $user->getRoleNames()->first()))) : null;
   $mutualCurrency = null;
   try { $mutualCurrency = \App\Models\Central\Currency::on('central')->find(tenant('currency_id')); } catch (\Throwable $e) {}
@@ -206,6 +158,7 @@
                 <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-navy text-sm font-bold text-white">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</span>
                 <span class="hidden leading-tight sm:block"><span class="block text-sm font-semibold">{{ $user->name }}</span>@if($roleName)<span class="block text-[11.5px] text-ink/50">{{ $roleName }}</span>@endif</span>
               </div>
+              @if (Route::has('account.password'))<a href="{{ route('account.password') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Mon mot de passe" aria-label="Mon mot de passe">{!! $svg('lock', 18) !!}</a>@endif
               <form method="POST" action="{{ url('/deconnexion') }}">
                 @csrf
                 <button class="grid h-10 w-10 place-items-center rounded-xl text-clay hover:bg-clay/10" title="{{ __('mxconnect.auth.logout') }}" aria-label="{{ __('mxconnect.auth.logout') }}">{!! $svg('logout', 19) !!}</button>

@@ -55,7 +55,22 @@ Route::middleware([
     });
 
     // Mutual back-office (roles resolved inside the tenant DB).
-    Route::middleware(['auth:web', 'mfa'])->group(function () {
+    Route::middleware(['auth:web', 'mfa', \App\Http\Middleware\TenantAccountGuard::class])->group(function () {
+
+        // --- Mon mot de passe + Équipe et rôles (2026-10-30) ---
+        Route::get('mon-mot-de-passe', [\App\Http\Controllers\Tenant\AccountController::class, 'edit'])->name('account.password');
+        Route::post('mon-mot-de-passe', [\App\Http\Controllers\Tenant\AccountController::class, 'update'])->name('account.password.update')->middleware('throttle:5,1');
+        Route::prefix('equipe')->name('team.')->controller(\App\Http\Controllers\Tenant\TeamController::class)->whereNumber('user')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('roles-et-droits', 'roles')->name('roles');
+            Route::get('ajouter', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('{user}/modifier', 'edit')->name('edit');
+            Route::post('{user}/modifier', 'update')->name('update');
+            Route::post('{user}/activation', 'toggle')->name('toggle');
+            Route::post('{user}/mot-de-passe', 'resetPassword')->name('password');
+            Route::post('{user}/double-authentification', 'resetMfa')->name('mfa');
+        });
 
         // --- Réseau social : page publique et publications de la mutuelle ---
         Route::prefix('reseau-social')->name('social-presence.')->controller(\App\Http\Controllers\Tenant\SocialPresenceController::class)

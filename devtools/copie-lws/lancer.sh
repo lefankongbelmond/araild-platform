@@ -50,10 +50,12 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$DB"; then
     CREATE DATABASE IF NOT EXISTS mx_central CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     CREATE DATABASE IF NOT EXISTS mx_mutueltest CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     CREATE DATABASE IF NOT EXISTS mx_tests CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE IF NOT EXISTS mx_tests_tenant CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     CREATE USER IF NOT EXISTS 'mxdev'@'%' IDENTIFIED BY '$DB_PASSWORD';
     GRANT ALL PRIVILEGES ON mx_central.* TO 'mxdev'@'%';
     GRANT ALL PRIVILEGES ON mx_mutueltest.* TO 'mxdev'@'%';
     GRANT ALL PRIVILEGES ON mx_tests.* TO 'mxdev'@'%';
+    GRANT ALL PRIVILEGES ON mx_tests_tenant.* TO 'mxdev'@'%';
     FLUSH PRIVILEGES;"
 fi
 

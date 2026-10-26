@@ -25,6 +25,8 @@ class User extends Authenticatable implements Auditable
         'password' => 'hashed',
         'active'   => 'boolean',
         'two_factor_confirmed_at' => 'datetime',
+        'must_change_password' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     public function getNameAttribute(): string
