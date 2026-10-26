@@ -3,10 +3,20 @@
   $suggest = $feed->suggestions(auth('member')->user(), 4);
   $events = $feed->upcomingEvents(3);
   $campaigns = $feed->campaigns(2);
+  $trends = $feed->trends(5);
   // Offres ouvertes les plus récentes (mises en cache 5 min ; vide tant que la migration n'est pas passée).
   $latestOpps = \Illuminate\Support\Facades\Cache::remember('social:sb-opps', 300, fn () => \Illuminate\Support\Facades\Schema::connection('central')->hasTable('social_opportunities')
       ? \App\Models\Social\Opportunity::public()->open()->with('mutual:id,name')->latest('published_at')->limit(3)->get() : collect());
 @endphp
+@if (! empty($trends))
+<section class="mx-card" aria-labelledby="sb-trends">
+  <div class="mx-card__head"><h2 class="mx-card__title" id="sb-trends"><x-mx.icon name="hash" :size="18"/> Tendances de la semaine</h2></div>
+  <div class="mx-card__pad mx-trends" style="padding-top:4px">
+    @foreach ($trends as $tag => $n)<a href="{{ route('social.search', ['q' => '#' . $tag]) }}">#{{ $tag }} <span>{{ $n }} publication{{ $n > 1 ? 's' : '' }}</span></a>@endforeach
+  </div>
+</section>
+@endif
+
 <section class="mx-card" aria-labelledby="sb-discover">
   <div class="mx-card__head"><h2 class="mx-card__title" id="sb-discover">Organisations à découvrir</h2><a class="mx-small" href="{{ route('social.mutuals') }}">Tout voir</a></div>
   <div class="mx-mini">
@@ -19,7 +29,7 @@
 </section>
 
 <section class="mx-card" aria-labelledby="sb-events">
-  <div class="mx-card__head"><h2 class="mx-card__title" id="sb-events">Prochains événements</h2><a class="mx-small" href="{{ route('social.events') }}">Agenda</a></div>
+  <div class="mx-card__head"><h2 class="mx-card__title" id="sb-events"><x-mx.icon name="calendar" :size="18"/> Événements à venir</h2><a class="mx-small" href="{{ route('social.events') }}">Agenda</a></div>
   <div class="mx-mini">
     @forelse ($events as $e)
       <a class="mx-mini__item" href="{{ route('social.post', $e) }}" style="color:inherit">
@@ -34,7 +44,7 @@
 
 @if ($latestOpps->isNotEmpty() && ! request()->routeIs('social.opportunities', 'social.opportunity'))
 <section class="mx-card" aria-labelledby="sb-opps">
-  <div class="mx-card__head"><h2 class="mx-card__title" id="sb-opps">Emplois et opportunités</h2><a class="mx-small" href="{{ route('social.opportunities') }}">Tout voir</a></div>
+  <div class="mx-card__head"><h2 class="mx-card__title" id="sb-opps"><x-mx.icon name="rocket" :size="18"/> Opportunités récentes</h2><a class="mx-small" href="{{ route('social.opportunities') }}">Tout voir</a></div>
   <div class="mx-mini">
     @foreach ($latestOpps as $o)
       <a class="mx-mini__item" href="{{ route('social.opportunity', $o) }}" style="color:inherit">

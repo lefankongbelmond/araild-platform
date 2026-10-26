@@ -18,7 +18,12 @@
     <label class="block text-sm font-medium">Résumé * (300 caractères)<textarea name="summary" rows="2" required minlength="10" maxlength="300" class="{{ $field }}">{{ old('summary', $project->summary) }}</textarea></label>
     <label class="block text-sm font-medium">Description<textarea name="description" rows="6" maxlength="8000" class="{{ $field }}">{{ old('description', $project->description) }}</textarea></label>
     <label class="block text-sm font-medium">Objectifs<textarea name="objectives" rows="3" maxlength="3000" class="{{ $field }}">{{ old('objectives', $project->objectives) }}</textarea></label>
+@php $selD = old('domains', $project->domains ?? $mutual->profile?->domains ?? []) ?: []; @endphp
+    <fieldset class="text-sm"><legend class="font-medium">Domaines d’intervention</legend>
+      <div class="mt-2 flex flex-wrap gap-2">@foreach (\App\Support\SocialDomains::ALL as $code => $label)<label class="flex items-center gap-2 rounded-md border border-ink/10 bg-white px-3 py-1.5"><input type="checkbox" name="domains[]" value="{{ $code }}" @checked(in_array($code, (array) $selD, true))> {{ $label }}</label>@endforeach</div></fieldset>
     <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block text-sm font-medium">Avancement déclaré (%)<input type="number" min="0" max="100" name="progress" value="{{ old('progress', $project->progress) }}" class="{{ $field }}"></label>
+      <label class="block text-sm font-medium">Bénéficiaires (chiffres globaux, jamais de noms)<input name="beneficiaries" maxlength="255" value="{{ old('beneficiaries', $project->beneficiaries) }}" class="{{ $field }}"></label>
       <label class="block text-sm font-medium">État
         <select name="phase" class="{{ $field }}">@foreach (\App\Models\Social\Project::PHASES as $k => $v)<option value="{{ $k }}" @selected(old('phase', $project->phase) === $k)>{{ $v }}</option>@endforeach</select></label>
       <label class="block text-sm font-medium">Zone d’intervention<input name="zone" maxlength="255" value="{{ old('zone', $project->zone) }}" class="{{ $field }}"></label>

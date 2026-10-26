@@ -47,6 +47,10 @@ class ProjectService
             'seeks_partners'   => ['nullable', 'boolean'],
             'partner_needs'    => ['nullable', 'string', 'max:2000', 'required_if:seeks_partners,1'],
             'partners'         => ['nullable', 'string', 'max:2000'],
+            'domains'          => ['nullable', 'array'],
+            'domains.*'        => [Rule::in(array_keys(\App\Support\SocialDomains::ALL))],
+            'progress'         => ['nullable', 'integer', 'min:0', 'max:100'],
+            'beneficiaries'    => ['nullable', 'string', 'max:255'],
             'status'           => ['required', Rule::in(['published', 'draft'])],
             'cover'            => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif', 'max:' . $maxKb],
             'remove_cover'     => ['nullable', 'boolean'],
@@ -111,7 +115,8 @@ class ProjectService
                                 ?PublicAccount $by = null, ?int $tenantUserId = null, ?string $authorLabel = null): Project
     {
         $fields = collect($data)->only(['title', 'summary', 'description', 'objectives', 'zone', 'region', 'city', 'phase',
-            'starts_on', 'ends_on', 'volunteer_needs', 'partner_needs', 'partners', 'status'])->all();
+            'starts_on', 'ends_on', 'volunteer_needs', 'partner_needs', 'partners', 'status', 'progress', 'beneficiaries'])->all();
+        $fields['domains'] = \App\Support\SocialDomains::clean($data['domains'] ?? []) ?: null;
         $fields['seeks_volunteers'] = ! empty($data['seeks_volunteers']);
         $fields['seeks_partners'] = ! empty($data['seeks_partners']);
         if (! $fields['seeks_volunteers']) { $fields['volunteer_needs'] = null; }

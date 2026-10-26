@@ -81,6 +81,8 @@ class Mutual extends BaseTenant implements TenantWithDatabase
     }
 
     public function country()  { return $this->belongsTo(Country::class); }
+    /** Projets publiés sur le réseau par cette organisation. */
+    public function projects() { return $this->hasMany(\App\Models\Social\Project::class, 'mutual_id'); }
     public function currency() { return $this->belongsTo(Currency::class); }
     public function locale()   { return $this->belongsTo(Locale::class); }
 

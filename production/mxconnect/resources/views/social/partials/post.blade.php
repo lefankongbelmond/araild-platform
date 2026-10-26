@@ -83,6 +83,11 @@
     <div class="mx-post__body">{!! \App\Support\SocialText::render($post->body, $post->mentions, $detail ? null : 320) !!}@if(!$detail && mb_strlen($post->body) > 320) <a class="mx-more-link" href="{{ route('social.post', $post) }}">Voir plus</a>@endif</div>
   @endif
 
+  @php $postDomains = $post->project?->domains ?: ($post->mutual?->profile?->domains ?? []); @endphp
+  @if (! empty($postDomains) && ! $sponsor)
+    <div class="mx-dtags" style="padding:0 16px 10px">@foreach ($postDomains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['domaine' => $d]) }}">{{ \App\Support\SocialDomains::label($d) }}</a>@endif @endforeach</div>
+  @endif
+
   @if ($post->type === 'evenement' && $post->event_starts_at)
     <div class="mx-post__event">
       <div class="mx-cal"><b>{{ $post->event_starts_at->format('d') }}</b><span>{{ $post->event_starts_at->translatedFormat('M Y') }}</span></div>
@@ -129,21 +134,25 @@
     </div>
   @endif
 
-  {{-- Publication liée à un projet ou à une offre : accès direct (seulement si l'élément est toujours public). --}}
-  @if ($post->project_id && $post->project?->status === 'published')
-    <div class="mx-post__cta">
-      <b>{{ \Illuminate\Support\Str::limit($post->project->title, 80) }}</b>
-      <span class="mx-row">
-        <a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.project', $post->project) }}#resultats"><x-mx.icon name="chart" :size="14"/> Voir le projet et les résultats</a>
-        @if (! $isDemo && ! $isOwner && $post->project->seeks_volunteers)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ $viewer ? route('social.request.create', ['type' => 'engagement', 'projet' => $post->project->slug]) : route('social.login') }}">Je m’engage</a>@endif
-        @if (! $isDemo && ! $isOwner && $post->project->seeks_partners)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ $viewer ? route('social.request.create', ['type' => 'support', 'projet' => $post->project->slug]) : route('social.login') }}">Soutenir ou devenir partenaire</a>@endif
-      </span>
-    </div>
-  @elseif ($post->opportunity_id && $post->opportunity?->status === 'published')
-    <div class="mx-post__cta">
-      <b>{{ \Illuminate\Support\Str::limit($post->opportunity->title, 80) }}</b>
-      <a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.opportunity', $post->opportunity) }}"><x-mx.icon name="briefcase" :size="14"/> {{ $post->opportunity->isOpen() ? 'Voir l’offre' : 'Offre ' . mb_strtolower($post->opportunity->availabilityLabel()) }}</a>
-    </div>
+  {{-- Publication liée à un projet ou à une offre (seulement si l'élément est toujours public). --}}
+  @php
+    $linkedProject = $post->project_id && $post->project?->status === 'published' ? $post->project : null;
+    $linkedOffer = ! $linkedProject && $post->opportunity_id && $post->opportunity?->status === 'published' ? $post->opportunity : null;
+    $canAct = ! $isDemo && ! $isOwner && $post->mutual_id;
+    $act = fn (string $type, array $target) => $viewer ? route('social.request.create', ['type' => $type] + $target) : route('social.login');
+  @endphp
+  @if ($linkedProject)
+    <a class="mx-linkbox" href="{{ route('social.project', $linkedProject) }}">
+      <i><x-mx.icon name="folder" :size="18"/></i>
+      <span class="mx-grow" style="min-width:0"><b>{{ $linkedProject->title }}</b><span class="mx-xs mx-muted">{{ $linkedProject->phaseLabel() }}@if($linkedProject->progress !== null) · {{ $linkedProject->progress }} %@endif</span></span>
+      <x-mx.icon name="arrow-right" :size="16"/>
+    </a>
+  @elseif ($linkedOffer)
+    <a class="mx-linkbox" href="{{ route('social.opportunity', $linkedOffer) }}">
+      <i><x-mx.icon name="briefcase" :size="18"/></i>
+      <span class="mx-grow" style="min-width:0"><b>{{ $linkedOffer->title }}</b><span class="mx-xs mx-muted">{{ $linkedOffer->categoryLabel() }} · {{ $linkedOffer->availabilityLabel() }}</span></span>
+      <x-mx.icon name="arrow-right" :size="16"/>
+    </a>
   @endif
 
   @if ($sponsor)
@@ -177,6 +186,23 @@
       <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="bookmark" :size="18"/> <span>Enregistrer</span></a>
     @endif
   </div>
+
+  {{-- Les 3 actions (design Lot 2), affichées seulement quand elles ont un sens. --}}
+  @if ($linkedProject)
+    <div class="mx-tiles">
+      @if ($canAct && $linkedProject->seeks_volunteers)<a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>Je m’engage<small>Bénévolat, participation, compétences</small></span></a>@endif
+      <a class="mx-tile mx-tile--project" href="{{ route('social.project', $linkedProject) }}#resultats"><x-mx.icon name="chart" :size="20"/><span>Voir le projet et les résultats<small>Objectifs, indicateurs, avancement</small></span></a>
+      @if ($canAct && $linkedProject->seeks_partners)<a class="mx-tile mx-tile--support" href="{{ $act('support', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="gift" :size="20"/><span>Soutenir<small>Partenariat, matériel, expertise</small></span></a>@endif
+    </div>
+  @elseif ($linkedOffer)
+    <div class="mx-tiles">
+      <a class="mx-tile mx-tile--engage" href="{{ route('social.opportunity', $linkedOffer) }}"><x-mx.icon name="briefcase" :size="20"/><span>{{ $linkedOffer->isOpen() ? ($linkedOffer->isJob() ? 'Voir l’offre et postuler' : 'Voir l’opportunité') : 'Voir l’offre' }}<small>{{ $linkedOffer->categoryLabel() }}@if($linkedOffer->deadline_on) · avant le {{ $linkedOffer->deadline_on->format('d/m/Y') }}@endif</small></span></a>
+    </div>
+  @elseif ($canAct && $post->type === 'evenement' && ! $post->group_id && ! $post->mutual?->profile?->is_demo)
+    <div class="mx-tiles">
+      <a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['page' => $post->mutual->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>Je m’engage<small>Bénévolat, participation, compétences</small></span></a>
+    </div>
+  @endif
 
   @if ($detail)
     @include('social.partials.comments', ['post' => $post])

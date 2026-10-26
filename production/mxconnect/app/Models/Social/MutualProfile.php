@@ -13,7 +13,7 @@ class MutualProfile extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     protected $guarded = [];
-    protected $casts = ['services' => 'array', 'is_demo' => 'boolean'];
+    protected $casts = ['services' => 'array', 'is_demo' => 'boolean', 'domains' => 'array'];
 
     public const CATEGORIES = [
         'mutuelle'      => 'Mutuelle de santé',

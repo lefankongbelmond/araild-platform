@@ -20,10 +20,10 @@
 
   <p class="mx-xs mx-muted" style="padding:0 6px"><span class="mx-badge mx-badge--declared">Déclaré</span> chiffre publié par l’organisation · <span class="mx-badge mx-badge--verified">Vérifié</span> chiffre contrôlé par l’administration du réseau.</p>
 
-  @forelse ($projects as $p)
-    @include('social.projects._card', ['p' => $p])
-  @empty
+  @if ($projects->isNotEmpty())
+    <div class="mx-cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">@foreach ($projects as $p)@include('social.partials.project-tile', ['p' => $p])@endforeach</div>
+  @else
     @include('social.partials.empty', ['icon' => 'target', 'title' => 'Aucun projet trouvé', 'text' => $q || $phase || $need || $region ? 'Essayez d’autres filtres.' : 'Les projets publiés par les mutuelles et les organisations apparaîtront ici.'])
-  @endforelse
+  @endif
   {{ $projects->links('social.partials.pagination') }}
 </x-layouts.social>

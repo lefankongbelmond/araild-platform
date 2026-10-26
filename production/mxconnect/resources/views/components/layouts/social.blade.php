@@ -1,21 +1,26 @@
 @props(['title' => null, 'active' => null, 'wide' => false, 'bare' => false])
 @php
   $viewer = auth('member')->user();
+  // Navigation « Lot 2 » : rubriques principales, puis domaines, puis espaces personnels.
   $nav = [
     ['fil', 'social.home', 'home', 'Accueil', null],
-    ['explorer', 'social.explore', 'compass', 'Explorer', null],
-    ['toutes', 'social.all', 'list', 'Toutes les publications', null],
-    ['reels', 'social.reels', 'reel', 'Réels', null],
+    ['decouvrir', 'social.discover', 'compass', 'Découvrir', null],
     ['organisations', 'social.mutuals', 'building', 'Organisations', null],
-    ['projets', 'social.projects', 'target', 'Projets et résultats', null],
-    ['opportunites', 'social.opportunities', 'briefcase', 'Emplois et opportunités', null],
-    ['pages', 'social.pages.mine', 'flag-page', 'Mes pages', 'auth'],
-    ['annonceur', 'social.ads', 'megaphone', 'Publicité', 'auth'],
-    ['abonnements', 'social.following', 'star', 'Mes abonnements', 'auth'],
-    ['connexions', 'social.connections', 'users', 'Mes connexions', 'auth'],
+    ['projets', 'social.projects', 'folder', 'Projets', null],
     ['evenements', 'social.events', 'calendar', 'Événements', null],
+    ['opportunites', 'social.opportunities', 'rocket', 'Opportunités', null],
+    ['reels', 'social.reels', 'reel', 'Réels', null],
     ['groupes', 'social.groups', 'groups', 'Groupes', null],
-    ['enregistrements', 'social.saved', 'bookmark', 'Enregistrements', 'auth'],
+    ['toutes', 'social.all', 'list', 'Toutes les publications', null],
+  ];
+  $mine = [
+    ['pages', 'social.pages.mine', 'flag-page', 'Mes pages'],
+    ['demandes', 'social.requests', 'briefcase', 'Mes candidatures'],
+    ['adhesions', 'social.adhesions', 'file', 'Mes adhésions'],
+    ['abonnements', 'social.following', 'star', 'Mes abonnements'],
+    ['connexions', 'social.connections', 'users', 'Mes connexions'],
+    ['enregistrements', 'social.saved', 'bookmark', 'Enregistrements'],
+    ['annonceur', 'social.ads', 'megaphone', 'Publicité'],
   ];
   $soon = [];
   $unreadNotif = $viewer ? \App\Models\Social\SocialNotification::where('public_account_id', $viewer->id)->whereNull('read_at')->count() : 0;
@@ -28,7 +33,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   @if ($viewer)<meta name="mx-mentions" content="{{ route('social.mentions') }}">@endif
-  <meta name="theme-color" content="#102A56">
+  <meta name="theme-color" content="#0B2559">
   <title>{{ $title ? $title . ' · ' : '' }}MX-CONNECT</title>
   <meta name="description" content="MX-CONNECT — Ensemble pour une meilleure santé. Le réseau social des mutuelles de santé.">
   <link rel="icon" href="/brand/favicon.png" type="image/png">
@@ -91,16 +96,21 @@
             @endif
             <div class="mx-drawer__grid">
               @foreach ($nav as [$key, $route, $icon, $label, $needs])
-                @if (! $needs || $viewer)
-                  <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" :size="20"/> {{ $label }}</a>
-                @endif
+                <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" :size="20"/> {{ $label }}</a>
               @endforeach
               @if ($viewer)
-                <a href="{{ route('social.adhesions') }}" @class(['is-active' => $active === 'adhesions'])><x-mx.icon name="file" :size="20"/> Mes adhésions</a>
-                <a href="{{ route('social.requests') }}" @class(['is-active' => $active === 'demandes'])><x-mx.icon name="briefcase" :size="20"/> Mes candidatures</a>
+                @foreach ($mine as [$key, $route, $icon, $label])
+                  <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" :size="20"/> {{ $label }}</a>
+                @endforeach
                 <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" :size="20"/> Paramètres</a>
               @endif
               <a href="{{ route('social.about') }}"><x-mx.icon name="shield" :size="20"/> À propos et règles</a>
+            </div>
+            <p class="mx-nav__title">Domaines</p>
+            <div class="mx-drawer__grid">
+              @foreach (\App\Support\SocialDomains::ALL as $code => $label)
+                <a href="{{ route('social.discover', ['domaine' => $code]) }}"><x-mx.icon :name="'d-' . $code" :size="20"/> {{ $label }}</a>
+              @endforeach
             </div>
             @if ($viewer)
               <form method="POST" action="{{ route('social.logout') }}">@csrf<button class="is-danger"><x-mx.icon name="logout" :size="18"/> Déconnexion</button></form>
@@ -117,7 +127,7 @@
       <a href="{{ route('social.connections') }}" @class(['is-active' => in_array($active, ['connexions', 'abonnements'], true)]) aria-label="Mes connexions et abonnements"><x-mx.icon name="users" :size="24"/></a>
       <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages']) aria-label="Messages{{ $unreadMsg ? ' ('.$unreadMsg.' non lus)' : '' }}"><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
     @else
-      <a href="{{ route('social.explore') }}" @class(['is-active' => $active === 'explorer']) aria-label="Explorer"><x-mx.icon name="compass" :size="24"/></a>
+      <a href="{{ route('social.discover') }}" @class(['is-active' => $active === 'decouvrir']) aria-label="Découvrir"><x-mx.icon name="compass" :size="24"/></a>
     @endif
     <a href="{{ route('social.reels') }}" @class(['is-active' => $active === 'reels']) aria-label="Réels"><x-mx.icon name="reel" :size="24"/></a>
     <a href="{{ route('social.groups') }}" @class(['is-active' => $active === 'groupes']) aria-label="Groupes"><x-mx.icon name="groups" :size="24"/></a>
@@ -135,26 +145,24 @@
   <div @class(['mx-shell', 'mx-shell--wide' => $wide])>
     <aside class="mx-left" aria-label="Navigation principale">
       <div class="mx-sticky mx-stack">
-        <nav class="mx-nav">
+        <nav class="mx-nav" aria-label="Rubriques">
           @foreach ($nav as [$key, $route, $icon, $label, $needs])
-            @if (! $needs || $viewer)
-              <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" /> {{ $label }}</a>
-            @endif
+            <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" /> {{ $label }}</a>
+          @endforeach
+          <p class="mx-nav__title">Domaines</p>
+          @foreach (\App\Support\SocialDomains::ALL as $code => $label)
+            <a class="mx-nav__dom" href="{{ route('social.discover', ['domaine' => $code]) }}" @class(['is-active' => $active === 'decouvrir' && request('domaine') === $code])><x-mx.icon :name="'d-' . $code" :size="18" /> {{ $label }}</a>
           @endforeach
           @if ($viewer)
+            <p class="mx-nav__title">Mes espaces</p>
             <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" /> Messages @if($unreadMsg)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadMsg }}</span>@endif</a>
             <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications'])><x-mx.icon name="bell" /> Notifications @if($unreadNotif)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadNotif }}</span>@endif</a>
-            <a href="{{ route('social.adhesions') }}" @class(['is-active' => $active === 'adhesions'])><x-mx.icon name="file" /> Mes adhésions</a>
-            <a href="{{ route('social.requests') }}" @class(['is-active' => $active === 'demandes'])><x-mx.icon name="briefcase" /> Mes candidatures</a>
+            @foreach ($mine as [$key, $route, $icon, $label])
+              <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" /> {{ $label }}</a>
+            @endforeach
             <a href="{{ route('social.user', $viewer) }}" @class(['is-active' => $active === 'profil'])><x-mx.icon name="user" /> Mon profil</a>
             <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" /> Paramètres</a>
           @endif
-          @if ($soon)<hr>@endif
-          @foreach ($soon as [$icon, $label])
-            <span class="mx-nav-soon" style="display:flex;align-items:center;gap:12px;padding:10px 12px;color:var(--mx-muted);font-weight:550" title="Disponible dans la prochaine version">
-              <x-mx.icon :name="$icon" /> {{ $label }} <span class="mx-badge" style="margin-left:auto">Bientôt</span>
-            </span>
-          @endforeach
         </nav>
         @if ($viewer)
           <a class="mx-btn mx-btn--primary mx-btn--lg mx-btn--block" href="{{ route('social.home') }}#composer"><x-mx.icon name="plus" /> Créer une publication</a>

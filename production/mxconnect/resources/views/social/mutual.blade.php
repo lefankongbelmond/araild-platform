@@ -22,6 +22,10 @@
           @else
             <a class="mx-btn mx-btn--primary" href="{{ route('social.login') }}">Suivre</a>
           @endif
+          @if (! ($canPublish ?? false) && ! $profile->is_demo)
+            <a class="mx-btn mx-btn--ghost mx-btn--engage" href="{{ $viewer ? route('social.request.create', ['type' => 'engagement', 'page' => $mutual->slug]) : route('social.login') }}"><x-mx.icon name="hand" :size="16"/> Je m’engage</a>
+            <a class="mx-btn mx-btn--ghost mx-btn--support" href="{{ $viewer ? route('social.request.create', ['type' => 'support', 'page' => $mutual->slug]) : route('social.login') }}"><x-mx.icon name="gift" :size="16"/> Soutenir</a>
+          @endif
           @if ($isOwner)
             <a class="mx-btn mx-btn--ghost" href="{{ route('social.pages.edit', $mutual->slug) }}"><x-mx.icon name="edit" :size="16"/> Modifier la page</a>
           @else
@@ -37,10 +41,6 @@
               <button type="button" data-copy="{{ route('social.mutual', $mutual->slug) }}"><x-mx.icon name="link" :size="18"/> Copier le lien</button>
               @if ($viewer)
                 <form method="POST" action="{{ route('social.mute', $mutual->slug) }}">@csrf<button><x-mx.icon name="eye-off" :size="18"/> {{ $muted ? 'Réafficher dans mon fil' : 'Masquer de mon fil' }}</button></form>
-                @unless (($canPublish ?? false) || $profile->is_demo)
-                  <a href="{{ route('social.request.create', ['type' => 'engagement', 'page' => $mutual->slug]) }}"><x-mx.icon name="hand" :size="18"/> Je m’engage auprès de cette organisation</a>
-                  <a href="{{ route('social.request.create', ['type' => 'support', 'page' => $mutual->slug]) }}"><x-mx.icon name="handshake" :size="18"/> Soutenir ou devenir partenaire</a>
-                @endunless
                 @unless ($canPublish ?? false)
                   <button type="button" class="is-danger" data-report="{{ route('social.mutual.report', $mutual->slug) }}"><x-mx.icon name="flag" :size="18"/> Signaler cette page</button>
                 @endunless
@@ -51,16 +51,17 @@
       </div>
       <div>
         <h1 style="font-size:24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">{{ $mutual->name }}
-          @if ($mutual->isVerified())<span class="mx-verified" title="Organisation vérifiée par l’administration du réseau MX-CONNECT"><x-mx.icon name="verified" :size="22"/></span>@endif
+          @if ($mutual->isVerified())<span class="mx-verified-pill" title="Organisation vérifiée par l’administration du réseau MX-CONNECT"><x-mx.icon name="verified" :size="14"/> Organisation vérifiée</span>@endif
           @if ($profile->is_demo)<span class="mx-demo-ribbon" title="Organisation fictive de démonstration">Démo</span>@endif
         </h1>
         <p class="mx-small mx-muted">{{ $catLabel }}@if($isPage) · Page créée par un membre @endif @if($place) · <x-mx.icon name="pin" :size="14"/> {{ $place }}@endif</p>
         @if ($profile->tagline)<p style="margin-top:8px">{{ $profile->tagline }}</p>@endif
+        @if (! empty($profile->domains))<div class="mx-dtags" style="margin-top:8px">@foreach ($profile->domains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['domaine' => $d]) }}">{{ \App\Support\SocialDomains::label($d) }}</a>@endif @endforeach</div>@endif
       </div>
-      <div class="mx-stats">
-        <span><b data-followers="{{ $followUrl }}">{{ number_format($stats['followers'], 0, ',', ' ') }}</b> abonné(s)</span>
-        <span><b>{{ number_format($stats['posts'], 0, ',', ' ') }}</b> publication(s)</span>
-        <span><b>{{ $stats['events'] }}</b> événement(s)</span>
+      <div class="mx-statgrid">
+        <div><b data-followers="{{ $followUrl }}">{{ number_format($stats['followers'], 0, ',', ' ') }}</b><span>Abonnés</span></div>
+        <div><b>{{ number_format($stats['posts'], 0, ',', ' ') }}</b><span>Publications</span></div>
+        <a href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'projets']) }}" style="color:inherit"><div><b>{{ $stats['projects'] }}</b><span>Projets</span></div></a>
       </div>
       <p class="mx-xs mx-muted"><x-mx.icon name="shield" :size="13"/> @if($isPage) S’abonner à cette page permet de voir ses actualités dans votre fil. @else Suivre une mutuelle permet de voir ses actualités. Ce n'est pas une adhésion. @endif</p>
     </div>

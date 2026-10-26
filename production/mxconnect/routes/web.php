@@ -188,6 +188,7 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
     Route::get('groupes', [Social\GroupController::class, 'index'])->name('groups');
     Route::get('groupes/{group}', [Social\GroupController::class, 'show'])->name('group');
     // Projets (résultats) et emplois / opportunités publiés par les pages
+    Route::get('decouvrir', [Social\DiscoverController::class, 'index'])->name('discover');
     Route::get('projets', [Social\ProjectController::class, 'index'])->name('projects');
     Route::get('projets/{project}', [Social\ProjectController::class, 'show'])->name('project');
     Route::get('opportunites', [Social\OpportunityController::class, 'index'])->name('opportunities');

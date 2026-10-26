@@ -92,11 +92,14 @@ class SocialPresenceController extends Controller
             'cover'         => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif', 'max:' . $maxKb],
             'remove_logo'   => ['nullable', 'boolean'],
             'remove_cover'  => ['nullable', 'boolean'],
+            'domains'       => ['nullable', 'array'],
+            'domains.*'     => [Rule::in(array_keys(\App\Support\SocialDomains::ALL))],
         ]);
 
         $profile = MutualProfile::firstOrNew(['mutual_id' => $mutual->id]);
         $old = ['logo_path' => $profile->logo_path, 'cover_path' => $profile->cover_path];
-        $profile->fill(collect($data)->except(['logo', 'cover', 'remove_logo', 'remove_cover', 'services'])->all());
+        $profile->fill(collect($data)->except(['logo', 'cover', 'remove_logo', 'remove_cover', 'services', 'domains'])->all());
+        $profile->domains = \App\Support\SocialDomains::clean($data['domains'] ?? []) ?: null;
         $profile->services = collect(preg_split('/[,;\n]+/', (string) ($data['services'] ?? '')))
             ->map(fn ($s) => trim($s))->filter()->unique()->take(20)->values()->all();
 

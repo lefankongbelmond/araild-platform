@@ -60,7 +60,8 @@ class OrgPageController extends SocialController
                 'country_id' => $country->id, 'currency_id' => $country->default_currency_id, 'locale_id' => $country->default_locale_id,
                 'region' => $data['region'] ?? null, 'city' => $data['city'] ?? null, 'status' => 'pending',
             ]));
-            MutualProfile::create(['mutual_id' => $mutual->id, 'owner_account_id' => $viewer->id]
+            MutualProfile::create(['mutual_id' => $mutual->id, 'owner_account_id' => $viewer->id,
+                'domains' => \App\Support\SocialDomains::clean($data['domains'] ?? []) ?: null]
                 + collect($data)->only(['category', 'tagline', 'description', 'phone', 'email', 'website', 'address'])->all());
             \App\Models\Social\PageAdmin::create(['mutual_id' => $mutual->id, 'public_account_id' => $viewer->id, 'role' => 'admin']);
 
@@ -90,7 +91,8 @@ class OrgPageController extends SocialController
             'name' => $data['name'], 'country_id' => $data['country_id'],
             'region' => $data['region'] ?? null, 'city' => $data['city'] ?? null,
         ]));
-        $mutual->profile->update(collect($data)->only(['category', 'tagline', 'description', 'phone', 'email', 'website', 'address'])->all());
+        $mutual->profile->update(collect($data)->only(['category', 'tagline', 'description', 'phone', 'email', 'website', 'address'])->all()
+            + ['domains' => \App\Support\SocialDomains::clean($data['domains'] ?? []) ?: null]);
         $this->saveImages($request, $mutual);
         cache()->forget('social:places');
 
@@ -163,6 +165,8 @@ class OrgPageController extends SocialController
             'remove_logo' => ['nullable', 'boolean'],
             'remove_cover'=> ['nullable', 'boolean'],
             'accept'      => [$creating ? 'accepted' : 'nullable'],
+            'domains'     => ['nullable', 'array'],
+            'domains.*'   => [Rule::in(array_keys(\App\Support\SocialDomains::ALL))],
         ], [
             'name.required'   => 'Donnez un nom à votre page.',
             'accept.accepted' => 'Merci de confirmer que vous êtes autorisé(e) à représenter cette organisation.',

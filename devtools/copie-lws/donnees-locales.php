@@ -41,7 +41,7 @@ if (! $mutual) {
 $note('Back-office http://mutueltest.m.araild.test:8080/connexion');
 $note('  admin@mutueltest.test / ' . $prov->createUser($mutual, 'admin@mutueltest.test', 'Admin', 'Test'));
 $note('  cm@mutueltest.test / ' . $prov->createUser($mutual, 'cm@mutueltest.test', 'Chargé', 'Communication', 'community_manager'));
-MutualProfile::updateOrCreate(['mutual_id' => $mutual->id], ['category' => 'mutuelle', 'tagline' => 'Mutuelle de santé communautaire (test local)']);
+MutualProfile::updateOrCreate(['mutual_id' => $mutual->id], ['category' => 'mutuelle', 'tagline' => 'Mutuelle de santé communautaire (test local)', 'domains' => ['sante', 'protection_sociale']]);
 
 // --- Comptes membres ---
 $mk = function (string $first, string $email) use ($note) {
@@ -67,7 +67,7 @@ if (! $page) {
     $page = Mutual::withoutEvents(fn () => Mutual::create(['id' => 'pg_' . Str::lower(Str::random(10)), 'name' => 'Association Santé pour Tous',
         'slug' => 'sante-pour-tous-local', 'country_id' => $country->id, 'currency_id' => $country->default_currency_id,
         'locale_id' => $country->default_locale_id, 'region' => 'Centre', 'city' => 'Mbalmayo', 'status' => 'pending']));
-    MutualProfile::create(['mutual_id' => $page->id, 'owner_account_id' => $owner->id, 'category' => 'osc',
+    MutualProfile::create(['mutual_id' => $page->id, 'owner_account_id' => $owner->id, 'category' => 'osc', 'domains' => ['sante', 'solidarite'],
         'tagline' => 'Prévention et accès aux soins en zone rurale']);
     PageAdmin::create(['mutual_id' => $page->id, 'public_account_id' => $owner->id, 'role' => 'admin']);
     $page = $page->fresh('profile');
@@ -77,7 +77,9 @@ if (! $page) {
         'description' => "Tournées mensuelles de dépistage de la glycémie, conseils nutritionnels et orientation.\nPartenariat avec le district de santé.",
         'objectives' => 'Dépister 2 000 adultes et orienter les cas positifs.', 'zone' => 'District de santé de Mbalmayo', 'region' => 'Centre', 'city' => 'Mbalmayo',
         'phase' => 'ongoing', 'starts_on' => '2026-03-01', 'ends_on' => '2026-12-31', 'seeks_volunteers' => 1, 'volunteer_needs' => 'Accueil, orientation et sensibilisation les samedis.',
-        'seeks_partners' => 1, 'partner_needs' => 'Bandelettes de glycémie, transport des équipes.', 'status' => 'published', 'announce' => 1], null, null, $owner);
+        'seeks_partners' => 1, 'partner_needs' => 'Bandelettes de glycémie, transport des équipes.', 'status' => 'published', 'announce' => 1,
+        'progress' => 62, 'beneficiaries' => '10 villages, environ 3 000 adultes', 'partners' => "District de santé de Mbalmayo\nPharmacie du Centre", 'domains' => ['sante']], null, null, $owner);
+    app(\App\Services\Social\PostService::class)->create(['body' => 'Septième village couvert par la tournée de dépistage ! Merci aux bénévoles #SantéCommunautaire #Prévention', 'type' => 'activite'], [], $owner, $page);
     $svc->saveIndicator($project, ['label' => 'Adultes dépistés', 'value' => 1250, 'target' => 2000, 'unit' => 'personnes', 'period' => 'Mars–septembre 2026', 'source_note' => 'Registres de dépistage du district']);
     $svc->saveIndicator($project, ['label' => 'Villages couverts', 'value' => 7, 'target' => 10, 'unit' => 'villages', 'source_note' => 'Rapports de tournée']);
     $svc->addUpdate($project, 'Septième village couvert', 'La tournée de septembre a couvert le village de Nkolmebanga.', false, $page, $owner);

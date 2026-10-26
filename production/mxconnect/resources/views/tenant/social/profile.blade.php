@@ -12,6 +12,9 @@
       <label class="block text-sm font-medium">Accroche (une phrase)<input name="tagline" maxlength="180" value="{{ old('tagline', $profile->tagline) }}" class="{{ $field }}"></label>
       <label class="block text-sm font-medium">Présentation<textarea name="description" rows="6" maxlength="5000" class="{{ $field }}">{{ old('description', $profile->description) }}</textarea></label>
       <label class="block text-sm font-medium">Mission<textarea name="mission" rows="3" maxlength="2000" class="{{ $field }}">{{ old('mission', $profile->mission) }}</textarea></label>
+@php $selD = old('domains', $profile->domains ?? []) ?: []; @endphp
+    <fieldset class="text-sm"><legend class="font-medium">Domaines d’intervention</legend>
+      <div class="mt-2 flex flex-wrap gap-2">@foreach (\App\Support\SocialDomains::ALL as $code => $label)<label class="flex items-center gap-2 rounded-md border border-ink/10 bg-white px-3 py-1.5"><input type="checkbox" name="domains[]" value="{{ $code }}" @checked(in_array($code, (array) $selD, true))> {{ $label }}</label>@endforeach</div></fieldset>
       <label class="block text-sm font-medium">Services (séparés par des virgules)<input name="services" value="{{ old('services', implode(', ', $profile->services ?? [])) }}" class="{{ $field }}" placeholder="Consultations, Maternité, Pharmacie"></label>
       <label class="block text-sm font-medium">Zone couverte<input name="coverage_zone" maxlength="255" value="{{ old('coverage_zone', $profile->coverage_zone) }}" class="{{ $field }}"></label>
       <div class="grid gap-4 sm:grid-cols-2">

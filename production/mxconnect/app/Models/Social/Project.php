@@ -23,7 +23,7 @@ class Project extends Model
     protected $guarded = [];
     protected $casts = [
         'starts_on' => 'date', 'ends_on' => 'date', 'published_at' => 'datetime',
-        'seeks_volunteers' => 'boolean', 'seeks_partners' => 'boolean', 'is_demo' => 'boolean',
+        'seeks_volunteers' => 'boolean', 'seeks_partners' => 'boolean', 'is_demo' => 'boolean', 'domains' => 'array', 'progress' => 'integer',
     ];
 
     public const PHASES = ['planned' => 'En préparation', 'ongoing' => 'En cours', 'completed' => 'Terminé'];

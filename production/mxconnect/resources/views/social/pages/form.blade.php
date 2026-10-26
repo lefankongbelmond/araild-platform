@@ -33,6 +33,7 @@
       <div class="mx-field"><label class="mx-label" for="pg-web">Site web</label><input class="mx-input" id="pg-web" type="url" name="website" value="{{ old('website', $profile->website) }}" maxlength="255" placeholder="https://">@error('website')<p class="mx-error">{{ $message }}</p>@enderror</div>
       <div class="mx-field"><label class="mx-label" for="pg-addr">Adresse</label><input class="mx-input" id="pg-addr" name="address" value="{{ old('address', $profile->address) }}" maxlength="255"></div>
     </div>
+    @include('social.partials.domain-picker', ['selected' => $profile->domains ?? []])
     <div class="mx-grid-2">
       <div class="mx-field"><label class="mx-label" for="pg-logo">Logo (photo de profil)</label>
         <input id="pg-logo" type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">

@@ -77,6 +77,7 @@ class MutualController extends SocialController
                 'followers' => (int) ($profile->followers_count ?? 0),
                 'posts'     => (int) ($profile->posts_count ?? 0),
                 'events'    => Post::publicFeed()->where('mutual_id', $mutual->id)->where('type', 'evenement')->count(),
+                'projects'  => \App\Models\Social\Project::where('mutual_id', $mutual->id)->where('status', 'published')->count(),
             ],
         ];
 

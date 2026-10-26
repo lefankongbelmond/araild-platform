@@ -58,6 +58,20 @@ $paths = [
   'target' => '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   'handshake' => '<path d="m11 17 2 2a1.4 1.4 0 0 0 2-2"/><path d="m14 14 2.5 2.5a1.4 1.4 0 0 0 2-2l-3.9-3.9a3 3 0 0 0-4.2 0l-.9.9a1.4 1.4 0 0 1-2-2L10.3 7a4.2 4.2 0 0 1 5.1-.7l.5.3a3 3 0 0 0 2.1.4L21 6"/><path d="m21 5 1 9-2 2M3 4 2 14l6.5 6.5a1.4 1.4 0 0 0 2-2M3 5h8"/>',
   'hand' => '<path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/>',
+  'd-sante' => '<path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6Z"/><path d="M8 12h2l1.5-2.5 2 5L15 12h1.5"/>',
+  'd-protection_sociale' => '<path d="M12 3 5 6v6c0 4.5 3 8 7 9 4-1 7-4.5 7-9V6Z"/><path d="m9 12 2 2 4-4"/>',
+  'd-education' => '<path d="m2 9 10-5 10 5-10 5Z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/>',
+  'd-agriculture' => '<path d="M12 21V11"/><path d="M12 11c0-4 3-6 7-6 0 4-3 6-7 6Z"/><path d="M12 14c0-3-2.5-5-6-5 0 3 2.5 5 6 5Z"/>',
+  'd-environnement' => '<path d="M5 19c9 0 14-5 14-14-9 0-14 5-14 14Z"/><path d="M5 19 13 11"/>',
+  'd-entrepreneuriat' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  'd-solidarite' => '<circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14.5c2.2 0 3.7 1.4 4 4"/>',
+  'folder' => '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  'rocket' => '<path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M9 15 15 9a8 8 0 0 0 5-6 8 8 0 0 0-6 5l-6 6Z"/><path d="m9 15-3-3 3-3h3M15 9v3l-3 3"/>',
+  'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  'hash' => '<path d="M5 9h15M4 15h15M10 3 8 21M16 3l-2 18"/>',
+  'share-out' => '<path d="M14 5h5v5"/><path d="M19 5 10 14"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/>',
+  'filter' => '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+  'arrow-right' => '<path d="M5 12h14M13 6l6 6-6 6"/>',
 ];
 @endphp
 <svg {{ $attributes->merge(['class' => 'mx-ic']) }} width="{{ $size }}" height="{{ $size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $paths[$name] ?? $paths['more'] !!}</svg>

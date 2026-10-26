@@ -150,6 +150,29 @@ class FeedService
         return $state;
     }
 
+    /**
+     * « Tendances de la semaine » : mots-clés # les plus utilisés dans les publications
+     * publiques des 7 derniers jours (comptage réel, démos exclues), mis en cache 10 min.
+     * @return array<string,int>  mot-clé => nombre de publications
+     */
+    public function trends(int $limit = 5): array
+    {
+        return Cache::remember('social:trends:' . $limit, 600, function () use ($limit) {
+            $counts = [];
+            Post::query()->publicFeed()->where('is_demo', false)->where('published_at', '>=', now()->subDays(7))
+                ->where('body', 'like', '%#%')->latest('published_at')->limit(500)->pluck('body')
+                ->each(function ($body) use (&$counts) {
+                    preg_match_all('/(?<![\p{L}\p{N}_&])#([\p{L}\p{N}_]{2,50})/u', (string) $body, $m);
+                    foreach (array_unique(array_map('mb_strtolower', $m[1])) as $tag) {
+                        $counts[$tag] = ($counts[$tag] ?? 0) + 1;
+                    }
+                });
+            arsort($counts);
+
+            return array_slice($counts, 0, $limit, true);
+        });
+    }
+
     /** Mutuelles visibles dans le réseau (tout sauf suspendues). */
     public function mutualsQuery(): Builder
     {

@@ -51,6 +51,7 @@ class ProjectController extends SocialController
             'project' => $project, 'page' => $project->mutual, 'canManage' => $canManage,
             'opportunities' => Opportunity::public()->open()->where('project_id', $project->id)->orderBy('deadline_on')->get(),
             'isDemo' => $project->is_demo || $project->mutual->profile?->is_demo,
+            'related' => \App\Models\Social\Post::publicFeed()->where('project_id', $project->id)->latest('published_at')->limit(4)->get(),
         ]);
     }
 }

@@ -26,7 +26,12 @@
     <div class="mx-field"><label class="mx-label" for="pj-obj">Objectifs</label>
       <textarea class="mx-textarea" id="pj-obj" name="objectives" maxlength="3000">{{ old('objectives', $project->objectives) }}</textarea>@error('objectives')<p class="mx-error">{{ $message }}</p>@enderror</div>
 
+    @include('social.partials.domain-picker', ['selected' => $project->domains ?? $page->profile?->domains ?? []])
     <div class="mx-grid-2">
+      <div class="mx-field"><label class="mx-label" for="pj-progress">Avancement déclaré (%)</label><input class="mx-input" id="pj-progress" type="number" min="0" max="100" name="progress" value="{{ old('progress', $project->progress) }}" placeholder="Ex. : 60">
+        @error('progress')<p class="mx-error">{{ $message }}</p>@enderror</div>
+      <div class="mx-field"><label class="mx-label" for="pj-benef">Bénéficiaires</label><input class="mx-input" id="pj-benef" name="beneficiaries" value="{{ old('beneficiaries', $project->beneficiaries) }}" maxlength="255" placeholder="Ex. : 12 villages, environ 3 000 habitants">
+        <p class="mx-help">Chiffres globaux seulement, jamais de noms.</p></div>
       <div class="mx-field"><label class="mx-label" for="pj-phase">État *</label>
         <select class="mx-select" id="pj-phase" name="phase" required>@foreach (\App\Models\Social\Project::PHASES as $k => $v)<option value="{{ $k }}" @selected(old('phase', $project->phase) === $k)>{{ $v }}</option>@endforeach</select></div>
       <div class="mx-field"><label class="mx-label" for="pj-zone">Zone d’intervention</label><input class="mx-input" id="pj-zone" name="zone" value="{{ old('zone', $project->zone) }}" maxlength="255" placeholder="Ex. : District de santé de Mbalmayo"></div>
