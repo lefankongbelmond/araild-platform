@@ -68,3 +68,11 @@ bash devtools/copie-lws/lancer.sh arreter
 ## Limite connue
 
 La copie tourne en HTTP. Dans le back-office des mutuelles, la CSP (`img-src … https:`) bloque donc les logos servis en `http://` par le domaine central. En production (HTTPS), ces logos sont autorisés.
+
+La caméra (lecteur de QR du portail prestataire) n'est disponible que dans un contexte sécurisé (HTTPS en production). Pour la tester en local, ajoutez l'alias `mutueltest.localhost` à la mutuelle de test (Chromium considère `*.localhost` comme sûr) :
+
+```
+docker exec mxlws-db mariadb -uroot -p"$DB_ROOT_PASSWORD" -e "insert ignore into mx_central.domains (domain, mutual_id, created_at, updated_at) values ('mutueltest.localhost','mut_01',now(),now());"
+```
+
+puis ouvrez `http://mutueltest.localhost:8080/prestataire`.

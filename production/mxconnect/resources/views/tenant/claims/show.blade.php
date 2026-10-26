@@ -133,6 +133,11 @@
           @foreach ($claim->invoices as $inv)
             <div class="mt-2 rounded-md bg-mist px-3 py-2 text-sm">
               {{ __('mxconnect.settlement.invoice') }} #{{ $inv->id }}: <b>{{ __('mxconnect.settlement.status_'.$inv->status) }}</b> — {{ $currency->format($inv->amount_minor) }}
+              @if ($inv->provider_reference)<div class="text-xs text-ink/55">Réf. du prestataire : {{ $inv->provider_reference }}</div>@endif
+              @if ($inv->supporting_doc_path)
+                @if (\App\Support\TenantAccess::can('claims.invoice.document'))<a class="text-xs text-pine underline" href="{{ route('claims.invoice.document', [$claim, $inv]) }}">Facture PDF du prestataire</a>
+                @else<div class="text-xs text-ink/45">Facture PDF reçue (consultable par le gestionnaire des prestations ou le contrôleur)</div>@endif
+              @endif
               @if ($inv->status !== 'paid' && \App\Support\TenantAccess::can('claims.invoice.pay'))
                 <form method="POST" action="{{ route('claims.invoice.pay', [$claim, $inv]) }}" class="mt-1">@csrf<button class="w-full rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-white">{{ __('mxconnect.settlement.pay') }}</button></form>
               @endif

@@ -74,6 +74,7 @@ class TenantAccess
             'claims.reimbursement.pay'     => [$T],
             'claims.invoice.create'        => [$A, $C, $B],
             'claims.invoice.pay'           => [$T],
+            'claims.invoice.document'      => [$A, $C, $B],   // pièce du prestataire : peut contenir des données de santé
             'alerts.*'                     => [$A, $C],
             // Détail médical d'un recours (motif, actes) : le trésorier ne voit que les montants.
             'capacite.donnees-sante'       => [$A, $C, $B],
@@ -132,6 +133,7 @@ class TenantAccess
             'providers.index'         => [$A, $C, $B],
             'providers.show'          => [$A, $C, $B],
             'providers.*'             => [$A],
+            'guarantees.network'      => [$A],            // réseau de soins d'une garantie (2026-11-01)
             'team.*'                  => [$A],
             // (garanties, antennes, actes, médicaments, référentiels : écriture = administrateur, règle par défaut)
 

@@ -15,6 +15,7 @@ use App\Models\Tenant\RightsCheck;
 use App\Services\ClaimCaptureService;
 use App\Services\DigitalCardService;
 use App\Services\RightsVerificationService;
+use App\Services\Tenant\InvoiceDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -179,21 +180,47 @@ class ProviderPortalController extends Controller
         ]);
     }
 
-    public function requestPayment(Request $request, int $claim)
+    public function requestPayment(Request $request, int $claim, InvoiceDocumentService $docs)
     {
         [$provider, $convention] = $this->context($request, true);
-        $data = $request->validate(['provider_reference' => ['nullable', 'string', 'max:60']]);
+        $data = $request->validate(['provider_reference' => ['nullable', 'string', 'max:60']] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages());
         $c = CareClaim::findOrFail($claim);
         abort_if(ProviderInvoice::where('provider_id', $provider->id)->where('care_claim_id', $c->id)->exists(), 422, 'Cette prise en charge est déjà facturée.');
         $amount = (int) $c->prestations()->where('provider_id', $provider->id)->where('status', 'validated')->sum('mutual_part_minor');
         abort_if($amount <= 0, 422, 'Aucune prestation validée à facturer.');
 
-        ProviderInvoice::create([
-            'provider_id' => $provider->id, 'care_claim_id' => $c->id, 'amount_minor' => $amount, 'status' => 'captured',
-            'captured_by' => $request->user()->id,
-        ] + (\Illuminate\Support\Facades\Schema::hasColumn('provider_invoices', 'provider_reference') ? ['provider_reference' => $data['provider_reference'] ?? null] : []));
+        // Facture et pièce ensemble : un PDF refusé n'enregistre aucune demande.
+        DB::transaction(function () use ($provider, $c, $amount, $request, $data, $docs) {
+            $invoice = ProviderInvoice::create([
+                'provider_id' => $provider->id, 'care_claim_id' => $c->id, 'amount_minor' => $amount, 'status' => 'captured',
+                'captured_by' => $request->user()->id, 'provider_reference' => $data['provider_reference'] ?? null,
+            ]);
+            if ($request->hasFile('document')) {
+                $docs->attach($invoice, $request->file('document'));
+            }
+        });
 
         return back()->with('success', 'Demande de paiement transmise à la mutuelle (' . $this->currency()->format($amount) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
+    }
+
+    /** Joindre (ou remplacer) la facture PDF tant que la mutuelle n'a pas payé. */
+    public function attachDocument(Request $request, int $invoice, InvoiceDocumentService $docs)
+    {
+        [$provider, $convention] = $this->context($request, true);
+        $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
+        abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, 'Cette facture est déjà en paiement : la pièce ne se modifie plus.');
+        $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => 'Choisissez le fichier PDF de la facture.']);
+        $docs->attach($inv, $request->file('document'));
+
+        return back()->with('success', "Facture PDF jointe à la demande n° {$inv->id}.");
+    }
+
+    /** Le prestataire retélécharge la pièce de SA facture. */
+    public function document(Request $request, int $invoice, InvoiceDocumentService $docs)
+    {
+        [$provider] = $this->context($request);
+
+        return $docs->download(ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice));
     }
 
     // ---

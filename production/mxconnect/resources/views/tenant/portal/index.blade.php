@@ -8,7 +8,19 @@
         @csrf
         <label class="block text-sm font-semibold" for="pv-code">Code adhérent ou lien de la carte</label>
         <input id="pv-code" name="code" required maxlength="500" autocomplete="off" value="{{ old('code') }}" class="w-full rounded-md border border-ink/15 px-3 py-2.5" style="font-size:16px" placeholder="Ex. MUT-000123">
-        <p class="text-xs text-ink/55">Le code est imprimé sur la carte de membre. Vous pouvez aussi scanner le QR code de la carte avec l’appareil photo du téléphone : la page de vérification s’ouvre directement.</p>
+        <p class="text-xs text-ink/55">Le code est imprimé sur la carte de membre. Ou lisez le QR code de la carte :</p>
+        <div data-mx-scan data-target="pv-code" class="space-y-2">
+          <div class="flex flex-wrap gap-2">
+            <button type="button" data-scan-camera style="display:none" class="rounded-md border border-pine px-3 py-2 text-sm font-medium text-pine hover:bg-mist">Scanner avec la caméra</button>
+            <label class="cursor-pointer rounded-md border border-ink/15 px-3 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Photo de la carte
+              <input type="file" accept="image/*" capture="environment" data-scan-file class="sr-only"></label>
+          </div>
+          <div data-scan-box style="display:none" class="space-y-2">
+            <video playsinline muted class="w-full rounded-md bg-ink" style="max-height:320px;object-fit:cover" aria-label="Aperçu de la caméra"></video>
+            <button type="button" data-scan-stop class="text-sm text-ink/60 underline">Arrêter la caméra</button>
+          </div>
+          <p data-scan-status role="status" aria-live="polite" class="text-xs text-pine"></p>
+        </div>
         <button class="w-full rounded-md bg-pine px-4 py-2.5 text-sm font-semibold text-white hover:bg-navy" @disabled(! $convention->inForce())>Vérifier les droits</button>
       </form>
       <p class="text-xs text-ink/45">Seul le verdict s’affiche : aucune donnée médicale. Chaque vérification est enregistrée au nom de votre compte.</p>
@@ -50,4 +62,9 @@
       </section>
     </div>
   </div>
+  <x-slot:scripts>
+    {{-- Servis par la mutuelle elle-même (même origine : autorisé par la politique de sécurité). --}}
+    <script src="/js/vendor/jsqr-1.4.0.min.js" defer></script>
+    <script src="/js/mx-scan.js?v={{ config('mxconnect.asset_version') }}" defer></script>
+  </x-slot:scripts>
 </x-layouts.tenant>

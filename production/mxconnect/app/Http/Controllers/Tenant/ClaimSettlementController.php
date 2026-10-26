@@ -110,4 +110,12 @@ class ClaimSettlementController extends Controller
 
         return back()->with('success', __('mxconnect.settlement.invoice_paid'));
     }
+
+    /** Facture PDF jointe par le prestataire (réservée aux rôles qui voient le détail médical). */
+    public function invoiceDocument(CareClaim $claim, ProviderInvoice $invoice, \App\Services\Tenant\InvoiceDocumentService $docs)
+    {
+        abort_unless($invoice->care_claim_id === $claim->id, 404);
+
+        return $docs->download($invoice);
+    }
 }

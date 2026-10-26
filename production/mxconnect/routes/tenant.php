@@ -84,6 +84,8 @@ Route::middleware([
                 Route::get('prises-en-charge', 'claims')->name('claims');
                 Route::get('factures', 'invoices')->name('invoices');
                 Route::post('factures/{claim}', 'requestPayment')->name('invoices.store');
+                Route::post('factures/{invoice}/piece', 'attachDocument')->name('invoices.document.store')->whereNumber('invoice');
+                Route::get('factures/{invoice}/piece', 'document')->name('invoices.document')->whereNumber('invoice');
             });
 
         // --- Mon mot de passe + Équipe et rôles (2026-10-30) ---
@@ -219,6 +221,7 @@ Route::middleware([
         Route::post('garanties', [GuaranteeController::class, 'store'])->name('guarantees.store');
         Route::get('garanties/{guarantee}', [GuaranteeController::class, 'show'])->name('guarantees.show');
         Route::post('garanties/{guarantee}/version', [GuaranteeController::class, 'newVersion'])->name('guarantees.version');
+        Route::post('garanties/{guarantee}/reseau', [GuaranteeController::class, 'network'])->name('guarantees.network');
 
         // --- Module 5: members + dependents ---
         Route::get('adherents', [MemberController::class, 'index'])->name('members.index');
@@ -267,6 +270,7 @@ Route::middleware([
         Route::post('recours/{claim}/remboursement/{reimbursement}/paiement', [ClaimSettlementController::class, 'payReimbursement'])->name('claims.reimbursement.pay');
         Route::post('recours/{claim}/facture', [ClaimSettlementController::class, 'createInvoice'])->name('claims.invoice.create');
         Route::post('recours/{claim}/facture/{invoice}/paiement', [ClaimSettlementController::class, 'payInvoice'])->name('claims.invoice.pay');
+        Route::get('recours/{claim}/facture/{invoice}/piece', [ClaimSettlementController::class, 'invoiceDocument'])->name('claims.invoice.document');
 
         // Anti-fraud alerts
         Route::get('alertes', [AlertController::class, 'index'])->name('alerts.index');

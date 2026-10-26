@@ -75,6 +75,10 @@ class ProviderController extends Controller
             'invoices' => ProviderInvoice::where('provider_id', $c->care_provider_id)->selectRaw('status, count(*) n')->groupBy('status')->pluck('n', 'status'),
             'checks'   => RightsCheck::where('care_provider_id', $c->care_provider_id)->where('created_at', '>=', now()->subDays(30))->count(),
             'canEdit'  => TenantAccess::can('providers.update'),
+            // Garanties dont la version en cours accepte cet établissement (réseau vide = tous).
+            'guarantees' => \App\Models\Tenant\GuaranteeVersion::with('guarantee')->whereNull('valid_to')->get()
+                ->filter(fn ($v) => $v->guarantee && (! is_array($v->provider_network) || in_array($c->care_provider_id, $v->provider_network, true)))
+                ->map(fn ($v) => $v->guarantee->name . (is_array($v->provider_network) ? '' : ' (réseau ouvert à tous)'))->values(),
         ]);
     }
 

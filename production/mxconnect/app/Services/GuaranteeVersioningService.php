@@ -48,12 +48,45 @@ class GuaranteeVersioningService
                 $current->update(['valid_to' => $closeOn]);
             }
 
-            return $guarantee->versions()->create($params + [
+            // Ce qui n'est pas modifié est repris de la version précédente (2026-11-01) :
+            // réseau de soins, exclusions et plafonds ne se perdent plus à chaque nouvelle version.
+            $params += ['provider_network' => $current?->provider_network, 'exclusions' => $current?->exclusions];
+
+            $version = $guarantee->versions()->create($params + [
                 'version_no' => ($current->version_no ?? 0) + 1,
                 'valid_from' => $effectiveFrom,
                 'valid_to'   => null,
             ]);
+            if ($current) {
+                foreach (\App\Models\Tenant\Ceiling::where('guarantee_version_id', $current->id)->get() as $ceiling) {
+                    $ceiling->replicate()->fill(['guarantee_version_id' => $version->id])->save();
+                }
+            }
+
+            return $version;
         });
+    }
+
+    /**
+     * Réseau de soins d'une garantie (prestataires acceptés ; null = tous). Une version déjà
+     * utilisée par un recours est immuable : on ouvre alors une nouvelle version à la date
+     * choisie ; sinon la version en cours est modifiée directement.
+     *
+     * @param int[]|null $providerIds
+     */
+    public function setNetwork(Guarantee $guarantee, ?array $providerIds, ?string $effectiveFrom = null): GuaranteeVersion
+    {
+        $current = $guarantee->versions()->whereNull('valid_to')->latest('version_no')->firstOrFail();
+        $network = $providerIds === null ? null : array_values(array_unique(array_map('intval', $providerIds)));
+        if (! $current->locked) {
+            $current->update(['provider_network' => $network]);
+
+            return $current;
+        }
+
+        return $this->newVersion($guarantee, collect($current->only([
+            'base_contribution_minor', 'periodicity', 'coverage_rate', 'copay_rate', 'membership_fee_minor', 'observation_days', 'exclusions',
+        ]))->all() + ['provider_network' => $network], $effectiveFrom);
     }
 
     /** Guard: a locked version (already used by a claim) is immutable. */

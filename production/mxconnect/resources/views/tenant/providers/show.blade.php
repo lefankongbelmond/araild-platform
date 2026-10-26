@@ -21,6 +21,7 @@
         <div><dt class="text-ink/50">Période</dt><dd>{{ $c->starts_on?->format('d/m/Y') ?? '…' }} → {{ $c->ends_on?->format('d/m/Y') ?? '…' }}</dd></div>
         <div><dt class="text-ink/50">Contact</dt><dd>{{ $c->contact_name ?: '—' }}@if($c->contact_phone) · {{ $c->contact_phone }}@endif</dd></div>
         <div><dt class="text-ink/50">Vérifications de droits (30 jours)</dt><dd>{{ $checks }}</dd></div>
+        <div class="sm:col-span-2"><dt class="text-ink/50">Garanties qui l’acceptent (réseau de soins)</dt><dd>{{ $guarantees->isNotEmpty() ? $guarantees->implode(', ') : 'Aucune : cet établissement est hors du réseau de toutes les garanties en cours.' }}</dd></div>
         @if ($c->notes)<div class="sm:col-span-2"><dt class="text-ink/50">Notes</dt><dd class="whitespace-pre-line">{{ $c->notes }}</dd></div>@endif
       </dl>
       @if ($canEdit)

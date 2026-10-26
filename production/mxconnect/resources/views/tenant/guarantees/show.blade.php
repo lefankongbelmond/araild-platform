@@ -5,32 +5,64 @@
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
     {{-- Version history: past versions stay valid for claims dated within their window --}}
-    <div class="lg:col-span-2 space-y-3">
+    <div class="min-w-0 lg:col-span-2 space-y-3">
       @foreach ($guarantee->versions as $v)
         <div class="rounded-lg border {{ is_null($v->valid_to) ? 'border-pine/40 bg-pine/5' : 'border-ink/10 bg-white' }} p-4">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="font-medium">V{{ $v->version_no }}
               @if (is_null($v->valid_to))<span class="ml-2 rounded-full bg-pine px-2 py-0.5 text-xs text-white">{{ __('mxconnect.guarantee.current') }}</span>@endif
               @if ($v->locked)<span class="ml-2 rounded-full bg-ink/60 px-2 py-0.5 text-xs text-white">{{ __('mxconnect.guarantee.locked') }}</span>@endif
             </div>
             <div class="text-xs text-ink/50">{{ $v->valid_from?->format('d/m/Y') }} → {{ $v->valid_to?->format('d/m/Y') ?? '…' }}</div>
           </div>
-          <div class="mt-2 grid grid-cols-3 gap-2 text-sm text-ink/70">
+          <div class="mt-2 grid gap-2 text-sm text-ink/70 sm:grid-cols-3">
             <div>{{ __('mxconnect.guarantee.contribution') }}: <b>{{ $currency->format($v->base_contribution_minor) }}</b> / {{ $v->periodicity }}</div>
             <div>{{ __('mxconnect.guarantee.coverage') }}: <b>{{ $v->coverage_rate }}%</b></div>
             <div>{{ __('mxconnect.guarantee.copay') }}: <b>{{ $v->copay_rate }}%</b></div>
             <div>{{ __('mxconnect.guarantee.observation') }}: <b>{{ $v->observation_days }} {{ __('mxconnect.guarantee.days') }}</b></div>
           </div>
+          <div class="mt-2 text-sm text-ink/70">Réseau de soins :
+            @if (is_array($v->provider_network))<b>{{ collect($v->provider_network)->map(fn ($id) => $providers[$id] ?? 'Prestataire n° ' . $id)->implode(', ') }}</b>
+            @else<b>tous les prestataires</b>@endif
+          </div>
         </div>
       @endforeach
     </div>
 
+    <div class="space-y-6 self-start">
+    @php $current = $guarantee->versions->firstWhere('valid_to', null); @endphp
+    @if ($current && \App\Support\TenantAccess::can('guarantees.network'))
+    {{-- Réseau de soins : prestataires acceptés pour cette garantie --}}
+    <form method="POST" action="{{ route('guarantees.network', $guarantee) }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3">
+      @csrf
+      <h2 class="font-medium">Réseau de soins</h2>
+      <p class="text-xs text-ink/55">Prestataires où les adhérents de cette garantie sont pris en charge. Hors réseau, la vérification des droits répond « Prestataire non conventionné ».</p>
+      @if ($errors->hasAny(['mode', 'providers', 'providers.*', 'effective_from']))<p class="text-xs text-clay">{{ $errors->first('providers') ?: $errors->first('providers.*') ?: $errors->first('effective_from') ?: $errors->first('mode') }}</p>@endif
+      @php $restricted = old('mode', is_array($current->provider_network) ? 'list' : 'all') === 'list'; $sel = old('providers', $current->provider_network ?? []); @endphp
+      <label class="flex items-start gap-2 text-sm"><input type="radio" name="mode" value="all" class="mt-1" @checked(! $restricted)> <span><b>Tous les prestataires</b><span class="block text-xs text-ink/55">Aucune restriction de réseau.</span></span></label>
+      <label class="flex items-start gap-2 text-sm"><input type="radio" name="mode" value="list" class="mt-1" @checked($restricted)> <span><b>Seulement ces prestataires conventionnés</b></span></label>
+      <div class="space-y-1 pl-6">
+        @forelse ($conventions as $pid => $c)
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="providers[]" value="{{ $pid }}" @checked(in_array($pid, array_map('intval', (array) $sel), true))> {{ $providers[$pid] ?? 'Prestataire n° ' . $pid }}@unless ($c->active)<span class="text-xs text-clay">(convention suspendue)</span>@endunless</label>
+        @empty
+          <p class="text-xs text-ink/55">Aucun prestataire conventionné : ajoutez-en dans <a class="text-pine underline" href="{{ route('providers.index') }}">Prestataires conventionnés</a>.</p>
+        @endforelse
+      </div>
+      @if ($current->locked)
+        <label class="block text-sm">Applicable à partir du
+          <input name="effective_from" type="date" required min="{{ now()->toDateString() }}" value="{{ old('effective_from', now()->addDay()->toDateString()) }}" class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm"></label>
+        <p class="text-xs text-ink/50">La version V{{ $current->version_no }} a déjà servi à des recours : elle reste inchangée. Le nouveau réseau ouvre une version V{{ $current->version_no + 1 }}, avec les mêmes conditions financières.</p>
+      @endif
+      <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">Enregistrer le réseau</button>
+    </form>
+    @endif
+
     @can('manage-parameters')
     {{-- Roll a new version: closes the current one, opens the successor --}}
-    <form method="POST" action="{{ route('guarantees.version', $guarantee) }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">
+    <form method="POST" action="{{ route('guarantees.version', $guarantee) }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3">
       @csrf
       <h2 class="font-medium">{{ __('mxconnect.guarantee.new_version') }}</h2>
-      <p class="text-xs text-ink/50">{{ __('mxconnect.guarantee.new_version_note') }}</p>
+      <p class="text-xs text-ink/50">{{ __('mxconnect.guarantee.new_version_note') }} Le réseau de soins, les exclusions et les plafonds sont repris.</p>
       <input name="base_contribution" type="number" step="any" min="0" placeholder="{{ __('mxconnect.guarantee.contribution') }}" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
       <select name="periodicity" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
         <option value="monthly">{{ __('mxconnect.periodicity.monthly') }}</option>
@@ -49,5 +81,6 @@
       <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.guarantee.roll') }}</button>
     </form>
     @endcan
+    </div>
   </div>
 </x-layouts.tenant>
