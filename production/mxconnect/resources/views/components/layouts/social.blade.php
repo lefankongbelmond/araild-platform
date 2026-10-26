@@ -7,6 +7,8 @@
     ['toutes', 'social.all', 'list', 'Toutes les publications', null],
     ['reels', 'social.reels', 'reel', 'Réels', null],
     ['organisations', 'social.mutuals', 'building', 'Organisations', null],
+    ['projets', 'social.projects', 'target', 'Projets et résultats', null],
+    ['opportunites', 'social.opportunities', 'briefcase', 'Emplois et opportunités', null],
     ['pages', 'social.pages.mine', 'flag-page', 'Mes pages', 'auth'],
     ['annonceur', 'social.ads', 'megaphone', 'Publicité', 'auth'],
     ['abonnements', 'social.following', 'star', 'Mes abonnements', 'auth'],
@@ -64,6 +66,7 @@
               <a href="{{ route('social.saved') }}"><x-mx.icon name="bookmark" :size="18"/> Enregistrements</a>
               <a href="{{ route('social.connections') }}"><x-mx.icon name="users" :size="18"/> Mes connexions</a>
               <a href="{{ route('social.adhesions') }}"><x-mx.icon name="file" :size="18"/> Mes demandes d’adhésion</a>
+              <a href="{{ route('social.requests') }}"><x-mx.icon name="briefcase" :size="18"/> Mes candidatures et engagements</a>
               <a href="{{ route('social.events') }}"><x-mx.icon name="calendar" :size="18"/> Événements</a>
               <a href="{{ route('social.settings') }}"><x-mx.icon name="settings" :size="18"/> Paramètres</a>
               <form method="POST" action="{{ route('social.logout') }}">@csrf<button class="is-danger"><x-mx.icon name="logout" :size="18"/> Déconnexion</button></form>
@@ -94,6 +97,7 @@
               @endforeach
               @if ($viewer)
                 <a href="{{ route('social.adhesions') }}" @class(['is-active' => $active === 'adhesions'])><x-mx.icon name="file" :size="20"/> Mes adhésions</a>
+                <a href="{{ route('social.requests') }}" @class(['is-active' => $active === 'demandes'])><x-mx.icon name="briefcase" :size="20"/> Mes candidatures</a>
                 <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" :size="20"/> Paramètres</a>
               @endif
               <a href="{{ route('social.about') }}"><x-mx.icon name="shield" :size="20"/> À propos et règles</a>
@@ -141,6 +145,7 @@
             <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" /> Messages @if($unreadMsg)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadMsg }}</span>@endif</a>
             <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications'])><x-mx.icon name="bell" /> Notifications @if($unreadNotif)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadNotif }}</span>@endif</a>
             <a href="{{ route('social.adhesions') }}" @class(['is-active' => $active === 'adhesions'])><x-mx.icon name="file" /> Mes adhésions</a>
+            <a href="{{ route('social.requests') }}" @class(['is-active' => $active === 'demandes'])><x-mx.icon name="briefcase" /> Mes candidatures</a>
             <a href="{{ route('social.user', $viewer) }}" @class(['is-active' => $active === 'profil'])><x-mx.icon name="user" /> Mon profil</a>
             <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" /> Paramètres</a>
           @endif

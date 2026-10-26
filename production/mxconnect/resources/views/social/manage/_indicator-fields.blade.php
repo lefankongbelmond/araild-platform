@@ -1,0 +1,7 @@
+{{-- Champs d'un résultat chiffré. $i = indicateur, $p = préfixe d'identifiants. --}}
+<div class="mx-field"><label class="mx-label" for="{{ $p }}-label">Intitulé *</label><input class="mx-input" id="{{ $p }}-label" name="label" value="{{ $i->label }}" required maxlength="160" placeholder="Ex. : Personnes dépistées"></div>
+<div class="mx-field"><label class="mx-label" for="{{ $p }}-value">Valeur *</label><input class="mx-input" id="{{ $p }}-value" name="value" value="{{ $i->exists ? $i->value + 0 : '' }}" required inputmode="decimal" type="number" min="0" step="any"></div>
+<div class="mx-field"><label class="mx-label" for="{{ $p }}-target">Objectif</label><input class="mx-input" id="{{ $p }}-target" name="target" value="{{ $i->target !== null ? $i->target + 0 : '' }}" inputmode="decimal" type="number" min="0" step="any"></div>
+<div class="mx-field"><label class="mx-label" for="{{ $p }}-unit">Unité</label><input class="mx-input" id="{{ $p }}-unit" name="unit" value="{{ $i->unit }}" maxlength="40" placeholder="personnes, %, villages…"></div>
+<div class="mx-field"><label class="mx-label" for="{{ $p }}-period">Période</label><input class="mx-input" id="{{ $p }}-period" name="period" value="{{ $i->period }}" maxlength="60" placeholder="Ex. : 2026, T3 2026"></div>
+<div class="mx-field mx-span-all"><label class="mx-label" for="{{ $p }}-src">Source du chiffre</label><input class="mx-input" id="{{ $p }}-src" name="source_note" value="{{ $i->source_note }}" maxlength="255" placeholder="Ex. : registres de dépistage du district"></div>

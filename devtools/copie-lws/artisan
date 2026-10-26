@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+// Équivalent de « php artisan » pour la copie locale (la production n'a pas de
+// fichier artisan : sur LWS tout passe par index.php et /_installation).
+// Usage dans le conteneur : php /repo/devtools/copie-lws/artisan <commande>
+
+use Symfony\Component\Console\Input\ArgvInput;
+
+define('LARAVEL_START', microtime(true));
+$appDir = '/repo/production/mxconnect';
+require $appDir.'/vendor/autoload.php';
+
+$app = require_once $appDir.'/bootstrap/app.php';
+$app->usePublicPath('/repo/production');
+
+exit($app->handleCommand(new ArgvInput));

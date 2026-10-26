@@ -107,10 +107,13 @@ class OrgPageController extends SocialController
         $postIds = \App\Models\Social\Post::withTrashed()->where('mutual_id', $mutual->id)->pluck('id');
         $files = PostMedia::whereIn('post_id', $postIds)->get()->flatMap(fn ($m) => [$m->path, $m->thumb_path])
             ->merge(\App\Models\Social\Post::withTrashed()->whereIn('id', $postIds)->pluck('link_image_path'))
-            ->push($mutual->profile?->logo_path, $mutual->profile?->cover_path)->filter()->all();
+            ->push($mutual->profile?->logo_path, $mutual->profile?->cover_path)
+            ->merge(\App\Models\Social\Project::withTrashed()->where('mutual_id', $mutual->id)->pluck('cover_path'))
+            ->filter()->all();
         $name = $mutual->name;
-        Mutual::withoutEvents(fn () => $mutual->delete());   // suppression en cascade (profil, publications, abonnés)
+        Mutual::withoutEvents(fn () => $mutual->delete());   // suppression en cascade (profil, publications, abonnés, projets, offres, demandes)
         $this->media->delete(...$files);
+        \Illuminate\Support\Facades\Storage::disk('social_private')->deleteDirectory("requests/{$mutual->id}");   // CV reçus
         cache()->forget('social:places');
 
         return redirect()->route('social.pages.mine')->with('ok', "La page « {$name} » a été supprimée.");

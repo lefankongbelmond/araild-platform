@@ -23,6 +23,8 @@ class MutualController extends SocialController
         'a-propos'     => 'À propos',
         'activites'    => 'Activités',
         'evenements'   => 'Événements',
+        'projets'      => 'Projets',
+        'opportunites' => 'Opportunités',
         'photos'       => 'Photos',
         'offres'       => 'Offres',
         'contact'      => 'Contact',
@@ -89,6 +91,17 @@ class MutualController extends SocialController
             return $this->feedView($request, 'social.mutual', $posts, $data);
         }
 
+        if ($tab === 'projets') {
+            // Gestionnaires : aussi les brouillons ; public : projets publiés seulement.
+            $data['projects'] = \App\Models\Social\Project::where('mutual_id', $mutual->id)
+                ->when(! $canPublish, fn ($q) => $q->where('status', 'published'))
+                ->withCount('indicators')->orderByRaw("phase = 'completed'")->latest('id')->paginate(12)->withQueryString();
+        }
+        if ($tab === 'opportunites') {
+            $data['opportunities'] = \App\Models\Social\Opportunity::where('mutual_id', $mutual->id)
+                ->when(! $canPublish, fn ($q) => $q->where('status', 'published')->open())
+                ->latest('id')->paginate(15)->withQueryString();
+        }
         if ($tab === 'photos') {
             // Album : photos des publications que ce visiteur a le droit de voir.
             $data['photos'] = \App\Models\Social\PostMedia::whereIn('post_id',

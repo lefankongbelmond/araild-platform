@@ -8,6 +8,7 @@ return [
 
     'social' => [
         'adhesions_nav' => 'Adhésions en ligne',
+        'engagement_nav' => 'Projets et opportunités',
         'messages_nav' => 'Messagerie',
         'nav' => 'Réseau social',
     ],

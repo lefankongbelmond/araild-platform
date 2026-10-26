@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class FeedService
 {
-    public const WITH = ['mutual.profile', 'account', 'media', 'group', 'mentions.mutual', 'shared.mutual.profile', 'shared.account', 'shared.media', 'shared.group', 'shared.mentions.mutual'];
+    public const WITH = ['mutual.profile', 'account', 'media', 'group', 'mentions.mutual', 'shared.mutual.profile', 'shared.account', 'shared.media', 'shared.group', 'shared.mentions.mutual', 'project', 'opportunity'];
 
     /** Accueil : toutes les publications visibles, sauf organisations masquées ; prioritaires en tête du jour. */
     public function home(?PublicAccount $viewer, array $filters = []): CursorPaginator

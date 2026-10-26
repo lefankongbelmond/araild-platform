@@ -7,6 +7,8 @@
           $navAlerts = [
               'online-adhesions.index' => \App\Models\Social\AdhesionRequest::where('mutual_id', $mid)->where('status', 'submitted')->count(),
               'conversations.index'    => (int) \App\Models\Social\Conversation::where('mutual_id', $mid)->sum('mutual_unread'),
+              'engagement.index'       => \App\Models\Social\SocialRequest::where('mutual_id', $mid)->where('status', 'submitted')
+                  ->when(! auth()->user()->hasRole('mutual_admin'), fn ($q) => $q->where('kind', '!=', 'application'))->count(),
               'social-presence.index'  => \App\Models\Social\ContactRequest::where('mutual_id', $mid)->where('status', 'new')->count()
                   + \App\Models\Social\GroupMember::where('status', 'pending')->whereIn('group_id', \App\Models\Social\Group::where('mutual_id', $mid)->select('id'))->count(),
           ];
@@ -17,6 +19,7 @@
   $navRoles = [
       'social-presence.index'  => ['mutual_admin', 'community_manager'],
       'online-adhesions.index' => ['mutual_admin', 'enrollment_agent', 'controller_validator'],
+      'engagement.index'       => \App\Http\Controllers\Tenant\EngagementController::ROLES,
       'conversations.index'    => ['mutual_admin', 'community_manager', 'enrollment_agent'],
       'cards.index'            => \App\Http\Controllers\Tenant\MemberCardController::ROLES,
       'member-notifications.index' => \App\Http\Controllers\Tenant\MemberNotificationController::ROLES,
@@ -53,6 +56,7 @@
       'Réseau social' => [
           'social-presence.index'  => ['mxconnect.social.nav', 'globe'],
           'online-adhesions.index' => ['mxconnect.social.adhesions_nav', 'user-plus'],
+          'engagement.index'       => ['mxconnect.social.engagement_nav', 'clipboard'],
           'conversations.index'    => ['mxconnect.social.messages_nav', 'message'],
       ],
       'Paramètres' => [

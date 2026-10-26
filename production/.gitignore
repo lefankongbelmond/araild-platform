@@ -1,0 +1,9 @@
+# Fichiers propres à chaque installation : jamais dans le dépôt ni dans un ZIP de livraison.
+mxconnect/.env
+mxconnect/vendor/
+mxconnect/storage/
+mxconnect/bootstrap/cache/*.php
+mxconnect/bootstrap/cache/*.txt
+mxconnect/bootstrap/cache/*.lock
+mxconnect/.phpunit.result.cache
+mxconnect/.phpunit.cache/

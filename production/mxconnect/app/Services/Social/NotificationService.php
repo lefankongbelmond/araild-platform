@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class NotificationService
 {
     /** Types également envoyés par e-mail (si le membre l'accepte et si l'envoi est configuré). */
-    public const EMAIL_TYPES = ['message', 'adhesion', 'group', 'mutuelle'];
+    public const EMAIL_TYPES = ['message', 'adhesion', 'group', 'mutuelle', 'demande'];
 
     public function __construct(private MailService $mail) {}
 

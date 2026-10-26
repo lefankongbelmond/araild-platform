@@ -41,6 +41,7 @@
                     @if (auth('network')->user()?->hasAnyRole(['super_admin', 'moderator']))
                     <a href="{{ route('network.moderation.index') }}" class="text-ink/70 hover:text-pine">Modération</a>
                     <a href="{{ route('network.social.sponsorships') }}" class="text-ink/70 hover:text-pine">Sponsorisations</a>
+                    <a href="{{ route('network.social.projects') }}" class="text-ink/70 hover:text-pine">Projets et offres</a>
                     <a href="{{ route('network.social.settings') }}" class="text-ink/70 hover:text-pine">Réglages réseau</a>
                     @endif
                 </nav>

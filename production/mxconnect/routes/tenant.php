@@ -102,6 +102,29 @@ Route::middleware([
                 Route::post('{reference}/preremplir', 'prefill')->name('prefill');
                 Route::post('{reference}/relier', 'link')->name('link');
             });
+        // --- Réseau social (2026-10-26) : projets, emplois et opportunités, demandes reçues ---
+        Route::prefix('projets-opportunites')->name('engagement.')->controller(\App\Http\Controllers\Tenant\EngagementController::class)
+            ->whereNumber(['project', 'indicator', 'opportunity'])->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('demandes/{reference}', 'showRequest')->name('requests.show');
+                Route::post('demandes/{reference}/decision', 'decide')->name('requests.decide');
+                Route::get('demandes/{reference}/cv', 'cv')->name('requests.cv');
+                Route::get('projets/creer', 'createProject')->name('projects.create');
+                Route::post('projets', 'storeProject')->name('projects.store');
+                Route::get('projets/{project}/modifier', 'editProject')->name('projects.edit');
+                Route::post('projets/{project}/modifier', 'updateProject')->name('projects.update');
+                Route::post('projets/{project}/supprimer', 'destroyProject')->name('projects.destroy');
+                Route::post('projets/{project}/resultats', 'storeIndicator')->name('indicators.store');
+                Route::post('projets/{project}/resultats/{indicator}', 'updateIndicator')->name('indicators.update');
+                Route::post('projets/{project}/resultats/{indicator}/supprimer', 'destroyIndicator')->name('indicators.destroy');
+                Route::post('projets/{project}/actualites', 'storeUpdate')->name('updates.store');
+                Route::get('opportunites/creer', 'createOpportunity')->name('opportunities.create');
+                Route::post('opportunites', 'storeOpportunity')->name('opportunities.store');
+                Route::get('opportunites/{opportunity}/modifier', 'editOpportunity')->name('opportunities.edit');
+                Route::post('opportunites/{opportunity}/modifier', 'updateOpportunity')->name('opportunities.update');
+                Route::post('opportunites/{opportunity}/statut', 'availability')->name('opportunities.availability');
+                Route::post('opportunites/{opportunity}/supprimer', 'destroyOpportunity')->name('opportunities.destroy');
+            });
         Route::prefix('messagerie')->name('conversations.')->controller(\App\Http\Controllers\Tenant\ConversationController::class)
             ->whereNumber('conversation')->group(function () {
                 Route::get('/', 'index')->name('index');

@@ -113,6 +113,10 @@ Route::middleware('auth:network')->group(function () {
         Route::get('reseau-social/reglages', [\App\Http\Controllers\Network\SocialAdminController::class, 'settings'])->name('social.settings');
         Route::post('reseau-social/reglages', [\App\Http\Controllers\Network\SocialAdminController::class, 'saveSettings'])->name('social.settings.save');
         Route::get('moderation/pages', [\App\Http\Controllers\Network\ModerationController::class, 'pages'])->name('moderation.pages');
+        Route::get('reseau-social/projets', [\App\Http\Controllers\Network\ProjectAdminController::class, 'index'])->name('social.projects');
+        Route::post('reseau-social/resultats/{indicator}', [\App\Http\Controllers\Network\ProjectAdminController::class, 'verify'])->name('social.indicators.verify')->whereNumber('indicator');
+        Route::post('reseau-social/projets/{project}/bascule', [\App\Http\Controllers\Network\ProjectAdminController::class, 'toggleProject'])->name('social.projects.toggle')->whereNumber('project');
+        Route::post('reseau-social/opportunites/{opportunity}/bascule', [\App\Http\Controllers\Network\ProjectAdminController::class, 'toggleOpportunity'])->name('social.opportunities.toggle')->whereNumber('opportunity');
         Route::post('moderation/pages/{mutual}/bascule', [\App\Http\Controllers\Network\ModerationController::class, 'togglePage'])->name('moderation.pages.toggle');
         Route::post('moderation/publications/{post}/reafficher', [\App\Http\Controllers\Network\ModerationController::class, 'restore'])->name('moderation.restore');
 
@@ -183,6 +187,11 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
     Route::get('u/{account}', [Social\AccountController::class, 'show'])->name('user')->whereNumber('account');
     Route::get('groupes', [Social\GroupController::class, 'index'])->name('groups');
     Route::get('groupes/{group}', [Social\GroupController::class, 'show'])->name('group');
+    // Projets (résultats) et emplois / opportunités publiés par les pages
+    Route::get('projets', [Social\ProjectController::class, 'index'])->name('projects');
+    Route::get('projets/{project}', [Social\ProjectController::class, 'show'])->name('project');
+    Route::get('opportunites', [Social\OpportunityController::class, 'index'])->name('opportunities');
+    Route::get('opportunites/{opportunity}', [Social\OpportunityController::class, 'show'])->name('opportunity');
     Route::get('a-propos', [Social\PageController::class, 'about'])->name('about');
     Route::get('confidentialite', [Social\PageController::class, 'privacy'])->name('privacy');
 
@@ -228,6 +237,38 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
         Route::post('pages/{slug}/supprimer', [Social\OrgPageController::class, 'destroy'])->name('pages.destroy');
         Route::post('pages/{slug}/gestionnaires', [Social\OrgPageController::class, 'addManager'])->name('pages.managers.add')->middleware('throttle:social-publish');
         Route::delete('pages/{slug}/gestionnaires/{admin}', [Social\OrgPageController::class, 'removeManager'])->name('pages.managers.remove')->whereNumber('admin');
+        // « Je m'engage », « Soutenir ou devenir partenaire », candidatures (côté membre)
+        Route::get('demandes/nouvelle', [Social\RequestController::class, 'create'])->name('request.create');
+        Route::post('demandes', [Social\RequestController::class, 'store'])->name('request.store')->middleware('throttle:social-publish');
+        Route::get('compte/demandes', [Social\RequestController::class, 'index'])->name('requests');
+        Route::get('compte/demandes/{reference}', [Social\RequestController::class, 'show'])->name('request');
+        Route::post('compte/demandes/{reference}/retirer', [Social\RequestController::class, 'withdraw'])->name('request.withdraw');
+        Route::get('compte/demandes/{reference}/cv', [Social\RequestController::class, 'cv'])->name('request.cv');
+        // Gestion d'une page : projets, opportunités, demandes reçues
+        Route::prefix('pages/{slug}')->name('manage.')->controller(Social\PageManageController::class)->whereNumber(['project', 'indicator', 'update', 'opportunity'])->group(function () {
+            Route::get('projets', 'projects')->name('projects');
+            Route::get('projets/creer', 'createProject')->name('project.create');
+            Route::post('projets', 'storeProject')->name('project.store')->middleware('throttle:social-publish');
+            Route::get('projets/{project}/modifier', 'editProject')->name('project.edit');
+            Route::post('projets/{project}/modifier', 'updateProject')->name('project.update');
+            Route::post('projets/{project}/supprimer', 'destroyProject')->name('project.destroy');
+            Route::post('projets/{project}/resultats', 'storeIndicator')->name('indicator.store');
+            Route::post('projets/{project}/resultats/{indicator}', 'updateIndicator')->name('indicator.update');
+            Route::post('projets/{project}/resultats/{indicator}/supprimer', 'destroyIndicator')->name('indicator.destroy');
+            Route::post('projets/{project}/actualites', 'storeUpdate')->name('update.store')->middleware('throttle:social-publish');
+            Route::post('projets/{project}/actualites/{update}/supprimer', 'destroyUpdate')->name('update.destroy');
+            Route::get('opportunites', 'opportunities')->name('opportunities');
+            Route::get('opportunites/creer', 'createOpportunity')->name('opportunity.create');
+            Route::post('opportunites', 'storeOpportunity')->name('opportunity.store')->middleware('throttle:social-publish');
+            Route::get('opportunites/{opportunity}/modifier', 'editOpportunity')->name('opportunity.edit');
+            Route::post('opportunites/{opportunity}/modifier', 'updateOpportunity')->name('opportunity.update');
+            Route::post('opportunites/{opportunity}/statut', 'availability')->name('opportunity.availability');
+            Route::post('opportunites/{opportunity}/supprimer', 'destroyOpportunity')->name('opportunity.destroy');
+            Route::get('demandes', 'requests')->name('requests');
+            Route::get('demandes/{reference}', 'showRequest')->name('request');
+            Route::post('demandes/{reference}/decision', 'decide')->name('request.decide');
+            Route::get('demandes/{reference}/cv', 'requestCv')->name('request.cv');
+        });
         // Compte annonceur et publications sponsorisées
         Route::get('annonceur', [Social\AdvertiserController::class, 'index'])->name('ads');
         Route::post('annonceur', [Social\AdvertiserController::class, 'save'])->name('ads.save')->middleware('throttle:social-publish');

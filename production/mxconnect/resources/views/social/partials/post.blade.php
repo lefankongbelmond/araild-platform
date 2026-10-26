@@ -129,6 +129,23 @@
     </div>
   @endif
 
+  {{-- Publication liée à un projet ou à une offre : accès direct (seulement si l'élément est toujours public). --}}
+  @if ($post->project_id && $post->project?->status === 'published')
+    <div class="mx-post__cta">
+      <b>{{ \Illuminate\Support\Str::limit($post->project->title, 80) }}</b>
+      <span class="mx-row">
+        <a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.project', $post->project) }}#resultats"><x-mx.icon name="chart" :size="14"/> Voir le projet et les résultats</a>
+        @if (! $isDemo && ! $isOwner && $post->project->seeks_volunteers)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ $viewer ? route('social.request.create', ['type' => 'engagement', 'projet' => $post->project->slug]) : route('social.login') }}">Je m’engage</a>@endif
+        @if (! $isDemo && ! $isOwner && $post->project->seeks_partners)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ $viewer ? route('social.request.create', ['type' => 'support', 'projet' => $post->project->slug]) : route('social.login') }}">Soutenir ou devenir partenaire</a>@endif
+      </span>
+    </div>
+  @elseif ($post->opportunity_id && $post->opportunity?->status === 'published')
+    <div class="mx-post__cta">
+      <b>{{ \Illuminate\Support\Str::limit($post->opportunity->title, 80) }}</b>
+      <a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.opportunity', $post->opportunity) }}"><x-mx.icon name="briefcase" :size="14"/> {{ $post->opportunity->isOpen() ? 'Voir l’offre' : 'Offre ' . mb_strtolower($post->opportunity->availabilityLabel()) }}</a>
+    </div>
+  @endif
+
   @if ($sponsor)
     <a class="mx-sponsor-cta" href="{{ route('social.sponsor.click', $sponsor->id) }}" rel="nofollow sponsored">
       <span>{{ $post->mutual?->name ?? $post->authorName() }}</span>

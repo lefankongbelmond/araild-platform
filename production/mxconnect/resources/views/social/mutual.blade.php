@@ -28,12 +28,19 @@
             <a class="mx-btn mx-btn--ghost" href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'contact']) }}"><x-mx.icon name="mail" :size="16"/> Contacter</a>
           @endif
           @if ($offer)<a class="mx-btn mx-btn--ghost" href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'offres']) }}"><x-mx.icon name="gift" :size="16"/> Offres</a>@endif
+          @if ($canPublish ?? false)
+            <a class="mx-btn mx-btn--ghost" href="{{ route('social.manage.projects', $mutual->slug) }}"><x-mx.icon name="target" :size="16"/> Projets et offres</a>
+          @endif
           <details class="mx-menu">
             <summary class="mx-btn mx-btn--ghost" aria-label="Plus d'options"><x-mx.icon name="more" :size="16"/></summary>
             <div class="mx-menu__list">
               <button type="button" data-copy="{{ route('social.mutual', $mutual->slug) }}"><x-mx.icon name="link" :size="18"/> Copier le lien</button>
               @if ($viewer)
                 <form method="POST" action="{{ route('social.mute', $mutual->slug) }}">@csrf<button><x-mx.icon name="eye-off" :size="18"/> {{ $muted ? 'Réafficher dans mon fil' : 'Masquer de mon fil' }}</button></form>
+                @unless (($canPublish ?? false) || $profile->is_demo)
+                  <a href="{{ route('social.request.create', ['type' => 'engagement', 'page' => $mutual->slug]) }}"><x-mx.icon name="hand" :size="18"/> Je m’engage auprès de cette organisation</a>
+                  <a href="{{ route('social.request.create', ['type' => 'support', 'page' => $mutual->slug]) }}"><x-mx.icon name="handshake" :size="18"/> Soutenir ou devenir partenaire</a>
+                @endunless
                 @unless ($canPublish ?? false)
                   <button type="button" class="is-danger" data-report="{{ route('social.mutual.report', $mutual->slug) }}"><x-mx.icon name="flag" :size="18"/> Signaler cette page</button>
                 @endunless
@@ -110,6 +117,32 @@
             <a class="mx-btn mx-btn--ghost" href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'contact']) }}">Poser une question</a>
           </p>
         @endif
+      </section>
+  @elseif ($tab === 'projets')
+      <section class="mx-stack">
+        <div class="mx-row mx-between mx-row--wrap" style="gap:8px;padding:0 4px">
+          <h2 class="mx-card__title">Projets de {{ $mutual->name }}</h2>
+          @if ($canPublish ?? false)<a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.manage.project.create', $mutual->slug) }}"><x-mx.icon name="plus" :size="16"/> Nouveau projet</a>@endif
+        </div>
+        @forelse ($projects as $p)
+          @include('social.projects._card', ['p' => $p->setRelation('mutual', $mutual)])
+        @empty
+          @include('social.partials.empty', ['icon' => 'target', 'title' => 'Aucun projet publié', 'text' => $mutual->name . ' n’a pas encore présenté de projet.'])
+        @endforelse
+        {{ $projects->links('social.partials.pagination') }}
+      </section>
+  @elseif ($tab === 'opportunites')
+      <section class="mx-stack">
+        <div class="mx-row mx-between mx-row--wrap" style="gap:8px;padding:0 4px">
+          <h2 class="mx-card__title">Emplois et opportunités</h2>
+          @if ($canPublish ?? false)<a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.manage.opportunity.create', $mutual->slug) }}"><x-mx.icon name="plus" :size="16"/> Nouvelle offre</a>@endif
+        </div>
+        @forelse ($opportunities as $o)
+          @include('social.opportunities._card', ['o' => $o->setRelation('mutual', $mutual)])
+        @empty
+          @include('social.partials.empty', ['icon' => 'briefcase', 'title' => 'Aucune offre ouverte', 'text' => $mutual->name . ' n’a pas d’offre ouverte pour le moment.', 'action' => ['Toutes les opportunités du réseau', route('social.opportunities')]])
+        @endforelse
+        {{ $opportunities->links('social.partials.pagination') }}
       </section>
   @elseif ($tab === 'photos')
       <section class="mx-card mx-card__pad mx-stack">

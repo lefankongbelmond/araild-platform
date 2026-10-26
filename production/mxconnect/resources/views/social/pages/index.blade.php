@@ -22,7 +22,15 @@
       </div>
       <div class="mx-row mx-row--wrap" style="gap:6px">
         <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.mutual', $m->slug) }}">Voir</a>
-        <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.pages.edit', $m->slug) }}"><x-mx.icon name="edit" :size="14"/> Modifier</a>
+        @if ($m->profile?->owner_account_id && \App\Services\Social\PageService::canAdminister(auth('member')->user(), $m))
+          <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.pages.edit', $m->slug) }}"><x-mx.icon name="edit" :size="14"/> Modifier</a>
+        @endif
+        <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.projects', $m->slug) }}"><x-mx.icon name="target" :size="14"/> Projets</a>
+        <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.opportunities', $m->slug) }}"><x-mx.icon name="briefcase" :size="14"/> Opportunités</a>
+        @if (\App\Services\Social\PageService::canAdminister(auth('member')->user(), $m))
+          @php $newReq = \App\Models\Social\SocialRequest::where('mutual_id', $m->id)->where('status', 'submitted')->count(); @endphp
+          <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.requests', $m->slug) }}"><x-mx.icon name="handshake" :size="14"/> Demandes@if($newReq) <span class="mx-badge mx-badge--blue">{{ $newReq }}</span>@endif</a>
+        @endif
       </div>
     </article>
   @empty

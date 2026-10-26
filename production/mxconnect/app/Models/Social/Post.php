@@ -66,6 +66,8 @@ class Post extends Model
     public function shared()  { return $this->belongsTo(Post::class, 'shared_post_id')->withTrashed(); }
     public function group()   { return $this->belongsTo(Group::class, 'group_id'); }
     public function mentions(){ return $this->hasMany(Mention::class, 'post_id'); }
+    public function project() { return $this->belongsTo(Project::class, 'project_id'); }
+    public function opportunity() { return $this->belongsTo(Opportunity::class, 'opportunity_id'); }
 
     /** Ce compte peut-il gérer (supprimer) cette publication ? Auteur, ou propriétaire de la page qui l'a publiée. */
     public function canManage(?PublicAccount $viewer): bool

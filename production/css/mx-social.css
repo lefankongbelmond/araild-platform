@@ -689,3 +689,45 @@ a.mx-hashtag { color: var(--mx-blue); font-weight: 550; }
 .mx-sponsor-cta b { flex: none; padding: 7px 14px; border-radius: 999px; background: var(--mx-blue); color: #fff; font-size: 13px; }
 .mx-sponsor-cta:hover { text-decoration: none; background: var(--mx-blue-soft); }
 .mx-post--sponsored { border: 1px solid #d9e6fb; }
+
+/* ===== 2026-10-26 : projets, emplois et opportunités, demandes ===== */
+.mx-listcard { display: flex; gap: 14px; padding: 16px; color: inherit; }
+.mx-listcard:hover { text-decoration: none; box-shadow: var(--mx-shadow-lg); }
+.mx-listcard__body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.mx-listcard__title { font-size: 16px; font-weight: 700; color: var(--mx-heading); line-height: 1.3; overflow-wrap: anywhere; }
+.mx-listcard__thumb { flex: none; width: 92px; height: 72px; border-radius: 12px; object-fit: cover; background: var(--mx-blue-soft); }
+@media (max-width: 420px) { .mx-listcard__thumb { display: none; } }
+.mx-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--mx-muted); }
+.mx-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.mx-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.mx-filters { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .mx-filters { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1000px) { .mx-filters--4 { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.mx-filters .mx-input, .mx-filters .mx-select { min-width: 0; }
+.mx-actionbar { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .mx-actionbar { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } }
+.mx-actionbar .mx-btn { justify-content: center; white-space: normal; text-align: center; min-height: 44px; height: auto; padding-top: 8px; padding-bottom: 8px; }
+.mx-results { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .mx-results { grid-template-columns: 1fr 1fr; } }
+.mx-result { border: 1px solid var(--mx-border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--mx-surface-2); min-width: 0; }
+.mx-result__value { font-size: 24px; font-weight: 800; color: var(--mx-navy); line-height: 1.15; overflow-wrap: anywhere; }
+.mx-result__label { font-size: 14px; font-weight: 600; color: var(--mx-text); overflow-wrap: anywhere; }
+.mx-bar { height: 6px; border-radius: 999px; background: var(--mx-border); overflow: hidden; }
+.mx-bar > i { display: block; height: 100%; background: var(--mx-green); border-radius: inherit; }
+.mx-badge--declared { background: var(--mx-warning-soft); color: var(--mx-warning); }
+.mx-badge--verified { background: var(--mx-green-soft); color: #0E7C49; }
+.mx-status--in_review, .mx-status--submitted { background: var(--mx-blue-soft); color: var(--mx-blue); }
+.mx-status--open { background: var(--mx-green-soft); color: #0E7C49; }
+.mx-status--closed, .mx-status--filled, .mx-status--expired { background: var(--mx-surface-2); color: var(--mx-muted); border: 1px solid var(--mx-border); }
+.mx-post__cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 0 16px 12px; padding: 10px 12px; border-radius: 12px; background: var(--mx-blue-soft); }
+.mx-post__cta b { color: var(--mx-heading); font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.mx-post__cta .mx-row { gap: 6px; flex-wrap: wrap; }
+.mx-pagecover { height: 160px; border-radius: var(--mx-radius) var(--mx-radius) 0 0; background: linear-gradient(135deg, var(--mx-navy) 0%, #0B3B86 60%, var(--mx-blue) 100%); background-size: cover; background-position: center; }
+@media (min-width: 640px) { .mx-pagecover { height: 220px; } }
+.mx-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.mx-table th, .mx-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--mx-border); vertical-align: top; }
+.mx-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--mx-muted); }
+.mx-scroll-x { overflow-x: auto; }
+.mx-inline-form { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .mx-inline-form { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.mx-inline-form .mx-span-all { grid-column: 1 / -1; }
