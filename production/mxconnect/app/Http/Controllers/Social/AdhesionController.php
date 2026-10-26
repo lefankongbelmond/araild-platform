@@ -172,9 +172,10 @@ class AdhesionController extends SocialController
         $ext = pathinfo($doc->path, PATHINFO_EXTENSION);
         $name = $doc->original_name ? pathinfo($doc->original_name, PATHINFO_FILENAME) . '.' . $ext : basename($doc->path);
 
+        // setPrivate() : sans lui, la réponse de téléchargement est marquée « public » (cache partagé possible).
         return response()->download($disk->path($doc->path), $name, [
-            'Content-Type' => $doc->mime, 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff',
-        ]);
+            'Content-Type' => $doc->mime, 'X-Content-Type-Options' => 'nosniff',
+        ])->setPrivate()->setCache(['no_store' => true]);
     }
 
     private function own(AdhesionRequest $r): void

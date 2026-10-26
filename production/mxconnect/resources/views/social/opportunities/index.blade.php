@@ -14,7 +14,7 @@
         @endunless
       @endforeach
     </div>
-    <form method="GET" action="{{ route('social.opportunities') }}" class="mx-filters mx-filters--4" role="search">
+    <form method="GET" action="{{ route('social.opportunities') }}" class="mx-filters" role="search">
       @if ($category)<input type="hidden" name="categorie" value="{{ $category }}">@endif
       <label class="mx-sr" for="op-q">Mots-clés</label>
       <input class="mx-input" id="op-q" name="q" value="{{ $q }}" placeholder="Poste, compétence, ville, organisation…" maxlength="100">

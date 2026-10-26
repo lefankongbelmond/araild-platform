@@ -29,7 +29,7 @@
         <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.opportunities', $m->slug) }}"><x-mx.icon name="briefcase" :size="14"/> Opportunités</a>
         @if (\App\Services\Social\PageService::canAdminister(auth('member')->user(), $m))
           @php $newReq = \App\Models\Social\SocialRequest::where('mutual_id', $m->id)->where('status', 'submitted')->count(); @endphp
-          <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.requests', $m->slug) }}"><x-mx.icon name="handshake" :size="14"/> Demandes@if($newReq) <span class="mx-badge mx-badge--blue">{{ $newReq }}</span>@endif</a>
+          <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.manage.requests', $m->slug) }}"><x-mx.icon name="handshake" :size="14"/> Demandes @if($newReq)<span class="mx-badge mx-badge--blue">{{ $newReq }}</span>@endif</a>
         @endif
       </div>
     </article>

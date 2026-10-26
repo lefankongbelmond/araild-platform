@@ -247,6 +247,7 @@ class ProjectService
         if (! $opportunity) {
             $opportunity = new Opportunity([
                 'mutual_id' => $page->id, 'slug' => Opportunity::uniqueSlug($data['title']),
+                'availability' => 'open', 'requests_count' => 0,   // valeurs par défaut aussi sur l'objet, pas seulement en base
                 'created_by_account_id' => $by?->id, 'tenant_user_id' => $tenantUserId,
                 'is_demo' => (bool) $page->profile?->is_demo,
             ]);

@@ -700,9 +700,8 @@ a.mx-hashtag { color: var(--mx-blue); font-weight: 550; }
 .mx-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--mx-muted); }
 .mx-meta span { display: inline-flex; align-items: center; gap: 4px; }
 .mx-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.mx-filters { display: grid; gap: 10px; grid-template-columns: 1fr; }
-@media (min-width: 640px) { .mx-filters { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1000px) { .mx-filters--4 { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.mx-filters { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.mx-filters > .mx-input:first-of-type { grid-column: 1 / -1; }
 .mx-filters .mx-input, .mx-filters .mx-select { min-width: 0; }
 .mx-actionbar { display: grid; gap: 8px; grid-template-columns: 1fr; }
 @media (min-width: 560px) { .mx-actionbar { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } }

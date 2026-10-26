@@ -4,7 +4,7 @@
       <h1 style="font-size:22px">Projets et résultats</h1>
       <p class="mx-small mx-muted">Les projets publiés par les mutuelles et les organisations du réseau : objectifs, résultats et besoins. Engagez-vous ou devenez partenaire.</p>
     </div>
-    <form method="GET" action="{{ route('social.projects') }}" class="mx-filters mx-filters--4" role="search">
+    <form method="GET" action="{{ route('social.projects') }}" class="mx-filters" role="search">
       <label class="mx-sr" for="pj-q">Mots-clés</label>
       <input class="mx-input" id="pj-q" name="q" value="{{ $q }}" placeholder="Mot-clé, zone…" maxlength="100">
       <label class="mx-sr" for="pj-etat">État</label>

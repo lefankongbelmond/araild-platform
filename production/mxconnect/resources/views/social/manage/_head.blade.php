@@ -9,7 +9,7 @@
     <a href="{{ route('social.manage.projects', $page->slug) }}" @class(['is-active' => $tab === 'projets'])>Projets</a>
     <a href="{{ route('social.manage.opportunities', $page->slug) }}" @class(['is-active' => $tab === 'opportunites'])>Opportunités</a>
     @if ($canInbox)
-      <a href="{{ route('social.manage.requests', $page->slug) }}" @class(['is-active' => $tab === 'demandes'])>Demandes reçues@if($openRequests) ({{ $openRequests }})@endif</a>
+      <a href="{{ route('social.manage.requests', $page->slug) }}" @class(['is-active' => $tab === 'demandes'])>Demandes reçues @if($openRequests)({{ $openRequests }})@endif</a>
     @endif
   </nav>
 </section>

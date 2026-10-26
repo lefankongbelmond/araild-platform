@@ -152,9 +152,10 @@ class RequestService
         $disk = Storage::disk('social_private');
         abort_unless($r->cv_path && $disk->exists($r->cv_path), 404);
 
+        // setPrivate() : sans lui, la réponse de téléchargement est marquée « public » (cache partagé possible).
         return response()->download($disk->path($r->cv_path), $r->cv_name ?: 'cv.pdf', [
-            'Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff',
-        ]);
+            'Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff',
+        ])->setPrivate()->setCache(['no_store' => true]);
     }
 
     /** Suppression complète (fichier compris). */

@@ -11,7 +11,9 @@ Le dossier `mx-connect/` de ce dépôt **n'est pas** le code de production.
 - Il part de l'archive « foundation » du 12/08/2026 (M-CONNECT, avant toutes les livraisons claude.ai).
 - Il contient, sur la branche `claude/mx-connect-vps-setup-jfby6i` : la mise à jour Laravel 13 (faille CVE-2026-48019 d'illuminate/mail), puis un Lot 1 (tables sociales centrales) et un Lot 2 (réseau social + actions « Je m'engage », « Voir le projet et les résultats », « Soutenir ou devenir partenaire »), voir `mx-connect/docs/LOT2_RESEAU_SOCIAL.md`.
 - La **production** (https://m.araild.com, livraisons jusqu'au 21/10/2026) est beaucoup plus avancée et a des conventions différentes (cache fichiers, polling, `/media/…`, CSS compilé, palette « Premium », routes `/compte/connexion`, `/se-connecter`, `/communaute`…). **Son code est dans `production/`** (copie exacte du ZIP `mxconnect-maj-20261021.zip`, = `htdocs/mconnect`), sans `composer.json`/`composer.lock`, `artisan`, `vendor/` ni `tests/`. C'est la base de référence pour toute nouvelle livraison.
-- Conséquence : **ne rien livrer en production depuis `mx-connect/` tel quel.** Toute évolution doit repartir du code de production (dernier ZIP cumulatif ou export complet de `htdocs/mconnect/mxconnect`), puis y porter uniquement ce qui manque (a priori les 3 actions du Module 5 et les projets à résultats déclarés/vérifiés), adapté à ses conventions.
+- Conséquence : **ne rien livrer en production depuis `mx-connect/` tel quel.** Toute évolution repart de `production/`.
+- **Lot 3 (26/10/2026, VERSION 2026.10.26) est fait dans `production/`** : projets à résultats déclarés/vérifiés, emplois et opportunités (recherche `/opportunites`), demandes « Je m'engage » / « Soutenir ou devenir partenaire » / candidatures (CV PDF privé), pour les mutuelles ET les pages des membres ; back-office « Réseau social → Projets et opportunités » ; réseau « Projets et offres ». Livrable : `livraisons/mxconnect-maj-20261026.zip` + `livraisons/LISEZMOI-20261026.md` (pas encore confirmé installé en production).
+- `production/mxconnect/composer.json` + `composer.lock` (fournis le 26/10, = Laravel 13.25), `tests/` (Pest, 20 tests Lot 3) et `phpunit.xml` sont dans le dépôt mais **exclus du ZIP**. Copie fidèle LWS exécutable : `devtools/copie-lws/` (voir son LISEZMOI).
 - Le site n'est pas joignable depuis les sessions cloud tant que `m.araild.com` n'est pas dans les domaines autorisés de l'environnement.
 
 ## 1. Le produit
@@ -66,7 +68,7 @@ Back-office mutuelles : CSS compilé `css/mx-tenant.css` (plus de Tailwind CDN).
 - `index.php` racine détecte `mxconnect/VERSION` : à la 1re visite après MAJ, il purge les caches (config/routes/vues/OPcache), applique les migrations centrales + tenants et lance les conversions par lots. → **Incrémenter `VERSION` à chaque livraison.**
 - `/_installation?token=<INSTALL_TOKEN>` (≥ 24 car.) : contrôles, adresse du site, SMTP, appliquer la MAJ, voir les 6 dernières erreurs (secrets masqués), réinitialiser la MFA d'un admin réseau, données de démo, Terminer (vide le jeton → 404).
 - Tester sur une copie fidèle du site LWS (Apache, `RewriteBase /`, PHP 8.4, fonctions système désactivées, symlinks refusés) + navigateur réel 320/360/768/1366 px, aucune erreur JS, aucun défilement horizontal.
-- Suites de non-régression actuelles : réseau 59 + 41 + 47 + 38 (+40 navigateur), back-office mutuelles 24, e-mails 16, accueil 19, médicaments 20, gestion avancée 49, Pest 37.
+- Suites de non-régression actuelles : réseau 59 + 41 + 47 + 38 (+40 navigateur), back-office mutuelles 24, e-mails 16, accueil 19, médicaments 20, gestion avancée 49, Pest 37. Lot 3 : Pest 20 (dans `production/mxconnect/tests`), navigateur 113 affichages + 1 parcours complet.
 
 ## 5. Leçons multi-tenant (à relire avant de toucher à la tenancy)
 

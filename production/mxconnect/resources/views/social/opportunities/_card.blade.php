@@ -5,7 +5,7 @@
   <span class="mx-listcard__body">
     <span class="mx-tags">
       <span class="mx-badge mx-badge--blue">{{ $o->categoryLabel() }}</span>
-      @if ($o->contract_type)<span class="mx-badge">{{ \App\Models\Social\Opportunity::CONTRACTS[$o->contract_type] ?? $o->contract_type }}</span>@endif
+      @if ($o->contract_type && $o->contract_type !== $o->category)<span class="mx-badge">{{ \App\Models\Social\Opportunity::CONTRACTS[$o->contract_type] ?? $o->contract_type }}</span>@endif
       @unless ($open)<span class="mx-status mx-status--closed">{{ $o->availabilityLabel() }}</span>@endunless
       @if ($o->is_demo || $o->mutual?->profile?->is_demo)<span class="mx-demo-ribbon">Démo</span>@endif
       @if ($o->status !== 'published')<span class="mx-badge mx-badge--warn">{{ $o->status === 'draft' ? 'Brouillon' : 'Masquée par la modération' }}</span>@endif

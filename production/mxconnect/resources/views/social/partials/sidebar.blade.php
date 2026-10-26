@@ -32,7 +32,7 @@
   </div>
 </section>
 
-@if ($latestOpps->isNotEmpty())
+@if ($latestOpps->isNotEmpty() && ! request()->routeIs('social.opportunities', 'social.opportunity'))
 <section class="mx-card" aria-labelledby="sb-opps">
   <div class="mx-card__head"><h2 class="mx-card__title" id="sb-opps">Emplois et opportunités</h2><a class="mx-small" href="{{ route('social.opportunities') }}">Tout voir</a></div>
   <div class="mx-mini">
