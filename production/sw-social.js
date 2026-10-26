@@ -1,7 +1,7 @@
 /* MX Connect — service worker du réseau social.
    Ne met en cache QUE des fichiers publics et statiques (logo, styles, scripts, polices)
    et une page hors ligne. Aucune page personnelle, aucune réponse d'API n'est stockée. */
-const VERSION = 'mx-social-2026.10.21';
+const VERSION = 'mx-social-2026.10.27';   // à changer à chaque livraison : purge les anciens caches
 const STATIC = ['/hors-ligne.html', '/css/mx-social.css', '/js/mx-social.js', '/js/mx-social-plus.js', '/brand/mx-logo-full.webp', '/brand/mx-mark-128.webp',
                 '/brand/favicon.png', '/brand/icon-192.png', '/fonts/inter-latin.woff2'];
 
@@ -25,9 +25,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(req).catch(() => caches.match('/hors-ligne.html')));
     return;
   }
-  // Fichiers statiques publics : cache d'abord (versionnés par ?v=).
+  // Fichiers statiques publics : cache d'abord. La clé garde le ?v= : une nouvelle version
+  // du CSS/JS (asset_version) est donc téléchargée au lieu de resservir l'ancienne.
   if (/^\/(css|js|brand|fonts)\//.test(url.pathname)) {
-    e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req).then((res) => {
+    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
       return res;
     })));
