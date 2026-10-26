@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Harmonisation du back-office (design du module Médicaments) appliquée aux
+   pages existantes, sans modifier leur balisage. Sélecteurs :where() =
+   spécificité nulle : les classes propres à chaque page gardent la priorité.
+   ========================================================================= */
+@layer components {
+  /* Cartes blanches */
+  :where(main) :where(.bg-white.border, .bg-white.rounded-lg) {
+    border-radius: 1.25rem; border-color: rgb(11 31 58 / .06);
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 20px rgba(16,24,40,.06);
+  }
+  /* Tableaux */
+  main thead.bg-mist, main thead.bg-paper { background: #EEF4FC; color: rgb(11 31 58 / .78); }
+  :where(main) :where(thead th) { font-weight: 600; font-size: 12.5px; letter-spacing: .01em; padding-top: .8rem; padding-bottom: .8rem; }
+  :where(main) :where(tbody tr) { transition: background-color .15s; }
+  :where(main) :where(tbody tr:hover) { background: #F7FAFE; }
+  :where(main) :where(td) { padding-top: .8rem; padding-bottom: .8rem; }
+  /* Champs de formulaire : bordure visible, coins arrondis, anneau de focus */
+  :where(main) :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]):not([type=range]), select, textarea) {
+    border: 1px solid rgb(11 31 58 / .14); border-radius: .75rem; background-color: #fff; min-height: 2.6rem;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  :where(main) :where(textarea) { min-height: 5rem; }
+  :where(main) :where(input, select, textarea):focus { outline: none; border-color: #1769D2; box-shadow: 0 0 0 4px #D9E8FF; }
+  :where(main) :where(input[type=checkbox], input[type=radio]) { accent-color: #1FA463; width: 1rem; height: 1rem; }
+  /* Boutons principaux (vert du module Médicaments) */
+  :where(main) :where(button.bg-pine, a.bg-pine, input.bg-pine) {
+    background-image: linear-gradient(90deg, #1FA463, #178A52); border-radius: .75rem;
+    box-shadow: 0 8px 18px -8px rgba(31,164,99,.55); font-weight: 650;
+  }
+  :where(main) :where(button.bg-pine, a.bg-pine):hover { filter: brightness(1.05); }
+  /* Boutons secondaires et filtres */
+  :where(main) :where(a.rounded-md, button.rounded-md) { border-radius: .75rem; }
+  /* Titres de section */
+  :where(main) :where(h2) { color: #0B1F3A; }
+  /* Pastilles d'état */
+  :where(main) :where(.rounded-full.border) { font-weight: 600; }
+}

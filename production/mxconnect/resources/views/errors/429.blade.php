@@ -1,0 +1,1 @@
+@include('errors.minimal-mx', ['icon' => '⏳', 'title' => 'Un instant…', 'text' => 'Beaucoup d’actions en peu de temps. Patientez une minute avant de réessayer : vos données ne sont pas perdues.', 'retry' => 0])

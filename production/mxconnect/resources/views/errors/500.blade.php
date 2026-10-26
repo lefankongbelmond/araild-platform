@@ -1,0 +1,1 @@
+@include('errors.minimal-mx', ['icon' => '🔧', 'title' => 'Une erreur est survenue', 'text' => 'La page n’a pas pu s’afficher. Réessayez dans un instant ; si le problème continue, l’équipe technique a été prévenue par le journal d’erreurs.', 'retry' => 0])

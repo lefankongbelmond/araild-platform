@@ -1,0 +1,16 @@
+{
+  "name": "MX-CONNECT",
+  "short_name": "MX-CONNECT",
+  "description": "Le réseau social des mutuelles de santé — Ensemble pour une meilleure santé.",
+  "lang": "fr",
+  "start_url": "/fil",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F4F7FB",
+  "theme_color": "#021F5A",
+  "icons": [
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/brand/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

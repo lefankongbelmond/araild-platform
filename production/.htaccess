@@ -1,0 +1,40 @@
+# MX-CONNECT — .htaccess pour hébergement LWS (sous-domaine dans son propre dossier)
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Indispensable sur LWS quand le sous-domaine pointe vers un sous-dossier
+    RewriteBase /
+
+    # Dossier de l'application : accès direct interdit
+    RewriteRule ^mxconnect(/|$) - [F,L]
+
+    # En-tête Authorization (API membres)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Ne jamais réécrire index.php lui-même (évite les boucles -> erreur 500)
+    RewriteRule ^index\.php$ - [L]
+
+    # Tout le reste -> Laravel
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Réseau social : types de fichiers (application installable, polices)
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType font/woff2 .woff2
+</IfModule>
+
+# Polices du back-office chargées depuis les sous-domaines des mutuelles
+<IfModule mod_headers.c>
+    <FilesMatch "\.(woff2?)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
