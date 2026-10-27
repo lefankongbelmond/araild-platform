@@ -70,7 +70,7 @@ class PostService
                     'author_label'      => $authorLabel,
                     'type'              => $data['type'] ?? 'texte',
                     'category'          => $data['category'] ?? null,
-                    'body'              => isset($data['body']) ? trim($data['body']) : null,
+                    'body'              => isset($data['body']) ? \App\Support\SocialText::normalize(trim($data['body'])) : null,   // texte collé nettoyé (2026-11-08)
                     'link_url'          => $data['link_url'] ?? ($preview['link_url'] ?? null),
                     'link_title'        => $preview['link_title'] ?? null,
                     'link_description'  => $preview['link_description'] ?? null,
@@ -175,7 +175,7 @@ class PostService
         $comment = DB::connection('central')->transaction(function () use ($post, $body, $account, $mutual, $parentId, $label) {
             $c = Comment::create([
                 'post_id' => $post->id, 'parent_id' => $parentId, 'public_account_id' => $account?->id,
-                'mutual_id' => $mutual?->id, 'author_label' => $label, 'body' => trim($body),
+                'mutual_id' => $mutual?->id, 'author_label' => $label, 'body' => \App\Support\SocialText::normalize(trim($body)),
             ]);
             $post->forceFill(['comments_count' => Comment::where('post_id', $post->id)->where('status', 'visible')->count()])->save();
 
@@ -225,7 +225,7 @@ class PostService
 
         return DB::connection('central')->transaction(function () use ($root, $account, $body) {
             $post = Post::create([
-                'public_account_id' => $account->id, 'type' => 'texte', 'body' => $body ? trim($body) : null,
+                'public_account_id' => $account->id, 'type' => 'texte', 'body' => $body ? \App\Support\SocialText::normalize(trim($body)) : null,
                 'shared_post_id' => $root->id, 'visibility' => 'public', 'status' => 'published', 'published_at' => now(),
             ]);
             $root->increment('shares_count');

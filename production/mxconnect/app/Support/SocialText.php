@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
  *  - les adresses web deviennent des liens cliquables (nouvel onglet, nofollow) ;
  *  - les mentions enregistrées (@Prénom Nom, @Page) deviennent des liens ;
  *  - les mots-clés #… mènent à la recherche ;
- *  - les retours à la ligne sont conservés.
+ *  - les retours à la ligne sont conservés (au plus une ligne vide entre deux paragraphes).
  * Les emojis sont du texte Unicode : ils s'affichent tels quels.
  */
 class SocialText
@@ -22,7 +22,7 @@ class SocialText
      */
     public static function render(?string $text, iterable $mentions = [], ?int $limit = null): string
     {
-        $text = (string) $text;
+        $text = self::normalize((string) $text);
         if ($text === '') {
             return '';
         }
@@ -82,7 +82,24 @@ class SocialText
         }
         $out .= e(substr($text, $pos));
 
-        return nl2br($out, false);
+        // Retours à la ligne → <br> SANS garder le caractère « \n » : le corps des publications
+        // est affiché en « white-space: pre-line », qui l'aurait compté une deuxième fois
+        // (chaque saut de ligne doublé, d'où les grands vides signalés le 27/10/2026).
+        return str_replace("\n", '<br>', $out);
+    }
+
+    /**
+     * Texte collé depuis Word, Facebook, WhatsApp… : fins de ligne Windows, espaces
+     * insécables ou invisibles en bout de ligne, lignes « vides » qui n'en sont pas.
+     * On garde au plus UNE ligne vide entre deux paragraphes.
+     */
+    public static function normalize(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r", "\u{2028}", "\u{2029}"], "\n", $text);
+        $text = preg_replace('/[ \t\x{00A0}\x{2007}\x{202F}\x{200B}\x{FEFF}]+$/mu', '', $text) ?? $text;   // fin de ligne
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text, "\n");
     }
 
     /** Première adresse web d'un texte (pour l'aperçu du lien). */
