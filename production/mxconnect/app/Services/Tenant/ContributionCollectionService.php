@@ -4,6 +4,7 @@ namespace App\Services\Tenant;
 
 use App\Models\Central\Currency;
 use App\Models\Tenant\AccountingDay;
+use App\Models\Tenant\CollectionCancellation;
 use App\Models\Tenant\ContributionPayment;
 use App\Models\Tenant\ContributionSchedule;
 use App\Models\Tenant\Member;
@@ -41,7 +42,8 @@ class ContributionCollectionService
             ->whereHas('subscription', fn ($q) => $q->where('member_id', $member->id)->where('status', 'validated'))
             ->where('status', '!=', 'paid')
             ->withSum('payments', 'amount_minor')
-            ->orderBy('due_date')->orderBy('id')->get();
+            // À date égale, le droit d'adhésion (« membership_fee ») passe avant la cotisation.
+            ->orderBy('due_date')->when($this->hasKind(), fn ($q) => $q->orderByDesc('kind'))->orderBy('id')->get();
     }
 
     /**
@@ -82,6 +84,7 @@ class ContributionCollectionService
             $ref = 'ENC-' . $day->format('Ymd') . '-' . strtoupper(Str::random(5));
             $left = $amountMinor;
             $payments = collect();
+            $bySource = [];   // montant par source de trésorerie (cotisation / droit d'adhésion)
             foreach ($open as $s) {
                 if ($left === 0) {
                     break;
@@ -93,21 +96,106 @@ class ContributionCollectionService
                     'collection_ref' => $ref, 'reference' => $reference, 'recorded_by' => $userId,
                 ]));
                 $left -= $part;
+                $source = $s->isFee() ? 'membership_fee' : 'contribution';
+                $bySource[$source] = ($bySource[$source] ?? 0) + $part;
                 if ($part === $remaining) {
                     $s->update(['status' => 'paid']);
                 }
             }
 
-            TreasuryMovement::create([
-                'direction' => 'inflow', 'source' => 'contribution', 'amount_minor' => $amountMinor,
-                'mode' => self::TREASURY_MODE[$mode], 'linked_reference' => $ref, 'moved_on' => $day->toDateString(),
-            ]);
+            // Un mouvement par source : cotisations (7561) et droits d'adhésion (7011) restent distincts en comptabilité.
+            foreach ($bySource as $source => $sum) {
+                TreasuryMovement::create([
+                    'direction' => 'inflow', 'source' => $source, 'amount_minor' => $sum,
+                    'mode' => self::TREASURY_MODE[$mode], 'linked_reference' => $ref, 'moved_on' => $day->toDateString(),
+                ]);
+            }
 
             $receipt = $this->receipt($member, $ref, $payments, $amountMinor, $mode, $reference, $day);
             ContributionPayment::whereIn('id', $payments->pluck('id'))->update(['receipt_path' => $receipt]);
 
             return ['ref' => $ref, 'receipt' => $receipt, 'payments' => $payments, 'amount' => $amountMinor];
         });
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Annulation d'un encaissement saisi par erreur (2026-11-07) : demandée par le trésorier
+    // avec un motif, validée par une AUTRE personne (administrateur ou contrôleur). À la
+    // validation : paiements annulés (gardés en base), échéances rouvertes, mouvement de
+    // trésorerie inverse daté du jour (contre-passation en comptabilité), reçu marqué « ANNULÉ ».
+    // ------------------------------------------------------------------------------------
+
+    public function requestCancellation(string $collectionRef, string $reason, int $userId): CollectionCancellation
+    {
+        $payments = ContributionPayment::where('collection_ref', $collectionRef)->with('schedule.subscription')->get();
+        if ($payments->isEmpty()) {
+            $this->refuse('Encaissement introuvable ou déjà annulé.');
+        }
+        if (CollectionCancellation::where('collection_ref', $collectionRef)->where('status', 'pending')->exists()) {
+            $this->refuse('Une demande d’annulation de cet encaissement attend déjà une décision.');
+        }
+
+        return CollectionCancellation::create([
+            'collection_ref' => $collectionRef, 'member_id' => $payments->first()->schedule->subscription->member_id,
+            'amount_minor' => (int) $payments->sum('amount_minor'), 'reason' => $reason, 'requested_by' => $userId,
+        ]);
+    }
+
+    public function approveCancellation(CollectionCancellation $c, int $userId): void
+    {
+        $this->assertDecidable($c, $userId);
+        $today = now()->startOfDay();
+        if ($this->accounting->isYearClosed((int) $today->year)) {
+            $this->refuse("L’exercice {$today->year} est clôturé.");
+        }
+        if (AccountingDay::whereDate('day', $today->toDateString())->first()?->isClosed()) {
+            $this->refuse('La journée d’aujourd’hui est arrêtée (arrêté de caisse) : l’annulation sera possible demain.');
+        }
+
+        DB::transaction(function () use ($c, $userId, $today) {
+            $payments = ContributionPayment::where('collection_ref', $c->collection_ref)->with('schedule')->get();
+            $movements = TreasuryMovement::where('linked_reference', $c->collection_ref)->where('direction', 'inflow')->get();
+            foreach ($payments as $p) {
+                $p->delete();
+            }
+            // Échéances rouvertes : à payer, ou en retard si leur date est passée.
+            foreach ($payments->pluck('schedule')->filter()->unique('id') as $s) {
+                $s->refresh();
+                if ($s->remainingMinor() > 0) {
+                    $s->update(['status' => $s->due_date->lt($today) ? 'overdue' : 'to_pay']);
+                }
+            }
+            foreach ($movements as $m) {
+                TreasuryMovement::create([
+                    'direction' => 'outflow', 'source' => $m->source, 'amount_minor' => $m->amount_minor, 'mode' => $m->mode,
+                    'linked_reference' => 'ANN-' . $c->collection_ref, 'moved_on' => $today->toDateString(),
+                ]);
+            }
+            $c->update(['status' => 'approved', 'decided_by' => $userId, 'decided_at' => now()]);
+        });
+    }
+
+    public function rejectCancellation(CollectionCancellation $c, int $userId, string $note): void
+    {
+        $this->assertDecidable($c, $userId);
+        $c->update(['status' => 'rejected', 'decided_by' => $userId, 'decided_at' => now(), 'decision_note' => $note]);
+    }
+
+    private function assertDecidable(CollectionCancellation $c, int $userId): void
+    {
+        if ($c->status !== 'pending') {
+            $this->refuse('Cette demande a déjà été décidée.');
+        }
+        if ((int) $c->requested_by === $userId) {
+            $this->refuse('Vous avez demandé cette annulation : une autre personne doit décider (contrôle « 4 yeux »).');
+        }
+    }
+
+    private ?bool $hasKind = null;
+
+    private function hasKind(): bool
+    {
+        return $this->hasKind ??= \Illuminate\Support\Facades\Schema::hasColumn('contribution_schedules', 'kind');
     }
 
     /** Reçu unique de l'encaissement (HTML imprimable, disque privé de la mutuelle). */

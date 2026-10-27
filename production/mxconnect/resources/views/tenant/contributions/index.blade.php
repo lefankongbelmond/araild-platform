@@ -16,6 +16,21 @@
   </x-tenant.hero>
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
+  @if ($cancellations->count())
+    <section class="mt-6 rounded-lg border border-amber-200 bg-white p-4">
+      <h2 class="font-semibold">Annulations d’encaissement à décider ({{ $cancellations->count() }})</h2>
+      <ul class="mt-2 divide-y divide-ink/5 text-sm">
+        @foreach ($cancellations as $x)
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+            <span class="min-w-0"><span class="font-mono text-xs">{{ $x->collection_ref }}</span> · {{ $x->member?->last_name }} {{ $x->member?->first_name }} · {{ $c->format($x->amount_minor) }}
+              <span class="block text-xs text-ink/55">demandée par {{ $x->requestedBy?->name }} — {{ $x->reason }}</span></span>
+            @if ($x->member)<a href="{{ route('contributions.member', $x->member) }}" class="text-sm text-pine hover:underline">{{ $canDecide ? 'Décider' : 'Voir' }}</a>@endif
+          </li>
+        @endforeach
+      </ul>
+    </section>
+  @endif
+
   <div class="mt-6 grid gap-3 sm:grid-cols-3">
     @foreach ($tabs as $k => $label)
       @php $t = $totals[$k]; @endphp
@@ -52,14 +67,14 @@
               @if ($m)<a href="{{ route('contributions.member', $m) }}" class="font-medium hover:underline">{{ $m->last_name }} {{ $m->first_name }}</a>
                 <div class="font-mono text-xs text-ink/50">{{ $m->member_code }}</div>@endif
             </td>
-            <td class="px-4 py-3 whitespace-nowrap">{{ $sch->period }}</td>
+            <td class="px-4 py-3 whitespace-nowrap">{{ $sch->label() }}</td>
             <td class="px-4 py-3 whitespace-nowrap {{ $sch->status === 'overdue' ? 'text-clay' : '' }}">{{ $sch->due_date?->format('d/m/Y') }}</td>
             <td class="px-4 py-3 text-right tabular-nums whitespace-nowrap">{{ $c->format($sch->due_minor) }}</td>
             <td class="px-4 py-3 text-right tabular-nums whitespace-nowrap">{{ $c->format($status === 'paid' ? $paid : $rest) }}
               @if ($status !== 'paid' && $paid > 0)<div class="text-xs text-ink/50">acompte {{ $c->format($paid) }}</div>@endif</td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
               @if ($sch->status !== 'paid' && $canCollect)
-                <form method="POST" action="{{ route('contributions.pay', $sch) }}" class="inline-flex items-center gap-2" onsubmit="return confirm('Encaisser {{ $c->format($rest) }} pour {{ $sch->period }} ?')">@csrf
+                <form method="POST" action="{{ route('contributions.pay', $sch) }}" class="inline-flex items-center gap-2" onsubmit="return confirm('Encaisser {{ $c->format($rest) }} pour {{ $sch->label() }} ?')">@csrf
                   <select name="mode" class="rounded-md border border-ink/15 px-2 py-1 text-xs" aria-label="Mode">
                     <option value="cash">{{ __('mxconnect.contribution.cash') }}</option>
                     <option value="group">Versement groupé</option>

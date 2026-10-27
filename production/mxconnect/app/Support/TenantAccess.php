@@ -92,6 +92,10 @@ class TenantAccess
             'contributions.export'    => [$A, $E, $C, $T, $U],   // CSV pour les relances
             'contributions.collect'   => [$T],                   // encaissement au guichet
             'contributions.refresh'   => [$A, $T],               // échéanciers glissants
+            'contributions.cancel.request' => [$T],              // annulation d'un encaissement : demande (2026-11-07)
+            'contributions.cancel.approve' => [$A, $C],          // … décision par une AUTRE personne
+            'contributions.cancel.reject'  => [$A, $C],
+            'contributions.fee'       => [$A, $T],               // appeler le droit d'adhésion
             'payments.initiate'       => [$A, $E, $T],
             'treasury.dashboard'      => [$A, $C, $T, $U],
             'treasury.movements'      => [$A, $C, $T, $U],
@@ -171,7 +175,7 @@ class TenantAccess
         'Souscriptions' => ['subscriptions.index' => 'Consulter', 'subscriptions.store' => 'Saisir', 'subscriptions.validate' => 'Valider'],
         'Recours et prestations (santé)' => ['claims.index' => 'Consulter', 'capacite.donnees-sante' => 'Voir le détail médical', 'claims.prestations.store' => 'Saisir', 'claims.prestations.validate' => 'Valider ou rejeter', 'alerts.index' => 'Alertes anti-fraude'],
         'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
-        'Cotisations' => ['contributions.index' => 'Consulter, relevé par adhérent, export CSV', 'contributions.collect' => 'Encaisser (partiel ou plusieurs échéances)', 'contributions.refresh' => 'Actualiser les échéanciers', 'payments.initiate' => 'Lancer un paiement en ligne'],
+        'Cotisations' => ['contributions.index' => 'Consulter, relevé par adhérent, export CSV', 'contributions.collect' => 'Encaisser (partiel ou plusieurs échéances)', 'contributions.refresh' => 'Actualiser les échéanciers', 'contributions.cancel.request' => 'Demander l’annulation d’un encaissement', 'contributions.cancel.approve' => 'Valider ou refuser une annulation', 'contributions.fee' => 'Appeler le droit d’adhésion', 'payments.initiate' => 'Lancer un paiement en ligne'],
         'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse',
             'accounting.entries.store' => 'Opérations diverses : saisir, préparer une extourne', 'accounting.entries.validate' => 'Opérations diverses : valider ou rejeter',
             'accounting.accounts.store' => 'Plan comptable : ajouter, renommer', 'accounting.closing.close' => 'Clôturer un exercice', 'accounting.closing.reopen' => 'Rouvrir un exercice', 'budget.index' => 'Budget : consulter', 'budget.lines.update' => 'Budget : préparer', 'budget.adopt' => 'Budget : adopter', 'solvency.dashboard' => 'Solvabilité'],

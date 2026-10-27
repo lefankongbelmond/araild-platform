@@ -36,7 +36,7 @@ class ReportController extends Controller
             ['Adhérents suspendus', $r['members']['suspended']], ['Souscriptions validées', $r['subscriptions']['validated']], ['Souscriptions en attente', $r['subscriptions']['pending']], [],
             ['Cotisations appelées', $m($r['contributions']['called'])], ['dont encaissées', $m($r['contributions']['collected_on_called'])],
             ['Taux de recouvrement (%)', $r['contributions']['rate'] ?? '—'], ['Encaissements de la période', $m($r['contributions']['collected'])],
-            ['Arriérés (échéances en retard)', $m($r['contributions']['overdue'])], [],
+            ['Arriérés (échéances en retard)', $m($r['contributions']['overdue'])], ['Droits d’adhésion encaissés', $m($r['contributions']['fees'] ?? 0)], [],
             ['Prestations validées', $r['prestations']['validated']], ['Montant total des soins', $m($r['prestations']['total'])],
             ['Part de la mutuelle', $m($r['prestations']['mutual'])], ['Part des adhérents', $m($r['prestations']['beneficiary'])],
             ['Prestations en attente', $r['prestations']['pending']], ['Prestations rejetées', $r['prestations']['rejected']],

@@ -29,7 +29,7 @@ class ContributionReminder extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject(__('mxconnect.contribution.reminder_subject'))
             ->line(__('mxconnect.contribution.reminder_line', [
-                'period' => $this->schedule->period,
+                'period' => $this->schedule->label(),
                 'date'   => optional($this->schedule->due_date)->format('d/m/Y'),
             ]));
     }
@@ -38,7 +38,7 @@ class ContributionReminder extends Notification implements ShouldQueue
     {
         return [
             'schedule_id' => $this->schedule->id,
-            'period'      => $this->schedule->period,
+            'period'      => $this->schedule->label(),
             'due_date'    => optional($this->schedule->due_date)->toDateString(),
         ];
     }

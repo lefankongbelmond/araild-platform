@@ -15,10 +15,10 @@ table{width:100%;border-collapse:collapse;margin-top:1rem}td,th{padding:.45rem 0
     <tr><td>Mode</td><td class="r">{{ $mode }}@if ($reference) — réf. {{ $reference }}@endif</td></tr>
   </table>
   <table>
-    <thead><tr><th>Période réglée</th><th class="r">Montant</th></tr></thead>
+    <thead><tr><th>Échéance réglée</th><th class="r">Montant</th></tr></thead>
     <tbody>
       @foreach ($payments as $p)
-        <tr><td>{{ $p->schedule?->period }}@if ($p->amount_minor < $p->schedule?->due_minor) <span class="muted">(acompte)</span>@endif</td><td class="r">{{ $currency->format($p->amount_minor) }}</td></tr>
+        <tr><td>{{ $p->schedule?->label() }}@if ($p->amount_minor < $p->schedule?->due_minor) <span class="muted">(acompte)</span>@endif</td><td class="r">{{ $currency->format($p->amount_minor) }}</td></tr>
       @endforeach
       <tr class="total"><td>Total reçu</td><td class="r">{{ $currency->format($amount) }}</td></tr>
     </tbody>

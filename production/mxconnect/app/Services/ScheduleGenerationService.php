@@ -12,9 +12,32 @@ use Illuminate\Support\Carbon;
  */
 class ScheduleGenerationService
 {
+    /**
+     * Droit d'adhésion (2026-11-07) : une échéance « ADH » du montant prévu par la version de
+     * garantie, due à la date donnée (par défaut : date d'effet). Jamais en double ; rien si
+     * la garantie n'en prévoit pas.
+     */
+    public function fee(Subscription $subscription, ?Carbon $due = null): ?\App\Models\Tenant\ContributionSchedule
+    {
+        $amount = (int) ($subscription->guaranteeVersion?->membership_fee_minor ?? 0);
+        if ($amount <= 0 || ! \Illuminate\Support\Facades\Schema::hasColumn('contribution_schedules', 'kind')
+            || $subscription->schedules()->where('kind', 'membership_fee')->exists()) {
+            return null;
+        }
+        $due ??= Carbon::parse($subscription->effective_date);
+
+        return $subscription->schedules()->create([
+            'kind' => 'membership_fee', 'period' => \App\Models\Tenant\ContributionSchedule::FEE_PERIOD, 'year' => (int) $due->year,
+            'due_minor' => $amount, 'due_date' => $due->toDateString(), 'status' => 'to_pay',
+        ]);
+    }
+
     /** @return int number of schedule lines created */
     public function generate(Subscription $subscription): int
     {
+        // Nouvelle souscription validée : droit d'adhésion appelé avec la 1re échéance (2026-11-07).
+        $this->fee($subscription);
+
         // Idempotent: never duplicate a schedule for a period already present.
         $existing = $subscription->schedules()->pluck('period')->all();
 

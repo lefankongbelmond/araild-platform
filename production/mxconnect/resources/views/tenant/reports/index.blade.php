@@ -78,6 +78,7 @@
         {!! $line('Taux de recouvrement', $pct($r['contributions']['rate'])) !!}
         {!! $line('Encaissements de la période', $fmt($r['contributions']['collected']), 'toutes échéances confondues') !!}
         {!! $line('Arriérés (aujourd’hui)', $fmt($r['contributions']['overdue'])) !!}
+        @if ($r['contributions']['fees'] ?? 0){!! $line('Droits d’adhésion encaissés', $fmt($r['contributions']['fees']), 'en plus des cotisations') !!}@endif
       </dl>
     </section>
     <section class="min-w-0 rounded-lg border border-ink/10 bg-white p-5">

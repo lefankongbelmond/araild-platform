@@ -42,6 +42,12 @@
       @if ($open === 0)<span class="ml-2 text-sm text-ink/55">Aucune échéance à régler.</span>@endif
     </form>
   @endif
+  @if ($feeToCall > 0)
+    <form method="POST" action="{{ route('contributions.fee', $member) }}" class="print:hidden mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 bg-white p-4 text-sm">@csrf
+      <span class="min-w-0 flex-1 text-ink/70">La garantie prévoit un droit d’adhésion de <b>{{ $c->format($feeToCall) }}</b>, pas encore appelé pour cet adhérent.</span>
+      <button class="rounded-md border border-ink/15 bg-white px-4 py-2 text-sm font-medium">Appeler le droit d’adhésion</button>
+    </form>
+  @endif
 
   <section class="mt-6">
     <h2 class="font-semibold">Échéancier</h2>
@@ -55,7 +61,7 @@
           @forelse ($schedules as $s)
             @php $paid = (int) $s->payments_sum_amount_minor; @endphp
             <tr>
-              <td class="px-3 py-2 whitespace-nowrap">{{ $s->period }}</td>
+              <td class="px-3 py-2 whitespace-nowrap">{{ $s->label() }}</td>
               <td class="px-3 py-2 whitespace-nowrap">{{ $s->due_date?->format('d/m/Y') }}</td>
               <td class="px-3 py-2">{{ $s->subscription?->guaranteeVersion?->guarantee?->name }}</td>
               <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap">{{ $c->format($s->due_minor) }}</td>
@@ -73,31 +79,66 @@
 
   <section class="mt-6">
     <h2 class="font-semibold">Encaissements</h2>
-    <div class="relative mt-2 overflow-x-auto rounded-lg border border-ink/10 bg-white">
-      <table class="w-full text-sm">
-        <thead class="bg-mist text-left text-ink/60"><tr>
-          <th class="px-3 py-2 font-medium">Date</th><th class="px-3 py-2 font-medium">Reçu</th><th class="px-3 py-2 font-medium">Périodes réglées</th>
-          <th class="px-3 py-2 font-medium">Mode</th><th class="px-3 py-2 text-right font-medium">Montant</th>
-        </tr></thead>
-        <tbody class="divide-y divide-ink/5">
-          @forelse ($collections as $ref => $rows)
-            @php $first = $rows->first(); @endphp
-            <tr>
-              <td class="px-3 py-2 whitespace-nowrap">{{ $first->paid_on?->format('d/m/Y') }}</td>
-              <td class="px-3 py-2 whitespace-nowrap">
+    @php $byRef = $cancellations->groupBy('collection_ref'); $me = (int) auth()->id(); @endphp
+    <div class="mt-2 space-y-3">
+      @forelse ($collections as $ref => $rows)
+        @php
+          $first = $rows->first();
+          $cancelled = $first->trashed();
+          $reqs = $byRef[$first->collection_ref] ?? collect();
+          $pending = $reqs->firstWhere('status', 'pending');
+          $approved = $reqs->firstWhere('status', 'approved');
+          $refused = $reqs->where('status', 'rejected')->sortByDesc('id')->first();
+        @endphp
+        <article class="rounded-lg border bg-white p-4 {{ $cancelled ? 'border-clay/30' : ($pending ? 'border-amber-200' : 'border-ink/10') }}">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 text-sm">
+              <div class="flex flex-wrap items-center gap-2">
                 @if ($first->receipt_path)<a href="{{ route('contributions.receipt', $first) }}" target="_blank" rel="noopener" class="font-mono text-xs text-pine hover:underline">{{ $first->collection_ref ?: 'Reçu' }}</a>
                 @else<span class="font-mono text-xs">{{ $first->collection_ref ?: '—' }}</span>@endif
-              </td>
-              <td class="px-3 py-2">{{ $rows->map(fn ($p) => $p->schedule?->period)->filter()->unique()->implode(', ') }}
-                @if ($first->recordedBy)<div class="text-xs text-ink/50">par {{ $first->recordedBy->name }}</div>@endif</td>
-              <td class="px-3 py-2 whitespace-nowrap">{{ $modes[$first->mode] ?? $first->mode }}@if ($first->reference)<div class="text-xs text-ink/50">{{ $first->reference }}</div>@endif</td>
-              <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap font-medium">{{ $c->format($rows->sum('amount_minor')) }}</td>
-            </tr>
-          @empty
-            <tr><td colspan="5" class="px-4 py-6 text-center text-ink/45">Aucun encaissement.</td></tr>
-          @endforelse
-        </tbody>
-      </table>
+                <span class="text-ink/60">{{ $first->paid_on?->format('d/m/Y') }} · {{ $modes[$first->mode] ?? $first->mode }}@if ($first->reference) · {{ $first->reference }}@endif</span>
+                @if ($cancelled)<span class="rounded-full bg-clay/10 px-2 py-0.5 text-xs text-clay">Annulé</span>
+                @elseif ($pending)<span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Annulation demandée</span>@endif
+              </div>
+              <div class="mt-1">{{ $rows->map(fn ($p) => $p->schedule?->label())->filter()->unique()->implode(', ') }}</div>
+              @if ($first->recordedBy)<div class="text-xs text-ink/50">encaissé par {{ $first->recordedBy->name }}</div>@endif
+              @if ($approved)<div class="mt-1 text-xs text-clay">Annulé le {{ $approved->decided_at?->format('d/m/Y') }} (demande de {{ $approved->requestedBy?->name }}, validée par {{ $approved->decidedBy?->name }}) — motif : {{ $approved->reason }}</div>@endif
+              @if ($pending)<div class="mt-1 text-xs text-amber-700">Demandée par {{ $pending->requestedBy?->name }} — motif : {{ $pending->reason }}</div>@endif
+              @if ($refused && ! $cancelled && ! $pending)<div class="mt-1 text-xs text-ink/55">Annulation refusée le {{ $refused->decided_at?->format('d/m/Y') }} : {{ $refused->decision_note }}</div>@endif
+            </div>
+            <div class="text-right font-semibold tabular-nums whitespace-nowrap" @if ($cancelled) style="text-decoration:line-through" @endif>{{ $c->format($rows->sum('amount_minor')) }}</div>
+          </div>
+          @if (! $cancelled && $first->collection_ref)
+            @if ($pending && $canDecide)
+              @if ((int) $pending->requested_by === $me)
+                <p class="print:hidden mt-3 text-xs text-ink/55">Vous avez demandé cette annulation : une autre personne doit décider.</p>
+              @else
+                <div class="print:hidden mt-3 flex flex-wrap items-start gap-2">
+                  <form method="POST" action="{{ route('contributions.cancel.approve', $pending) }}" onsubmit="return confirm('Annuler l’encaissement {{ $first->collection_ref }} ?')">@csrf<button class="rounded-md border border-clay/30 bg-white px-4 py-2 text-sm font-medium text-clay">Valider l’annulation</button></form>
+                  <details class="min-w-0">
+                    <summary class="cursor-pointer rounded-md border border-ink/15 px-4 py-2 text-sm">Refuser</summary>
+                    <form method="POST" action="{{ route('contributions.cancel.reject', $pending) }}" class="mt-2 flex flex-wrap items-end gap-2">@csrf
+                      <label class="min-w-0 text-xs text-ink/60">Motif du refus<input name="note" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
+                      <button class="rounded-md border border-ink/15 bg-white px-3 py-2 text-sm font-medium">Confirmer le refus</button>
+                    </form>
+                  </details>
+                </div>
+              @endif
+            @elseif (! $pending && $canCancel)
+              <details class="print:hidden mt-3">
+                <summary class="cursor-pointer text-sm text-clay">Demander l’annulation (erreur de saisie)</summary>
+                <form method="POST" action="{{ route('contributions.cancel.request', $first->collection_ref) }}" class="mt-2 flex flex-wrap items-end gap-2">@csrf
+                  <label class="min-w-0 text-xs text-ink/60">Motif<input name="reason" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
+                  <button class="rounded-md border border-clay/30 bg-white px-3 py-2 text-sm font-medium text-clay">Envoyer la demande</button>
+                </form>
+                <p class="mt-1 text-xs text-ink/50">L’administrateur ou le contrôleur décide. Une fois validée, les échéances sont rouvertes et la trésorerie corrigée.</p>
+              </details>
+            @endif
+          @endif
+        </article>
+      @empty
+        <p class="rounded-lg border border-ink/10 bg-white px-4 py-6 text-center text-sm text-ink/45">Aucun encaissement.</p>
+      @endforelse
     </div>
   </section>
   <p class="mt-4 text-xs text-ink/45">Édité le {{ now()->format('d/m/Y à H:i') }} par {{ auth()->user()?->name }} · MX-CONNECT. MX-CONNECT ne détient aucun fonds : il enregistre les sommes reçues par la mutuelle.</p>

@@ -257,7 +257,13 @@ Route::middleware([
         Route::post('cotisations/actualiser', [ContributionController::class, 'refresh'])->name('contributions.refresh');
         Route::get('cotisations/adherent/{member}', [ContributionController::class, 'member'])->name('contributions.member');
         Route::post('cotisations/adherent/{member}/encaissement', [ContributionController::class, 'collect'])->name('contributions.collect');
-        Route::get('recus/{payment}', [ContributionController::class, 'receipt'])->name('contributions.receipt');
+        Route::get('recus/{payment}', [ContributionController::class, 'receipt'])->withTrashed()->name('contributions.receipt');
+        // Annulation d'un encaissement (4 yeux) et droit d'adhésion (2026-11-07)
+        Route::post('cotisations/encaissements/{ref}/annulation', [ContributionController::class, 'requestCancellation'])
+            ->where('ref', 'ENC-[0-9]{8}-[A-Z0-9]{5}')->name('contributions.cancel.request');
+        Route::post('cotisations/annulations/{cancellation}/validation', [ContributionController::class, 'approveCancellation'])->name('contributions.cancel.approve');
+        Route::post('cotisations/annulations/{cancellation}/refus', [ContributionController::class, 'rejectCancellation'])->name('contributions.cancel.reject');
+        Route::post('cotisations/adherent/{member}/droit-adhesion', [ContributionController::class, 'callFee'])->name('contributions.fee');
 
         // --- Module 8: Mobile Money initiation (facilitation) ---
         Route::post('cotisations/{schedule}/mobile-money', [PaymentInitiationController::class, 'initiate'])->name('payments.initiate');

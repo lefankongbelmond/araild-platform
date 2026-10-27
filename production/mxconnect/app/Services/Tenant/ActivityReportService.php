@@ -61,7 +61,10 @@ class ActivityReportService
             ->groupByRaw($ym($dateCol))->pluck('v', 'ym');
 
         $new = $by(Member::query()->whereBetween('joined_at', [$f, $t]), 'joined_at', 'count(*)');
-        $collected = $by(ContributionPayment::query()->whereBetween('paid_on', [$f, $t]), 'paid_on', 'sum(' . $g->wrap('amount_minor') . ')');
+        $collected = $by(ContributionPayment::query()->whereBetween('paid_on', [$f, $t])
+            ->when(\Illuminate\Support\Facades\Schema::hasColumn('contribution_schedules', 'kind'),
+                fn ($q) => $q->whereIn('schedule_id', ContributionSchedule::where('kind', 'contribution')->select('id'))),
+            'paid_on', 'sum(' . $g->wrap('amount_minor') . ')');
         $validated = Prestation::query()->where('status', 'validated')->whereBetween('care_date', [$f, $t]);
         $prestations = $by((clone $validated), 'care_date', 'count(*)');
         $mutual = $by((clone $validated), 'care_date', 'sum(' . $g->wrap('mutual_part_minor') . ')');
@@ -87,10 +90,16 @@ class ActivityReportService
     {
         [$f, $t] = [$from->toDateString(), $to->toDateString()];
 
-        $called = ContributionSchedule::whereBetween('due_date', [$f, $t]);
+        // Cotisations seulement ; droits d'adhésion à part (2026-11-07).
+        $hasKind = \Illuminate\Support\Facades\Schema::hasColumn('contribution_schedules', 'kind');
+        $contrib = fn ($q) => $hasKind ? $q->where('kind', 'contribution') : $q;
+        $called = $contrib(ContributionSchedule::whereBetween('due_date', [$f, $t]));
         $calledMinor = (int) (clone $called)->sum('due_minor');
         $paidOnSchedules = (int) ContributionPayment::whereIn('schedule_id', (clone $called)->select('id'))->sum('amount_minor');
-        $collected = (int) ContributionPayment::whereBetween('paid_on', [$f, $t])->sum('amount_minor');
+        $collectedAll = (int) ContributionPayment::whereBetween('paid_on', [$f, $t])->sum('amount_minor');
+        $fees = $hasKind ? (int) ContributionPayment::whereBetween('paid_on', [$f, $t])
+            ->whereIn('schedule_id', ContributionSchedule::where('kind', 'membership_fee')->select('id'))->sum('amount_minor') : 0;
+        $collected = $collectedAll - $fees;
 
         $presta = Prestation::whereBetween('care_date', [$f, $t]);
         $validated = (clone $presta)->where('status', 'validated');
@@ -122,6 +131,7 @@ class ActivityReportService
                 'called'    => $calledMinor,
                 'collected_on_called' => $paidOnSchedules,
                 'collected' => $collected,
+                'fees'      => $fees,
                 'rate'      => $calledMinor > 0 ? round($paidOnSchedules * 100 / $calledMinor, 1) : null,
                 // Reste dû sur les échéances en retard (paiements partiels déduits, 2026-11-06).
                 'overdue'   => (int) ContributionSchedule::where('status', 'overdue')->sum('due_minor')

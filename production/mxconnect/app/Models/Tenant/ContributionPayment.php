@@ -3,9 +3,12 @@
 namespace App\Models\Tenant;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ContributionPayment extends Model
 {
+    use SoftDeletes;   // paiement annulé (2026-11-07) : gardé en base, exclu des totaux
+
     protected $guarded = [];
     protected $casts = ['paid_on' => 'date', 'amount_minor' => 'integer'];
 

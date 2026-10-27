@@ -99,7 +99,9 @@ class AccountingService
                 $movement->moved_on->toDateString(),
                 debitNumber: $expense, creditNumber: $treasury,
                 amountMinor: $movement->amount_minor,
-                label: "Décaissement {$movement->source}",
+                label: in_array($movement->source, ['contribution', 'membership_fee'], true)
+                    ? 'Annulation d’encaissement ' . preg_replace('/^ANN-/', '', (string) $movement->linked_reference)
+                    : "Décaissement {$movement->source}",
                 piece: $movement->linked_reference,
             );
         }

@@ -33,7 +33,7 @@ return [
     'contact_email' => env('MXCONNECT_CONTACT_EMAIL'),
 
     // Version des fichiers CSS/JS (force le rechargement après une mise à jour).
-    'asset_version' => '2026.11.06',
+    'asset_version' => '2026.11.07',
 
     // Réseau social : médias téléversés
     'social' => [
@@ -139,6 +139,9 @@ return [
             'other'          => '7580',
         ],
         'source_expense' => [
+            // Annulation d'un encaissement (2026-11-07) : contre-passation du produit.
+            'contribution'     => '7561',
+            'membership_fee'   => '7011',
             'reimbursement'    => '6011',
             'provider_invoice' => '6041',
             'other'            => '6580',
