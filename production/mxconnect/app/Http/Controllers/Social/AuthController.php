@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Social;
 
 use App\Http\Controllers\Controller;
 use App\Models\Central\PublicAccount;
+use App\Services\Social\LegalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -27,34 +28,60 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        // Application : indicatif choisi + numéro local (maquette 4, téléphone facultatif).
+        if ($request->filled('phone_local')) {
+            $request->merge(['phone' => $request->input('phone_cc', '+237') . preg_replace('/\D+/', '', (string) $request->input('phone_local'))]);
+        }
         $request->merge([
             'phone' => self::normalizePhone($request->input('phone')),
             'email' => $request->filled('email') ? Str::lower(trim($request->input('email'))) : null,
         ]);
+        // Documents à cocher dans le formulaire (2026-11-09) : l'application présente chaque
+        // document publié (conditions, confidentialité) avec sa propre case, jamais pré-cochée ;
+        // le formulaire web garde sa case unique (règles communautaires + confidentialité).
+        $legal = app(LegalService::class);
+        $app = $request->input('app') === '1';
+        $shown = $app ? $legal->current()->whereIn('type', ['terms', 'privacy'])->values() : $legal->current()->whereIn('type', ['community', 'privacy'])->values();
+        $docRules = $app ? $shown->mapWithKeys(fn ($d) => ['doc_' . $d->id => ['accepted']])->all() : ['terms' => ['accepted']];
+        $docMessages = $app ? $shown->mapWithKeys(fn ($d) => ['doc_' . $d->id . '.accepted' => 'Cochez « ' . $d->checkboxText() . ' » pour créer votre compte.'])->all() : [];
+
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:120'],
             'last_name'  => ['required', 'string', 'max:120'],
-            'phone'      => ['required', 'regex:/^\+?[0-9]{8,15}$/', Rule::unique('central.public_accounts', 'phone')],
-            'email'      => ['nullable', 'email:rfc', 'max:180', Rule::unique('central.public_accounts', 'email')],
-            'password'   => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
-            'terms'      => ['accepted'],
-        ], [
+            // Téléphone OU e-mail (maquette Android : téléphone facultatif si l'e-mail est donné).
+            'phone'      => ['nullable', 'required_without:email', 'regex:/^\+?[0-9]{8,15}$/', Rule::unique('central.public_accounts', 'phone')],
+            'email'      => ['nullable', 'required_without:phone', 'email:rfc', 'max:180', Rule::unique('central.public_accounts', 'email')],
+            'password'   => ['required', ...($request->has('password_confirmation') ? ['confirmed'] : []), Password::min(8)->letters()->numbers()],
+        ] + $docRules, [
             'phone.regex'    => 'Numéro de téléphone invalide (8 à 15 chiffres, indicatif possible : +225…).',
             'phone.unique'   => 'Un compte existe déjà avec ce numéro. Connectez-vous.',
+            'phone.required_without' => 'Indiquez un numéro de téléphone ou une adresse e-mail.',
+            'email.required_without' => 'Indiquez une adresse e-mail ou un numéro de téléphone.',
             'email.unique'   => 'Un compte existe déjà avec cette adresse e-mail.',
             'terms.accepted' => 'Vous devez accepter les conditions d’utilisation.',
-        ]);
+        ] + $docMessages);
 
         $account = PublicAccount::create([
             'first_name' => trim($data['first_name']),
             'last_name'  => trim($data['last_name']),
-            'phone'      => $data['phone'],
+            'phone'      => $data['phone'] ?? null,
             'email'      => $data['email'] ?? null,
             'password'   => $data['password'],   // haché par le cast « hashed »
         ]);
 
-        Auth::guard('member')->login($account);
+        $legal->record($account, $shown, $request);   // acceptations tracées (version, date, canal, IP)
+
+        Auth::guard('member')->login($account, $app);   // application : session conservée sur l'appareil
         $request->session()->regenerate();
+
+        // Documents encore dus (ex. règles communautaires dans l'application) : écran « Conditions ».
+        $after = $app ? route('social.app.ready') : route('social.mutuals');
+        if ($legal->pendingFor($account)->isNotEmpty()) {
+            return redirect()->route('social.legal.pending', ['app' => $app ? 1 : null, 'suite' => parse_url($after, PHP_URL_PATH)]);
+        }
+        if ($app) {
+            return redirect($after);
+        }
 
         return redirect()->route('social.mutuals')
             ->with('ok', 'Bienvenue sur MX Connect, ' . $account->first_name . ' ! Suivez quelques mutuelles pour personnaliser votre fil.');
@@ -93,6 +120,11 @@ class AuthController extends Controller
 
         Auth::guard('member')->login($account, $request->boolean('remember'));
         $request->session()->regenerate();
+
+        // Nouvelle version d'un document à valider : écran « Conditions » d'abord (2026-11-09).
+        if (app(LegalService::class)->pendingFor($account)->isNotEmpty()) {
+            return redirect()->route('social.legal.pending', ['app' => $request->input('app') === '1' ? 1 : null]);
+        }
 
         return redirect()->intended(route('social.home'));
     }

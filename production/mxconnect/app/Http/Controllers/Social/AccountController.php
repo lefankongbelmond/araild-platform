@@ -73,7 +73,8 @@ class AccountController extends SocialController
         $data = $request->validate([
             'first_name'         => ['required', 'string', 'max:120'],
             'last_name'          => ['required', 'string', 'max:120'],
-            'email'              => ['nullable', 'email:rfc', 'max:180', Rule::unique('central.public_accounts', 'email')->ignore($account->id)],
+            // Compte sans téléphone (inscription par e-mail, 2026-11-09) : l'e-mail est son seul identifiant.
+            'email'              => [$account->phone ? 'nullable' : 'required', 'email:rfc', 'max:180', Rule::unique('central.public_accounts', 'email')->ignore($account->id)],
             'city'               => ['nullable', 'string', 'max:120'],
             'bio'                => ['nullable', 'string', 'max:280'],
             'interests'          => ['nullable', 'array'],

@@ -27,7 +27,8 @@
       <div class="mx-field"><label class="mx-label" for="st-email">E-mail</label><input class="mx-input" id="st-email" type="email" name="email" value="{{ old('email', $account->email) }}" maxlength="180">@error('email')<p class="mx-error">{{ $message }}</p>@enderror</div>
       <div class="mx-field"><label class="mx-label" for="st-city">Ville</label><input class="mx-input" id="st-city" name="city" value="{{ old('city', $account->city) }}" maxlength="120"></div>
     </div>
-    <div class="mx-field"><label class="mx-label">Téléphone (identifiant de connexion)</label><input class="mx-input" value="{{ $account->phone }}" disabled></div>
+    <div class="mx-field"><label class="mx-label">Téléphone (identifiant de connexion)</label><input class="mx-input" value="{{ $account->phone ?: 'Non renseigné — connexion par e-mail' }}" disabled></div>
+    <p class="mx-help"><a href="{{ route('social.legal.history') }}">Documents et historique de mes acceptations</a></p>
     <div class="mx-field"><label class="mx-label" for="st-bio">Présentation</label><textarea class="mx-textarea" id="st-bio" name="bio" maxlength="280" style="min-height:70px">{{ old('bio', $account->bio) }}</textarea><p class="mx-help">280 caractères maximum. N'indiquez pas d'information sur votre santé.</p></div>
     <fieldset class="mx-field" style="border:0;padding:0">
       <legend class="mx-label">Centres d'intérêt</legend>
@@ -63,7 +64,7 @@
   </form>
   <form class="mx-card mx-card__pad mx-stack" method="POST" action="{{ route('social.account.destroy') }}" data-confirm="Supprimer définitivement votre compte ? Cette action est irréversible.">
     @csrf
-    <h2 class="mx-card__title" style="color:var(--mx-danger)">Supprimer mon compte</h2>
+    <h2 class="mx-card__title" id="supprimer" style="color:var(--mx-danger)">Supprimer mon compte</h2>
     <p class="mx-small">Supprime définitivement votre profil, vos publications, commentaires, réactions, abonnements, messages, notifications et demandes d’adhésion (avec leurs pièces jointes). Une fiche d’adhérent déjà créée par une mutuelle reste dans sa gestion : adressez-vous à elle pour la clôturer.</p>
     <div class="mx-grid-2">
       <div class="mx-field"><label class="mx-label" for="del-pw">Mot de passe</label><input class="mx-input" id="del-pw" type="password" name="current_password" required autocomplete="current-password">@error('current_password')<p class="mx-error">{{ $message }}</p>@enderror</div>

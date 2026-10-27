@@ -73,6 +73,12 @@ $paths = [
   'filter' => '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
   'arrow-right' => '<path d="M5 12h14M13 6l6 6-6 6"/>',
   'download' => '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  // Application Android (2026-11-09)
+  'eye' => '<path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/>',
+  'lock' => '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  'chevron-right' => '<path d="m9 6 6 6-6 6"/>',
+  'help' => '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4V14M12 17.5h.01"/>',
+  'document' => '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
 ];
 @endphp
 <svg {{ $attributes->merge(['class' => 'mx-ic']) }} width="{{ $size }}" height="{{ $size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $paths[$name] ?? $paths['more'] !!}</svg>

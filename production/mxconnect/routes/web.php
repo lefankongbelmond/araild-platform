@@ -74,6 +74,14 @@ Route::middleware('auth:network')->group(function () {
     // --- Network back-office (MFA-gated for sensitive roles) ---
     Route::middleware('mfa')->prefix('reseau')->name('network.')->group(function () {
         Route::get('mutuelles', [MutualController::class, 'index'])->name('mutuals.index');
+        // Application Android (2026-11-09) : documents légaux, retours bêta, réglages
+        Route::get('android/documents', [\App\Http\Controllers\Network\AndroidAdminController::class, 'legal'])->name('android.legal');
+        Route::post('android/documents', [\App\Http\Controllers\Network\AndroidAdminController::class, 'saveLegal'])->name('android.legal.save');
+        Route::post('android/documents/{document}/publier', [\App\Http\Controllers\Network\AndroidAdminController::class, 'publish'])->name('android.legal.publish')->whereNumber('document');
+        Route::get('android/retours', [\App\Http\Controllers\Network\AndroidAdminController::class, 'feedback'])->name('android.feedback');
+        Route::post('android/retours/{feedback}', [\App\Http\Controllers\Network\AndroidAdminController::class, 'feedbackStatus'])->name('android.feedback.status')->whereNumber('feedback');
+        Route::get('android/reglages', [\App\Http\Controllers\Network\AndroidAdminController::class, 'settings'])->name('android.settings');
+        Route::post('android/reglages', [\App\Http\Controllers\Network\AndroidAdminController::class, 'saveSettings'])->name('android.settings.save');
         Route::get('mutuelles/creer', [MutualController::class, 'create'])->name('mutuals.create');
         Route::post('mutuelles', [MutualController::class, 'store'])->name('mutuals.store');
         Route::post('mutuelles/{mutual}/agrement', [MutualController::class, 'approve'])->name('mutuals.approve');
@@ -177,6 +185,20 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
     });
     Route::post('compte/deconnexion', [Social\AuthController::class, 'logout'])->name('logout');
 
+    // Application Android (TWA, 2026-11-09) : démarrage, onboarding, connexion, liaison du domaine
+    Route::get('.well-known/assetlinks.json', [Social\AppController::class, 'assetLinks'])->name('app.assetlinks');
+    Route::get('app', [Social\AppController::class, 'start'])->name('app.start');
+    Route::get('app/statut', [Social\AppController::class, 'status'])->name('app.status');
+    Route::get('app/bienvenue', [Social\AppController::class, 'onboarding'])->name('app.onboarding');
+    Route::get('app/bienvenue/terminer', [Social\AppController::class, 'onboardingDone'])->name('app.onboarding.done');
+    Route::get('app/connexion', [Social\AppController::class, 'auth'])->name('app.auth');
+    // Documents légaux versionnés (consultation publique) et page publique de suppression de compte
+    Route::get('legal/{type}/{version?}', [Social\LegalController::class, 'show'])->name('legal.show')
+        ->where(['type' => '[a-z_]+', 'version' => '[0-9A-Za-z.\-]+']);
+    Route::get('compte/suppression', [Social\PageController::class, 'deletion'])->name('account.deletion');
+    Route::get('aide', [Social\PageController::class, 'help'])->name('help');
+    Route::post('aide/retour', [Social\PageController::class, 'feedback'])->name('feedback.store')->middleware('throttle:social-contact');
+
     // Consultation publique
     Route::get('fil', [Social\FeedController::class, 'home'])->name('home');
     Route::get('publications', [Social\FeedController::class, 'all'])->name('all');
@@ -203,7 +225,14 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
     Route::get('confidentialite', [Social\PageController::class, 'privacy'])->name('privacy');
 
     // Actions réservées aux comptes connectés
-    Route::middleware('auth:member')->group(function () {
+    Route::middleware(['auth:member', \App\Http\Middleware\EnsureLegalAccepted::class])->group(function () {
+        // Documents à valider (maquette 5), historique, « compte prêt » (maquette 6)
+        Route::get('compte/conditions', [Social\LegalController::class, 'pending'])->name('legal.pending');
+        Route::post('compte/conditions', [Social\LegalController::class, 'accept'])->name('legal.accept');
+        Route::get('compte/mes-acceptations', [Social\LegalController::class, 'history'])->name('legal.history');
+        Route::get('app/pret', [Social\AppController::class, 'ready'])->name('app.ready');
+        Route::get('compte/menu', [Social\AppController::class, 'menu'])->name('app.menu');
+
         Route::get('fil/abonnements', [Social\FeedController::class, 'following'])->name('following');
         Route::get('enregistrements', [Social\FeedController::class, 'saved'])->name('saved');
         Route::get('connexions', [Social\AccountController::class, 'connections'])->name('connections');

@@ -8,6 +8,10 @@
     <h1 style="font-size:22px">{{ $title }}</h1>
   @endif
 
+  @if ($tab === 'fil')
+    @include('social.partials.app-home-search')
+  @endif
+
   @if (! empty($composer))
     @include('social.partials.composer')
     @guest('member')

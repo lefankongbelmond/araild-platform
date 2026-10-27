@@ -35,6 +35,38 @@ class PageController extends SocialController
 
     public function privacy()
     {
-        return view('social.privacy');
+        // Version publiée la plus récente (documents versionnés, 2026-11-09) ; sinon la page historique.
+        $doc = app(\App\Services\Social\LegalService::class)->currentOf('privacy');
+
+        return $doc ? redirect()->route('social.legal.show', ['type' => 'privacy']) : view('social.privacy');
+    }
+
+    /** Centre d'aide (questions fréquentes) et formulaire de retour bêta (2026-11-09). */
+    public function help()
+    {
+        return view('social.help');
+    }
+
+    public function feedback(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate([
+            'category' => ['required', 'in:' . implode(',', array_keys(\App\Models\Social\BetaFeedback::CATEGORIES))],
+            'message'  => ['required', 'string', 'min:10', 'max:3000'],
+            'screen'   => ['nullable', 'string', 'max:120'],
+            'contact'  => ['nullable', 'string', 'max:180'],
+            'device'   => ['nullable', 'string', 'max:160'],
+        ], ['message.min' => 'Décrivez votre retour en quelques mots (10 caractères minimum).']);
+        \App\Models\Social\BetaFeedback::create($data + [
+            'public_account_id' => auth('member')->id(),
+            'app_version' => session('app_version') ? 'Android ' . session('app_version') : 'Web',
+        ]);
+
+        return back()->with('ok', 'Merci ! Votre retour a été transmis à l’équipe MX-CONNECT.');
+    }
+
+    /** Page PUBLIQUE de suppression de compte (exigée par Google Play pour l'application). */
+    public function deletion()
+    {
+        return view('social.deletion');
     }
 }

@@ -197,6 +197,15 @@ return [
 
 
     // --- Phase 3 / Module 16: security headers ---
+    // Application Android (TWA, 2026-11-09). Rien de secret ici : le nom du paquet et
+    // l'empreinte SHA-256 du certificat de signature sont publics (assetlinks.json).
+    // Réglables aussi depuis l'espace super-admin (Réseau social → Réglages).
+    'android' => [
+        'package'  => env('MX_ANDROID_PACKAGE', 'com.araild.mxconnect'),
+        'sha256'   => env('MX_ANDROID_SHA256'),          // une ou plusieurs empreintes, séparées par des virgules
+        'store_url' => env('MX_ANDROID_STORE_URL'),
+    ],
+
     'security' => [
         // Moderate CSP: allows the Tailwind CDN + cdnjs and the inline config the
         // Blade views use. Tighten (drop 'unsafe-inline') once assets are bundled.

@@ -25,6 +25,8 @@
   $soon = [];
   $unreadNotif = $viewer ? \App\Models\Social\SocialNotification::where('public_account_id', $viewer->id)->whereNull('read_at')->count() : 0;
   $unreadMsg = $viewer ? (int) \App\Models\Social\Conversation::where('public_account_id', $viewer->id)->sum('account_unread') : 0;
+  // Documents légaux à valider (2026-11-09) : bandeau, la lecture reste possible.
+  $legalPending = $viewer ? app(\App\Services\Social\LegalService::class)->pendingFor($viewer)->count() : 0;
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -42,6 +44,10 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/mx-social.css?v={{ config('mxconnect.asset_version') }}">
+  <link rel="stylesheet" href="/css/mx-app.css?v={{ config('mxconnect.asset_version') }}">
+  {{-- Mode application (2026-11-09) : application Android (TWA) ou site installé (PWA) → barre
+       de navigation du bas des maquettes. Le site ouvert dans un navigateur ne change pas. --}}
+  <script>(function(){try{var d=document.documentElement,s=window.sessionStorage,app=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||document.referrer.indexOf('android-app://')===0||(s&&s.getItem('mx_app')==='1');if(app){d.classList.add('is-app');if(s)s.setItem('mx_app','1');}}catch(e){}})();</script>
   {{ $head ?? '' }}
 </head>
 @php $light = \App\Support\SocialLoad::light(); @endphp
@@ -56,9 +62,13 @@
       </form>
       <div class="mx-top-actions">
         @if ($viewer)
-          <a class="mx-iconbtn mx-show-m" href="{{ route('social.home') }}#composer" aria-label="Créer une publication"><x-mx.icon name="plus" :size="20" /></a>
+          <a class="mx-iconbtn mx-show-m mx-web-only" href="{{ route('social.home') }}#composer" aria-label="Créer une publication"><x-mx.icon name="plus" :size="20" /></a>
         @endif
         <a class="mx-iconbtn mx-show-sm" href="{{ route('social.search') }}" aria-label="Rechercher"><x-mx.icon name="search" :size="20" /></a>
+        @if ($viewer)
+          <a class="mx-iconbtn mx-badge-wrap mx-apphead-only" href="{{ route('social.notifications') }}" aria-label="Notifications{{ $unreadNotif ? ' ('.$unreadNotif.' non lues)' : '' }}"><x-mx.icon name="bell" :size="20"/>@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
+          <a class="mx-apphead-only" href="{{ route('social.app.menu') }}" aria-label="Mon profil"><x-mx.avatar :src="$viewer->avatarUrl()" :name="$viewer->name" size="sm" /></a>
+        @endif
         @if ($viewer)
           <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.messages') }}" aria-label="Messages{{ $unreadMsg ? ' ('.$unreadMsg.' non lus)' : '' }}"><x-mx.icon name="message" :size="18" />@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
           <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.notifications') }}" aria-label="Notifications{{ $unreadNotif ? ' ('.$unreadNotif.' non lues)' : '' }}"><x-mx.icon name="bell" :size="18" />@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
@@ -180,6 +190,7 @@
       @foreach (['ok' => 'ok', 'error' => 'err', 'info' => 'info'] as $key => $cls)
         @if (session($key))<div class="mx-alert mx-alert--{{ $cls }}" role="status">{{ session($key) }}</div>@endif
       @endforeach
+      @if ($legalPending)<div class="mx-alert mx-alert--info" role="status">Nos documents ont été mis à jour. <a href="{{ route('social.legal.pending', ['suite' => '/' . ltrim(request()->path(), '/')]) }}"><b>Les consulter et les valider</b></a> pour continuer à publier et à réagir.</div>@endif
       @if ($light)<div class="mx-alert mx-alert--info" role="status">Le réseau est très sollicité : affichage allégé pendant quelques minutes (moins de publications par page, vidéos sans lecture automatique). Tout reste accessible.</div>@endif
       {{ $slot }}
     </main>
@@ -194,6 +205,15 @@
   </div>
   @endif
 
+
+  {{-- Barre du bas (mode application uniquement) : maquettes 7 à 14 --}}
+  <nav class="mx-tabbar" aria-label="Navigation de l’application">
+    <a href="{{ route('social.home') }}" @class(['is-active' => $active === 'fil']) @if($active === 'fil') aria-current="page" @endif><x-mx.icon name="home" :size="24"/>Accueil</a>
+    <a href="{{ route('social.discover') }}" @class(['is-active' => $active === 'decouvrir'])><x-mx.icon name="compass" :size="24"/>Découvrir</a>
+    <a href="{{ $viewer ? route('social.home') . '#composer' : route('social.app.auth') }}" aria-label="Publier"><span class="mx-tabbar__plus"><x-mx.icon name="plus" :size="26"/></span>Publier</a>
+    <a href="{{ $viewer ? route('social.messages') : route('social.app.auth') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif Messages</a>
+    <a href="{{ $viewer ? route('social.app.menu') : route('social.app.auth') }}" @class(['is-active' => in_array($active, ['profil', 'parametres', 'menu'], true)])><x-mx.icon name="user" :size="24"/>Profil</a>
+  </nav>
 
   <div class="mx-toasts" id="mx-toasts" aria-live="polite"></div>
   @include('social.partials.report-modal')

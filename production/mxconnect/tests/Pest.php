@@ -14,10 +14,16 @@ uses(TestCase::class, RefreshDatabase::class)->in('Feature');
 
 // --- Aides communes aux tests du réseau social (comptes, pages, projets, offres) ---
 
-function account(string $name = 'Awa'): PublicAccount
+function account(string $name = 'Awa', bool $acceptLegal = true): PublicAccount
 {
-    return PublicAccount::create(['first_name' => $name, 'last_name' => 'Test', 'phone' => '+2376' . random_int(10000000, 99999999),
+    $a = PublicAccount::create(['first_name' => $name, 'last_name' => 'Test', 'phone' => '+2376' . random_int(10000000, 99999999),
         'email' => Str::lower($name) . random_int(1000, 9999) . '@exemple.cm', 'password' => 'motdepasse-solide'])->fresh();
+    // Comme à l'inscription : documents légaux en vigueur acceptés (2026-11-09).
+    if ($acceptLegal) {
+        app(\App\Services\Social\LegalService::class)->record($a, app(\App\Services\Social\LegalService::class)->current(), request(), 'web');
+    }
+
+    return $a;
 }
 
 /** Page créée par un membre (propriétaire = $owner). */

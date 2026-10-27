@@ -1,0 +1,139 @@
+/* =========================================================================
+   MX-CONNECT — application Android (TWA) et écrans d'entrée (2026-11-09)
+   D'après les maquettes 1 à 14 fournies par le fondateur.
+   Utilise les jetons de mx-social.css (navy, vert d'action, orange soutien).
+   ========================================================================= */
+
+/* ---------- Écrans plein écran (démarrage, onboarding, connexion, conditions) ---------- */
+.mx-appscreen { margin: 0; min-height: 100vh; min-height: 100dvh; background: var(--mx-white); color: var(--mx-text); font-family: Inter, system-ui, sans-serif; }
+.mx-as { box-sizing: border-box; max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+  padding: calc(16px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom)); }
+.mx-as *, .mx-as *::before, .mx-as *::after { box-sizing: border-box; }
+.mx-as__top { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.mx-as__back { display: inline-flex; align-items: center; gap: 10px; color: var(--mx-navy); font-weight: 700; font-size: 18px; text-decoration: none; }
+.mx-as__skip { color: var(--mx-blue); font-weight: 600; text-decoration: none; font-size: 15px; padding: 8px 4px; }
+.mx-as__title { color: var(--mx-navy); font-size: 26px; line-height: 1.2; font-weight: 800; margin: 14px 0 6px; }
+.mx-as__lead { color: var(--mx-muted); font-size: 15px; line-height: 1.5; margin: 0 0 18px; }
+.mx-as__grow { flex: 1; }
+.mx-as__foot { margin-top: 18px; }
+.mx-as__center { text-align: center; }
+
+/* Boutons pleine largeur */
+.mx-abtn { display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 14px; border: 0;
+  background: var(--mx-blue); color: #fff; font: 700 16px/1 Inter, system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.mx-abtn:hover { background: var(--mx-blue-2); }
+.mx-abtn[disabled], .mx-abtn.is-disabled { background: #E4E8EE; color: #9AA3B2; cursor: not-allowed; }
+.mx-abtn--ghost { background: #fff; color: var(--mx-text); border: 1px solid var(--mx-border); font-weight: 600; }
+.mx-abtn--ghost:hover { background: var(--mx-surface-2); }
+.mx-abtn--sun { background: var(--mx-sun); } .mx-abtn--sun:hover { background: #C4661A; }
+.mx-abtn--sky { background: var(--mx-sky); }
+
+/* Champs avec icône */
+.mx-afield { margin-bottom: 14px; }
+.mx-afield > label, .mx-alabel { display: block; font-size: 14px; font-weight: 600; color: var(--mx-text); margin-bottom: 7px; }
+.mx-ainput { position: relative; display: flex; align-items: center; border: 1px solid var(--mx-border); border-radius: 12px; background: #fff; min-height: 50px; }
+.mx-ainput:focus-within { border-color: var(--mx-blue); box-shadow: 0 0 0 3px var(--mx-blue-soft); }
+.mx-ainput > .mx-ic { margin: 0 4px 0 14px; color: #8A94A6; flex: none; }
+.mx-ainput input, .mx-ainput select { flex: 1; min-width: 0; border: 0; background: transparent; font: 15px Inter, system-ui, sans-serif; color: var(--mx-text); padding: 12px 12px; outline: none; }
+.mx-ainput select.mx-cc { flex: none; width: 108px; border-right: 1px solid var(--mx-border); border-radius: 0; padding-right: 4px; }
+.mx-ainput__eye { border: 0; background: none; color: #8A94A6; padding: 10px 14px; cursor: pointer; display: inline-flex; }
+.mx-arow2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.mx-aerror { color: var(--mx-danger); font-size: 13px; margin: 6px 0 0; }
+.mx-aalert { border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; background: var(--mx-danger-soft); color: var(--mx-danger); }
+.mx-aalert--ok { background: var(--mx-green-soft); color: var(--mx-blue-2); }
+.mx-aalert--info { background: var(--mx-sky-soft); color: #1F4FA8; }
+
+/* Cases à cocher (jamais pré-cochées pour un accord) */
+.mx-acheck { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--mx-text); margin: 10px 0; cursor: pointer; }
+.mx-acheck input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: var(--mx-blue); }
+.mx-acheck a { color: var(--mx-sky); }
+
+/* Onglets Se connecter / Créer un compte */
+.mx-atabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--mx-border); margin: 6px 0 20px; }
+.mx-atabs a { text-align: center; padding: 12px 4px; color: var(--mx-muted); text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.mx-atabs a.is-active { color: var(--mx-blue); border-bottom-color: var(--mx-blue); }
+.mx-arowlink { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 18px; font-size: 14px; }
+.mx-arowlink a { color: var(--mx-sky); text-decoration: none; font-weight: 600; }
+.mx-aor { display: flex; align-items: center; gap: 12px; color: var(--mx-muted); font-size: 13px; margin: 16px 0; }
+.mx-aor::before, .mx-aor::after { content: ""; flex: 1; height: 1px; background: var(--mx-border); }
+
+/* Démarrage (maquette 1) */
+.mx-splash { justify-content: space-between; text-align: center; }
+.mx-splash__logo { margin: 9vh auto 0; }
+.mx-splash__logo img { width: 132px; height: 132px; }
+.mx-splash__word { font-size: 34px; font-weight: 900; letter-spacing: .5px; color: var(--mx-navy); margin: 14px 0 4px; }
+.mx-splash__word b { color: var(--mx-brand-green); }
+.mx-splash__tag { color: var(--mx-blue); font-weight: 600; font-size: 15px; }
+.mx-splash__art { margin: 18px auto; width: 100%; max-width: 330px; }
+.mx-splash__msg { color: var(--mx-navy); font-size: 15px; line-height: 1.5; margin: 0 0 18px; }
+.mx-spin { width: 26px; height: 26px; border: 3px solid var(--mx-blue-soft); border-top-color: var(--mx-blue); border-radius: 50%; margin: 0 auto 8px; animation: mx-spin .9s linear infinite; }
+@keyframes mx-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mx-spin { animation: none; } }
+
+/* Onboarding (maquette 2) */
+.mx-onb__slide { display: none; flex: 1; flex-direction: column; }
+.mx-onb__slide.is-active { display: flex; }
+.mx-onb__art { position: relative; width: min(300px, 78vw); aspect-ratio: 1; margin: 6px auto 18px; border-radius: 50%; background: var(--mx-blue-soft); overflow: visible; }
+.mx-onb__art img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.mx-onb__bubble { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; background: #fff; box-shadow: 0 6px 18px rgba(11, 37, 89, .14); color: var(--mx-blue); }
+.mx-onb__bubble--sky { color: var(--mx-sky); } .mx-onb__bubble--sun { color: var(--mx-sun); } .mx-onb__bubble--red { color: #E0434B; }
+.mx-onb__h { color: var(--mx-navy); font-size: 28px; font-weight: 800; margin: 6px 0 8px; }
+.mx-onb__p { color: var(--mx-muted); font-size: 16px; line-height: 1.5; margin: 0; }
+.mx-dots { display: flex; justify-content: center; gap: 8px; margin: 22px 0; }
+.mx-dots span { width: 8px; height: 8px; border-radius: 50%; background: #D3DAE5; }
+.mx-dots span.is-active { background: var(--mx-blue); width: 22px; border-radius: 6px; }
+
+/* Documents à valider (maquette 5) */
+.mx-docs { display: grid; gap: 10px; margin: 6px 0 16px; }
+.mx-doc { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--mx-border); border-radius: 14px; background: #fff; text-decoration: none; color: inherit; }
+.mx-doc__ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--mx-sky-soft); color: var(--mx-sky); flex: none; }
+.mx-doc__ic--green { background: var(--mx-green-soft); color: var(--mx-blue); }
+.mx-doc__ic--navy { background: #E8EDF7; color: var(--mx-navy); }
+.mx-doc__t { flex: 1; min-width: 0; }
+.mx-doc__t b { display: block; color: var(--mx-navy); font-size: 15px; }
+.mx-doc__t span { color: var(--mx-muted); font-size: 13px; }
+.mx-doc__ok { color: var(--mx-blue); font-size: 13px; font-weight: 600; margin: 4px 0; display: flex; align-items: center; gap: 6px; }
+
+/* Compte prêt (maquette 6) */
+.mx-ready__check { width: 96px; height: 96px; border-radius: 50%; background: var(--mx-blue); color: #fff; display: grid; place-items: center; margin: 7vh auto 18px; box-shadow: 0 0 0 12px var(--mx-blue-soft); }
+.mx-confetti { position: relative; height: 0; }
+.mx-confetti i { position: absolute; width: 8px; height: 3px; border-radius: 2px; }
+.mx-steps { display: grid; gap: 10px; margin: 22px 0; }
+.mx-step { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--mx-border); border-radius: 14px; text-decoration: none; color: inherit; background: #fff; }
+.mx-step__ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+.mx-step b { display: block; color: var(--mx-navy); font-size: 15px; }
+.mx-step span { color: var(--mx-muted); font-size: 13px; }
+
+/* Texte légal */
+.mx-legal h2 { font-size: 17px; color: var(--mx-navy); margin: 18px 0 6px; }
+.mx-legal p { margin: 0 0 10px; line-height: 1.6; }
+.mx-legal__list { padding-left: 20px; margin: 0 0 10px; line-height: 1.6; }
+.mx-legal__tpl { border: 2px dashed var(--mx-warning); background: var(--mx-warning-soft); color: var(--mx-warning); border-radius: 12px; padding: 10px 14px; font-weight: 600; margin-bottom: 14px; }
+
+/* Accueil en mode application (maquette 7) : recherche + domaines */
+.mx-apphome { display: none; }
+@media (max-width: 899px) {
+  html.is-app .mx-apphome { display: grid; gap: 12px; margin-bottom: 12px; }
+}
+.mx-apphome__search { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border: 1px solid var(--mx-border); border-radius: 14px; background: var(--mx-surface); color: var(--mx-muted); }
+.mx-apphome__search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: 15px; color: var(--mx-text); }
+.mx-apphome__search:focus-within { border-color: var(--mx-blue-2); box-shadow: 0 0 0 3px rgba(46, 158, 79, .15); }
+
+/* ---------- Mode application dans les pages du réseau (TWA / PWA installée) ---------- */
+.mx-tabbar { display: none; }
+.mx-apphead-only { display: none; }
+/* Téléphone et petite tablette seulement : au-delà de 900 px, la mise en page du site reste celle du bureau. */
+@media (max-width: 899px) {
+  html.is-app .mx-tabbar { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    background: #fff; border-top: 1px solid var(--mx-border); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  html.is-app .mx-tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #8A94A6; text-decoration: none; position: relative; padding: 4px 0; }
+  html.is-app .mx-tabbar a.is-active { color: var(--mx-blue); }
+  html.is-app .mx-tabbar__plus { width: 50px; height: 50px; border-radius: 50%; background: var(--mx-blue); color: #fff; display: grid; place-items: center; margin-top: -22px; box-shadow: 0 6px 16px rgba(46, 158, 79, .35); }
+  html.is-app .mx-tabbar .mx-count { position: absolute; top: 0; left: 50%; margin-left: 6px; }
+  html.is-app body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  html.is-app .mx-iconnav { display: none; }                 /* remplacée par la barre du bas */
+  html.is-app .mx-topbar .mx-search { display: none !important; }
+  html.is-app .mx-topbar .mx-show-sm { display: none !important; }
+  html.is-app .mx-apphead-only { display: inline-flex; }
+  html.is-app .mx-web-only { display: none !important; }                /* « + » remplacé par « Publier » de la barre du bas */
+}

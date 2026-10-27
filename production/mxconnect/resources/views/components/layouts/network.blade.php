@@ -24,6 +24,11 @@
           ['network.social.projects', 'Projets et offres', 'target', $MOD, 'network.social.projects*'],
           ['network.social.settings', 'Réglages du réseau', 'sliders', $MOD, 'network.social.settings*'],
       ],
+      'Application Android' => [
+          ['network.android.legal', 'Documents légaux', 'file', $SA, 'network.android.legal*'],
+          ['network.android.feedback', 'Retours bêta', 'inbox', $MOD, 'network.android.feedback*'],
+          ['network.android.settings', 'Réglages de l’application', 'phone', $SA, 'network.android.settings*'],
+      ],
       'Configuration' => [
           ['network.config.countries', 'Pays', 'globe', $ADM, 'network.config.countries*'],
           ['network.config.currencies', 'Devises', 'coins', $ADM, 'network.config.currencies*'],
