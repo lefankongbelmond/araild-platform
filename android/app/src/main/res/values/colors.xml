@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palette du réseau (navy #0B2559, fond blanc de l'écran de démarrage) -->
+    <color name="status_bar">#FFFFFF</color>
+    <color name="navigation_bar">#FFFFFF</color>
+    <color name="splash_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#FFFFFF</color>
+</resources>

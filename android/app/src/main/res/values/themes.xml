@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Activité de lancement transparente : l'écran de démarrage est affiché par la bibliothèque TWA. -->
+    <style name="Theme.MxConnect" parent="@android:style/Theme.Translucent.NoTitleBar" />
+</resources>
