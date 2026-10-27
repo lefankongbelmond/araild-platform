@@ -124,8 +124,17 @@ $mutual->run(function () use ($csi) {
         'periodicity' => 'monthly', 'coverage_rate' => 80, 'copay_rate' => 20, 'observation_days' => 0]);
     $m = \App\Models\Tenant\Member::firstOrCreate(['member_code' => 'MUT-LOCAL-001'], ['first_name' => 'Awa', 'last_name' => 'Nkolo', 'birth_date' => '1990-04-02',
         'sex' => 'F', 'status' => 'active', 'joined_at' => '2026-01-01']);
-    \App\Models\Tenant\Subscription::firstOrCreate(['member_id' => $m->id, 'guarantee_version_id' => $v->id], ['contribution_minor' => 1500, 'effective_date' => '2026-01-01',
+    $sub = \App\Models\Tenant\Subscription::firstOrCreate(['member_id' => $m->id, 'guarantee_version_id' => $v->id], ['contribution_minor' => 1500, 'effective_date' => '2026-01-01',
         'observation_ends_on' => '2026-01-01', 'status' => 'validated', 'captured_by' => 1]);
+    // Lot 13 : « couvert » = à jour de ses cotisations. Échéancier glissant, échéances déjà
+    // arrivées soldées par un encaissement LOCAL (sinon les droits sont, à raison, refusés).
+    app(\App\Services\ScheduleGenerationService::class)->extend($sub->fresh('guaranteeVersion'));
+    $due = \App\Models\Tenant\ContributionSchedule::where('subscription_id', $sub->id)->where('status', '!=', 'paid')
+        ->whereDate('due_date', '<=', now()->toDateString())->withSum('payments', 'amount_minor')->get()
+        ->sum(fn ($s) => max(0, $s->due_minor - (int) $s->payments_sum_amount_minor));
+    if ($due > 0) {
+        app(\App\Services\Tenant\ContributionCollectionService::class)->collect($m, $due, now()->toDateString(), 'cash', 'DONNEES-LOCALES', 1);
+    }
     \App\Models\Tenant\ActType::firstOrCreate(['code' => 'LOC-CONS'], ['label' => 'Consultation de médecine générale', 'category' => 'consultation']);
     // Comptes LOCAUX prêts pour le parcours navigateur : mot de passe déjà choisi, double authentification à (re)configurer.
     \App\Models\Tenant\User::where('email', 'like', '%@mutueltest.test')->update(['must_change_password' => false,
