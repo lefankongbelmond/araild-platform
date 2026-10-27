@@ -25,6 +25,12 @@
             @if (is_array($v->provider_network))<b>{{ collect($v->provider_network)->map(fn ($id) => $providers[$id] ?? 'Prestataire n° ' . $id)->implode(', ') }}</b>
             @else<b>tous les prestataires</b>@endif
           </div>
+          @php $exNames = $acts->whereIn('id', (array) $v->exclusions)->pluck('label'); @endphp
+          <div class="mt-1 text-sm text-ink/70">Actes non couverts : <b>{{ $exNames->isNotEmpty() ? $exNames->implode(', ') : 'aucun' }}</b></div>
+          <div class="mt-1 text-sm text-ink/70">Plafonds :
+            @forelse ($v->ceilings as $c)<b>{{ $c->actType?->label ?? 'tous les actes' }} : {{ $currency->format($c->ceiling_minor) }} {{ \App\Models\Tenant\Ceiling::PERIODS[$c->period] ?? $c->period }}</b>@if (! $loop->last) ; @endif
+            @empty<b>aucun</b>@endforelse
+          </div>
         </div>
       @endforeach
     </div>
@@ -83,4 +89,66 @@
     @endcan
     </div>
   </div>
+
+  @if ($current && \App\Support\TenantAccess::can('guarantees.terms'))
+    @php
+      $raw = fn ($minor) => rtrim(rtrim(number_format($minor / (10 ** $currency->minor_unit), $currency->minor_unit, '.', ''), '0'), '.');
+      $rows = old('ceilings', $current->ceilings->map(fn ($c) => ['act_type_id' => $c->act_type_id, 'amount' => $raw($c->ceiling_minor), 'period' => $c->period])->all());
+      $rows = array_values($rows);
+      for ($i = count($rows); $i < count($rows) + 3 && count($rows) < 60; $i++) { $rows[] = ['act_type_id' => null, 'amount' => null, 'period' => 'annual']; }
+      $excluded = array_map('intval', (array) old('exclusions', $current->exclusions ?? []));
+      $fx = 'w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
+    @endphp
+    <form method="POST" action="{{ route('guarantees.terms', $guarantee) }}" class="mt-6 space-y-5 rounded-lg border border-ink/10 bg-white p-4 sm:p-6">
+      @csrf
+      <div>
+        <h2 class="text-lg font-semibold">Plafonds et exclusions</h2>
+        <p class="mt-1 text-sm text-ink/60">Version en cours V{{ $current->version_no }}. Un acte exclu bloque la prise en charge (« Acte non couvert »). Un plafond limite la part de la mutuelle ; au-delà, la différence reste à la charge de l’adhérent et une alerte « Plafond atteint » est créée.</p>
+      </div>
+      @if ($errors->hasAny(['ceilings', 'exclusions', 'exclusions.*', 'effective_from']) || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'ceilings.')))
+        <div class="rounded-md border border-clay/30 bg-clay/5 px-3 py-2 text-sm text-clay">{{ collect($errors->getMessages())->filter(fn ($m, $k) => str_starts_with($k, 'ceilings') || str_starts_with($k, 'exclusions') || $k === 'effective_from')->flatten()->first() }}</div>
+      @endif
+
+      <fieldset>
+        <legend class="text-sm font-semibold">Plafonds <span class="font-normal text-ink/50">({{ $currency->code }} ; laisser le montant vide pour supprimer une ligne)</span></legend>
+        <div class="mt-2 space-y-2">
+          @foreach ($rows as $i => $r)
+            <div class="grid gap-2 rounded-md bg-paper px-3 py-2 sm:grid-cols-3">
+              <label class="text-xs text-ink/60">Acte<select name="ceilings[{{ $i }}][act_type_id]" class="{{ $fx }} mt-1">
+                <option value="">Tous les actes (plafond global)</option>
+                @foreach ($acts as $a)<option value="{{ $a->id }}" @selected((int) ($r['act_type_id'] ?? 0) === $a->id)>{{ $a->label }}</option>@endforeach
+              </select></label>
+              <label class="text-xs text-ink/60">Montant maximal<input name="ceilings[{{ $i }}][amount]" value="{{ $r['amount'] ?? '' }}" inputmode="decimal" class="{{ $fx }} mt-1" placeholder="Ex. 150000"></label>
+              <label class="text-xs text-ink/60">Période<select name="ceilings[{{ $i }}][period]" class="{{ $fx }} mt-1">
+                @foreach (\App\Models\Tenant\Ceiling::PERIODS as $k => $l)<option value="{{ $k }}" @selected(($r['period'] ?? 'annual') === $k)>{{ $l }}</option>@endforeach
+              </select></label>
+            </div>
+          @endforeach
+        </div>
+        <p class="mt-1 text-xs text-ink/50">Un plafond « par an » se cumule sur les prestations validées de l’adhérent et de ses ayants droit dans l’année civile. Un plafond propre à un acte remplace le plafond global pour cet acte.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend class="text-sm font-semibold">Actes non couverts</legend>
+        @if ($acts->isEmpty())
+          <p class="mt-1 text-sm text-ink/55">Aucun acte : ajoutez-en dans Paramètres → Actes.</p>
+        @else
+          <div class="mt-2 grid gap-1 overflow-y-auto rounded-md border border-ink/10 p-3 sm:grid-cols-2 lg:grid-cols-3" style="max-height:18rem">
+            @foreach ($acts as $a)
+              <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="exclusions[]" value="{{ $a->id }}" class="mt-1" @checked(in_array($a->id, $excluded, true))><span>{{ $a->label }}@if ($a->category) <span class="text-xs text-ink/45">{{ $a->category }}</span>@endif</span></label>
+            @endforeach
+          </div>
+        @endif
+      </fieldset>
+
+      @if ($current->locked)
+        <div class="grid gap-2 sm:grid-cols-3">
+          <label class="text-sm">Applicable à partir du
+            <input name="effective_from" type="date" required min="{{ now()->toDateString() }}" value="{{ old('effective_from', now()->addDay()->toDateString()) }}" class="{{ $fx }} mt-1"></label>
+          <p class="text-xs text-ink/50 sm:col-span-2">La version V{{ $current->version_no }} a déjà servi à des recours : elle reste inchangée. Ces conditions ouvrent une version V{{ $current->version_no + 1 }} (cotisation, taux et réseau repris).</p>
+        </div>
+      @endif
+      <button class="rounded-md bg-pine px-5 py-2 text-sm font-medium text-white hover:bg-ink transition">Enregistrer les plafonds et exclusions</button>
+    </form>
+  @endif
 </x-layouts.tenant>

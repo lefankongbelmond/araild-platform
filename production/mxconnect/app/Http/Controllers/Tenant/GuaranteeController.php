@@ -56,7 +56,7 @@ class GuaranteeController extends Controller
 
     public function show(Guarantee $guarantee)
     {
-        $guarantee->load(['versions' => fn ($q) => $q->orderByDesc('version_no')]);
+        $guarantee->load(['versions' => fn ($q) => $q->orderByDesc('version_no'), 'versions.ceilings.actType']);
         $ids = $guarantee->versions->pluck('provider_network')->filter()->flatten()
             ->merge(\Illuminate\Support\Facades\Schema::hasTable('provider_conventions') ? ProviderConvention::pluck('care_provider_id') : [])->unique();
 
@@ -64,6 +64,7 @@ class GuaranteeController extends Controller
             'guarantee'   => $guarantee,
             'currency'    => $this->currency(),
             'providers'   => CareProvider::on('central')->whereIn('id', $ids)->orderBy('name')->pluck('name', 'id'),
+            'acts'        => \App\Models\Tenant\ActType::orderBy('label')->get(['id', 'label', 'category']),
             'conventions' => \Illuminate\Support\Facades\Schema::hasTable('provider_conventions')
                 ? ProviderConvention::all()->keyBy('care_provider_id') : collect(),
         ]);
@@ -114,6 +115,48 @@ class GuaranteeController extends Controller
 
         return redirect()->route('guarantees.show', $guarantee)
             ->with('success', __('mxconnect.guarantee.version_created'));
+    }
+
+    /**
+     * Plafonds et exclusions de la garantie (2026-11-03). Montants saisis dans la devise de la
+     * mutuelle ; un plafond laissé vide est supprimé. Version déjà utilisée → nouvelle version datée.
+     */
+    public function terms(Request $request, Guarantee $guarantee)
+    {
+        $current = $guarantee->versions()->whereNull('valid_to')->latest('version_no')->firstOrFail();
+        $data = $request->validate([
+            'exclusions'               => ['nullable', 'array'],
+            'exclusions.*'             => ['integer', Rule::exists('act_types', 'id')],
+            'ceilings'                 => ['nullable', 'array', 'max:60'],
+            'ceilings.*.act_type_id'   => ['nullable', 'integer', Rule::exists('act_types', 'id')],
+            'ceilings.*.amount'        => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
+            'ceilings.*.period'        => ['required_with:ceilings.*.amount', 'nullable', Rule::in(array_keys(\App\Models\Tenant\Ceiling::PERIODS))],
+            'effective_from'           => $current->locked
+                ? ['required', 'date', 'after_or_equal:today', 'after:' . $current->valid_from->toDateString()] : ['nullable'],
+        ], [
+            'ceilings.*.amount.numeric' => 'Le montant d’un plafond doit être un nombre.',
+            'effective_from.after'      => 'La nouvelle version doit commencer après le début de la version en cours.',
+        ]);
+
+        $cur = $this->currency();
+        $ceilings = [];
+        foreach ($data['ceilings'] ?? [] as $c) {
+            if (($c['amount'] ?? null) === null || $c['amount'] === '') {
+                continue;   // ligne vide = pas de plafond
+            }
+            $key = ($c['act_type_id'] ?? 0) . '|' . $c['period'];
+            if (isset($ceilings[$key])) {
+                return back()->withInput()->withErrors(['ceilings' => 'Deux plafonds identiques (même acte, même période) : gardez-en un seul.']);
+            }
+            $ceilings[$key] = ['act_type_id' => isset($c['act_type_id']) ? (int) $c['act_type_id'] : null,
+                'ceiling_minor' => $cur->toMinor((float) $c['amount']), 'period' => $c['period']];
+        }
+
+        $version = $this->versioning->setTerms($guarantee, $data['exclusions'] ?? [], array_values($ceilings), $data['effective_from'] ?? null);
+
+        return redirect()->route('guarantees.show', $guarantee)->with('success', $version->is($current)
+            ? 'Plafonds et exclusions enregistrés.'
+            : "Plafonds et exclusions enregistrés dans la version V{$version->version_no}, applicable à partir du {$version->valid_from->format('d/m/Y')} (la version précédente, déjà utilisée par des recours, reste inchangée).");
     }
 
     private function currency(): Currency

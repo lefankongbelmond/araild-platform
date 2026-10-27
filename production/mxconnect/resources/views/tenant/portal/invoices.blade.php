@@ -37,7 +37,8 @@
             <td class="px-4 py-3">n° {{ $inv->id }}@if($inv->provider_reference)<div class="text-xs text-ink/50">Votre réf. {{ $inv->provider_reference }}</div>@endif<div class="text-xs text-ink/50">{{ $inv->created_at?->format('d/m/Y') }}</div></td>
             <td class="px-4 py-3">{{ $inv->careClaim?->member?->last_name }} {{ $inv->careClaim?->member?->first_name }}</td>
             <td class="px-4 py-3 font-medium tabular-nums">{{ $currency->format($inv->amount_minor) }}</td>
-            <td class="px-4 py-3 text-xs {{ $inv->status === 'paid' ? 'text-pine' : ($inv->status === 'rejected' ? 'text-clay' : 'text-ink/60') }}">{{ $S[$inv->status] ?? $inv->status }}@if($inv->status === 'paid') le {{ $inv->updated_at?->format('d/m/Y') }}@endif</td>
+            <td class="px-4 py-3 text-xs {{ $inv->status === 'paid' ? 'text-pine' : ($inv->status === 'rejected' ? 'text-clay' : 'text-ink/60') }}">{{ $S[$inv->status] ?? $inv->status }}@if($inv->status === 'paid') le {{ ($inv->decided_at ?? $inv->updated_at)?->format('d/m/Y') }}@endif
+              @if ($inv->status === 'rejected' && $inv->decision_note)<div class="mt-1 text-clay">Motif : {{ $inv->decision_note }}</div>@endif</td>
             <td class="px-4 py-3 text-xs">
               @if ($inv->supporting_doc_path)<a class="text-pine underline" href="{{ route('portal.invoices.document', $inv->id) }}">Facture PDF</a>@endif
               @if (in_array($inv->status, ['captured', 'processed'], true) && $convention->inForce())

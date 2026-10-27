@@ -96,7 +96,8 @@ class ClaimSettlementController extends Controller
         }
 
         DB::transaction(function () use ($request, $invoice) {
-            $invoice->update(['status' => 'paid', 'validated_by' => $request->user()->id]);
+            $invoice->update(['status' => 'paid', 'validated_by' => $request->user()->id]
+                + (\Illuminate\Support\Facades\Schema::hasColumn('provider_invoices', 'decided_at') ? ['decided_at' => now()] : []));
 
             TreasuryMovement::create([
                 'direction'        => 'outflow',

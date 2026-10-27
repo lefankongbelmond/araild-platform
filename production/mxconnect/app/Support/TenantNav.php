@@ -51,6 +51,8 @@ class TenantNav
             'Facturation et finances' => [
                 'billing.dashboard'   => ['Facturation', 'receipt'],
                 'billing.quote'       => ['Calcul de quote-part', 'calculator'],
+                'invoices.index'      => ['Factures des prestataires', 'receipt'],
+                'reports.index'       => ['Rapports d’activité', 'chart'],
                 'contributions.index' => ['mxconnect.contribution.plural', 'coins'],
                 'budget.index'        => ['Budget', 'pie'],
                 'treasury.dashboard'  => ['mxconnect.treasury.title', 'wallet'],

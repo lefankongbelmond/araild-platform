@@ -223,6 +223,7 @@ Route::middleware([
         Route::get('garanties/{guarantee}', [GuaranteeController::class, 'show'])->name('guarantees.show');
         Route::post('garanties/{guarantee}/version', [GuaranteeController::class, 'newVersion'])->name('guarantees.version');
         Route::post('garanties/{guarantee}/reseau', [GuaranteeController::class, 'network'])->name('guarantees.network');
+        Route::post('garanties/{guarantee}/conditions', [GuaranteeController::class, 'terms'])->name('guarantees.terms');
 
         // --- Module 5: members + dependents ---
         Route::get('adherents', [MemberController::class, 'index'])->name('members.index');
@@ -272,6 +273,14 @@ Route::middleware([
         Route::post('recours/{claim}/facture', [ClaimSettlementController::class, 'createInvoice'])->name('claims.invoice.create');
         Route::post('recours/{claim}/facture/{invoice}/paiement', [ClaimSettlementController::class, 'payInvoice'])->name('claims.invoice.pay');
         Route::get('recours/{claim}/facture/{invoice}/piece', [ClaimSettlementController::class, 'invoiceDocument'])->name('claims.invoice.document');
+
+        // --- Registre des factures des prestataires (2026-11-03) ---
+        // --- Rapports d'activité (2026-11-03) ---
+        Route::get('rapports', [\App\Http\Controllers\Tenant\ReportController::class, 'index'])->name('reports.index');
+        Route::get('rapports/export.csv', [\App\Http\Controllers\Tenant\ReportController::class, 'export'])->name('reports.export');
+        Route::get('factures-prestataires', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'index'])->name('invoices.index');
+        Route::get('factures-prestataires/export.csv', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'export'])->name('invoices.export');
+        Route::post('factures-prestataires/{invoice}/rejet', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'reject'])->name('invoices.reject');
 
         // Anti-fraud alerts
         Route::get('alertes', [AlertController::class, 'index'])->name('alerts.index');

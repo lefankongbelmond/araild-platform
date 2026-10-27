@@ -75,6 +75,10 @@ class TenantAccess
             'claims.invoice.create'        => [$A, $C, $B],
             'claims.invoice.pay'           => [$T],
             'claims.invoice.document'      => [$A, $C, $B],   // pièce du prestataire : peut contenir des données de santé
+            'invoices.index'               => [$A, $C, $B, $T, $U],   // registre des factures des prestataires (2026-11-03)
+            'invoices.export'              => [$A, $C, $T, $U],
+            'invoices.reject'              => [$A, $C],
+            'reports.*'                    => [$A, $C, $B, $T, $U],   // rapports d'activité (détail par acte : capacite.donnees-sante)
             'alerts.*'                     => [$A, $C],
             // Détail médical d'un recours (motif, actes) : le trésorier ne voit que les montants.
             'capacite.donnees-sante'       => [$A, $C, $B],
@@ -134,6 +138,7 @@ class TenantAccess
             'providers.show'          => [$A, $C, $B],
             'providers.*'             => [$A],
             'guarantees.network'      => [$A],            // réseau de soins d'une garantie (2026-11-01)
+            'guarantees.terms'        => [$A],            // plafonds et exclusions (2026-11-03)
             'team.*'                  => [$A],
             // (garanties, antennes, actes, médicaments, référentiels : écriture = administrateur, règle par défaut)
 
@@ -147,9 +152,10 @@ class TenantAccess
         'Adhérents' => ['members.index' => 'Consulter', 'members.store' => 'Inscrire, modifier, suspendre', 'cards.index' => 'Cartes de membre'],
         'Souscriptions' => ['subscriptions.index' => 'Consulter', 'subscriptions.store' => 'Saisir', 'subscriptions.validate' => 'Valider'],
         'Recours et prestations (santé)' => ['claims.index' => 'Consulter', 'capacite.donnees-sante' => 'Voir le détail médical', 'claims.prestations.store' => 'Saisir', 'claims.prestations.validate' => 'Valider ou rejeter', 'alerts.index' => 'Alertes anti-fraude'],
-        'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
+        'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
         'Cotisations' => ['contributions.index' => 'Consulter', 'contributions.pay' => 'Encaisser', 'payments.initiate' => 'Lancer un paiement en ligne'],
         'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse', 'budget.index' => 'Budget : consulter', 'budget.lines.update' => 'Budget : préparer', 'budget.adopt' => 'Budget : adopter', 'solvency.dashboard' => 'Solvabilité'],
+        'Rapports' => ['reports.index' => 'Rapports d’activité (imprimer, CSV)'],
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
         'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles'],

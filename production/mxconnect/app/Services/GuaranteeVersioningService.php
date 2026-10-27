@@ -89,6 +89,39 @@ class GuaranteeVersioningService
         ]))->all() + ['provider_network' => $network], $effectiveFrom);
     }
 
+    /**
+     * Exclusions (actes non couverts) et plafonds d'une garantie (2026-11-03). Même règle que le
+     * réseau : version non utilisée modifiée sur place ; version déjà utilisée par un recours →
+     * nouvelle version datée, conditions financières et réseau repris, passé inchangé.
+     *
+     * @param int[] $exclusions  identifiants d'actes
+     * @param array<int,array{act_type_id:?int,ceiling_minor:int,period:string}> $ceilings
+     */
+    public function setTerms(Guarantee $guarantee, array $exclusions, array $ceilings, ?string $effectiveFrom = null): GuaranteeVersion
+    {
+        $current = $guarantee->versions()->whereNull('valid_to')->latest('version_no')->firstOrFail();
+        $exclusions = array_values(array_unique(array_map('intval', $exclusions)));
+        $exclusions = $exclusions ?: null;
+
+        return DB::transaction(function () use ($guarantee, $current, $exclusions, $ceilings, $effectiveFrom) {
+            if ($current->locked) {
+                $version = $this->newVersion($guarantee, collect($current->only([
+                    'base_contribution_minor', 'periodicity', 'coverage_rate', 'copay_rate', 'membership_fee_minor', 'observation_days', 'provider_network',
+                ]))->all() + ['exclusions' => $exclusions], $effectiveFrom);
+            } else {
+                $current->update(['exclusions' => $exclusions]);
+                $version = $current;
+            }
+            \App\Models\Tenant\Ceiling::where('guarantee_version_id', $version->id)->delete();
+            foreach ($ceilings as $c) {
+                \App\Models\Tenant\Ceiling::create(['guarantee_version_id' => $version->id, 'act_type_id' => $c['act_type_id'] ?: null,
+                    'ceiling_minor' => (int) $c['ceiling_minor'], 'period' => $c['period']]);
+            }
+
+            return $version;
+        });
+    }
+
     /** Guard: a locked version (already used by a claim) is immutable. */
     public function assertEditable(GuaranteeVersion $version): void
     {

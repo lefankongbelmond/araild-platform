@@ -12,7 +12,11 @@ class ProviderInvoice extends Model implements Auditable
     use SoftDeletes, AuditableTrait;
 
     protected $guarded = [];
-    protected $casts = ['amount_minor' => 'integer'];
+    protected $casts = ['amount_minor' => 'integer', 'provider_id' => 'integer', 'decided_at' => 'datetime'];
+
+    /** Libellés des états (registre des factures, portail prestataire). */
+    public const STATUSES = ['captured' => 'À vérifier', 'processed' => 'En traitement', 'prepared' => 'Mise en paiement', 'paid' => 'Payée', 'rejected' => 'Rejetée'];
+    public const PAYABLE = ['captured', 'processed', 'prepared'];
 
     public function careClaim() { return $this->belongsTo(CareClaim::class); }
 }
