@@ -13,6 +13,7 @@ use App\Models\Tenant\ProviderInvoice;
 use App\Models\Tenant\Subscription;
 use App\Models\Tenant\TreasuryMovement;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Rapport d'activité d'une mutuelle sur une période (2026-11-03). Uniquement des chiffres
@@ -34,6 +35,52 @@ class ActivityReportService
             'annee'           => ['Cette année', $now->copy()->startOfYear(), $now->copy()->endOfYear()],
             'annee-precedente' => ['L’année dernière', $now->copy()->subYear()->startOfYear(), $now->copy()->subYear()->endOfYear()],
         ];
+    }
+
+    /** Nombre maximal de mois affichés dans l'évolution mensuelle (les plus récents de la période). */
+    public const MAX_MONTHS = 24;
+
+    /**
+     * Évolution mois par mois (2026-11-04) : nouveaux adhérents, cotisations encaissées,
+     * prestations validées et part de la mutuelle, entrées et sorties de trésorerie.
+     * Une requête groupée par indicateur, jamais une par mois.
+     *
+     * @return array<string, array{label:string,new:int,collected:int,prestations:int,mutual:int,in:int,out:int}>
+     */
+    public function monthly(Carbon $from, Carbon $to): array
+    {
+        $start = $from->copy()->startOfMonth();
+        if ($start->diffInMonths($to->copy()->startOfMonth()) >= self::MAX_MONTHS) {
+            $start = $to->copy()->startOfMonth()->subMonthsNoOverflow(self::MAX_MONTHS - 1);
+        }
+        $f = ($start->gt($from) ? $start : $from)->toDateString();
+        $t = $to->toDateString();
+        $g = DB::connection()->getQueryGrammar();
+        $ym = fn (string $col) => 'date_format(' . $g->wrap($col) . ", '%Y-%m')";
+        $by = fn ($query, string $dateCol, string $agg) => $query->selectRaw($ym($dateCol) . ' as ym, ' . $agg . ' as v')
+            ->groupByRaw($ym($dateCol))->pluck('v', 'ym');
+
+        $new = $by(Member::query()->whereBetween('joined_at', [$f, $t]), 'joined_at', 'count(*)');
+        $collected = $by(ContributionPayment::query()->whereBetween('paid_on', [$f, $t]), 'paid_on', 'sum(' . $g->wrap('amount_minor') . ')');
+        $validated = Prestation::query()->where('status', 'validated')->whereBetween('care_date', [$f, $t]);
+        $prestations = $by((clone $validated), 'care_date', 'count(*)');
+        $mutual = $by((clone $validated), 'care_date', 'sum(' . $g->wrap('mutual_part_minor') . ')');
+        $moves = TreasuryMovement::query()->whereBetween('moved_on', [$f, $t]);
+        $in = $by((clone $moves)->where('direction', 'inflow'), 'moved_on', 'sum(' . $g->wrap('amount_minor') . ')');
+        $out = $by((clone $moves)->where('direction', 'outflow'), 'moved_on', 'sum(' . $g->wrap('amount_minor') . ')');
+
+        $months = [];
+        for ($m = $start->copy(); $m->lte($to); $m->addMonthNoOverflow()) {
+            $k = $m->format('Y-m');
+            $months[$k] = [
+                'label' => ucfirst($m->locale('fr')->translatedFormat('M Y')),
+                'new' => (int) ($new[$k] ?? 0), 'collected' => (int) ($collected[$k] ?? 0),
+                'prestations' => (int) ($prestations[$k] ?? 0), 'mutual' => (int) ($mutual[$k] ?? 0),
+                'in' => (int) ($in[$k] ?? 0), 'out' => (int) ($out[$k] ?? 0),
+            ];
+        }
+
+        return $months;
     }
 
     public function build(Carbon $from, Carbon $to): array
@@ -60,6 +107,7 @@ class ActivityReportService
 
         return [
             'from' => $from, 'to' => $to,
+            'monthly' => $this->monthly($from, $to),
             'members' => [
                 'active'      => Member::where('status', 'active')->count(),
                 'new'         => Member::whereBetween('joined_at', [$f, $t])->count(),

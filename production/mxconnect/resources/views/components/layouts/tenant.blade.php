@@ -53,7 +53,7 @@
   // Élément actif : route exacte, sinon sous-route (ex. billing.quote.compute), sinon même module.
   $navRoutes = collect($navGroups)->flatMap(fn ($g) => array_keys($g));
   $currentRoute = (string) request()->route()?->getName();
-  $activeNav = $navRoutes->first(fn ($r) => $r === $currentRoute)
+  $activeNav = $navRoutes->first(fn ($r) => $r === (\App\Support\TenantNav::ACTIVE_ALIASES[$currentRoute] ?? $currentRoute))
       ?? $navRoutes->first(fn ($r) => str_starts_with($currentRoute, $r . '.'))
       ?? $navRoutes->first(fn ($r) => \Illuminate\Support\Str::beforeLast($r, '.') === \Illuminate\Support\Str::before($currentRoute, '.'));
   $user = auth()->user();

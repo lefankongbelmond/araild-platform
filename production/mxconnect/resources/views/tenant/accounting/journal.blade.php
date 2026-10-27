@@ -1,7 +1,10 @@
 <x-layouts.tenant :title="__('mxconnect.accounting.journal')">
   <div class="flex items-center justify-between">
     <a href="{{ route('treasury.dashboard') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.treasury.title') }}</a>
-    <a href="{{ route('accounting.chart') }}" class="text-sm text-pine hover:underline">{{ __('mxconnect.accounting.chart') }}</a>
+    <span class="flex flex-wrap gap-3 text-sm">
+      @acces('accounting.balance')<a href="{{ route('accounting.balance') }}" class="text-pine hover:underline">États comptables</a>@endacces
+      <a href="{{ route('accounting.chart') }}" class="text-pine hover:underline">{{ __('mxconnect.accounting.chart') }}</a>
+    </span>
   </div>
   <x-tenant.hero icon="book" kicker="Comptabilité" tone="violet">
     <x-slot:title>{{ __('mxconnect.accounting.journal') }}</x-slot:title>

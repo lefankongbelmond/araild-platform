@@ -34,6 +34,29 @@
     <x-tenant.kpi label="Prestations / cotisations" :value="$pct($r['prestations']['claims_ratio'])" icon="chart" tone="violet" hint="Part mutuelle ÷ encaissements" />
   </div>
 
+  <section class="mt-6 min-w-0 rounded-lg border border-ink/10 bg-white p-5">
+    <h2 class="font-semibold">Évolution mois par mois</h2>
+    <p class="mt-1 text-xs text-ink/55">Cotisations encaissées et part de la mutuelle dans les soins validés, par mois.@if (count($r['monthly']) >= \App\Services\Tenant\ActivityReportService::MAX_MONTHS) Les {{ \App\Services\Tenant\ActivityReportService::MAX_MONTHS }} derniers mois de la période.@endif Survolez un mois pour ses montants.</p>
+    <x-tenant.month-chart class="mt-3" :months="$r['monthly']" :currency="$c"
+      :series="['collected' => ['Cotisations encaissées', '#0A5FB5'], 'mutual' => ['Part de la mutuelle (soins)', '#D97706']]" />
+    <div class="relative mt-4 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-ink/50"><tr>
+          <th class="py-1 pr-3 font-medium">Mois</th><th class="py-1 pr-3 text-right font-medium">Nouveaux adhérents</th><th class="py-1 pr-3 text-right font-medium">Cotisations encaissées</th>
+          <th class="py-1 pr-3 text-right font-medium">Prestations validées</th><th class="py-1 pr-3 text-right font-medium">Part mutuelle</th><th class="py-1 pr-3 text-right font-medium">Entrées</th><th class="py-1 text-right font-medium">Sorties</th>
+        </tr></thead>
+        <tbody class="divide-y divide-ink/5">
+          @foreach ($r['monthly'] as $mo)
+            <tr><td class="py-2 pr-3 whitespace-nowrap">{{ $mo['label'] }}</td><td class="py-2 pr-3 text-right tabular-nums">{{ $mo['new'] }}</td>
+              <td class="py-2 pr-3 text-right tabular-nums whitespace-nowrap">{{ $fmt($mo['collected']) }}</td><td class="py-2 pr-3 text-right tabular-nums">{{ $mo['prestations'] }}</td>
+              <td class="py-2 pr-3 text-right tabular-nums whitespace-nowrap">{{ $fmt($mo['mutual']) }}</td><td class="py-2 pr-3 text-right tabular-nums whitespace-nowrap">{{ $fmt($mo['in']) }}</td>
+              <td class="py-2 text-right tabular-nums whitespace-nowrap">{{ $fmt($mo['out']) }}</td></tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <div class="mt-6 grid gap-6 lg:grid-cols-2">
     <section class="min-w-0 rounded-lg border border-ink/10 bg-white p-5">
       <h2 class="font-semibold">Adhérents et souscriptions</h2>

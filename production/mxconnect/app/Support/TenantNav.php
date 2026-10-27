@@ -31,6 +31,13 @@ class TenantNav
         'auditor'              => 'Lecture seule : finances, registres, journal d’audit. Aucune donnée de santé, aucune saisie. Ne se cumule avec aucun autre rôle.',
     ];
 
+    /** Écrans sans entrée propre dans le menu : entrée à mettre en évidence. */
+    public const ACTIVE_ALIASES = [
+        'accounting.ledger' => 'accounting.balance',
+        'accounting.income' => 'accounting.balance',
+        'accounting.sheet'  => 'accounting.balance',
+    ];
+
     /** Menu regroupé par domaine : route => [libellé ou clé de traduction, icône]. */
     public static function groups(): array
     {
@@ -57,6 +64,7 @@ class TenantNav
                 'budget.index'        => ['Budget', 'pie'],
                 'treasury.dashboard'  => ['mxconnect.treasury.title', 'wallet'],
                 'accounting.journal'  => ['mxconnect.accounting.journal', 'book'],
+                'accounting.balance'  => ['États comptables', 'book'],
                 'solvency.dashboard'  => ['mxconnect.solvency.nav', 'chart'],
             ],
             'Conformité et qualité' => [

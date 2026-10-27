@@ -296,6 +296,12 @@ Route::middleware([
         Route::post('comptabilite/poster-tresorerie', [AccountingController::class, 'postTreasury'])->name('accounting.post-treasury');
         Route::get('comptabilite/arrete-caisse', [AccountingController::class, 'closeForm'])->name('accounting.close.form');
         Route::post('comptabilite/arrete-caisse', [AccountingController::class, 'close'])->name('accounting.close');
+        // États comptables SYSCOHADA (2026-11-04) : lecture seule, imprimables, CSV
+        Route::get('comptabilite/balance', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'balance'])->name('accounting.balance');
+        Route::get('comptabilite/grand-livre', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'ledger'])->name('accounting.ledger');
+        Route::get('comptabilite/compte-de-resultat', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'income'])->name('accounting.income');
+        Route::get('comptabilite/bilan', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'sheet'])->name('accounting.sheet');
+        Route::get('comptabilite/etats/export.csv', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'export'])->name('accounting.statements.export');
 
         // --- Module 11: audit trail viewer ---
         Route::get('audit', [AuditController::class, 'index'])->name('audit.index');

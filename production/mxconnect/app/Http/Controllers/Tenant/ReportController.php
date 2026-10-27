@@ -46,6 +46,8 @@ class ReportController extends Controller
             ['Par prestataire', 'Prestations', 'Part mutuelle'],
         ];
         foreach ($r['by_provider'] as $p) { $rows[] = [$p['label'], $p['count'], $m($p['mutual'])]; }
+        $rows[] = []; $rows[] = ['Mois', 'Nouveaux adhérents', 'Cotisations encaissées', 'Prestations validées', 'Part mutuelle', 'Entrées de trésorerie', 'Sorties de trésorerie'];
+        foreach ($r['monthly'] as $mo) { $rows[] = [$mo['label'], $mo['new'], $m($mo['collected']), $mo['prestations'], $m($mo['mutual']), $m($mo['in']), $m($mo['out'])]; }
         if ($d['health']) {
             $rows[] = []; $rows[] = ['Par acte', 'Prestations', 'Part mutuelle'];
             foreach ($r['by_act'] as $a) { $rows[] = [$a['label'], $a['count'], $m($a['mutual'])]; }
@@ -66,7 +68,7 @@ class ReportController extends Controller
         $periods = ActivityReportService::periods();
         $key = $request->get('periode', 'mois');
         if ($key === 'libre') {
-            $request->validate(['du' => ['required', 'date'], 'au' => ['required', 'date', 'after_or_equal:du']],
+            $this->validateOr(route('reports.index'), $request, ['du' => ['required', 'date'], 'au' => ['required', 'date', 'after_or_equal:du']],
                 ['au.after_or_equal' => 'La fin doit suivre le début.']);
             [$from, $to] = [Carbon::parse($request->get('du'))->startOfDay(), Carbon::parse($request->get('au'))->endOfDay()];
         } else {
