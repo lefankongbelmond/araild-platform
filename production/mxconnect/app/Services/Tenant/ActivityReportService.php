@@ -123,7 +123,9 @@ class ActivityReportService
                 'collected_on_called' => $paidOnSchedules,
                 'collected' => $collected,
                 'rate'      => $calledMinor > 0 ? round($paidOnSchedules * 100 / $calledMinor, 1) : null,
-                'overdue'   => (int) ContributionSchedule::where('status', 'overdue')->sum('due_minor'),
+                // Reste dû sur les échéances en retard (paiements partiels déduits, 2026-11-06).
+                'overdue'   => (int) ContributionSchedule::where('status', 'overdue')->sum('due_minor')
+                    - (int) ContributionPayment::whereIn('schedule_id', ContributionSchedule::where('status', 'overdue')->select('id'))->sum('amount_minor'),
             ],
             'prestations' => [
                 'validated'   => (clone $validated)->count(),

@@ -33,7 +33,7 @@ return [
     'contact_email' => env('MXCONNECT_CONTACT_EMAIL'),
 
     // Version des fichiers CSS/JS (force le rechargement après une mise à jour).
-    'asset_version' => '2026.11.05',
+    'asset_version' => '2026.11.06',
 
     // Réseau social : médias téléversés
     'social' => [

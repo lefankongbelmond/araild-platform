@@ -37,6 +37,7 @@ class TenantNav
         'accounting.income' => 'accounting.balance',
         'accounting.sheet'  => 'accounting.balance',
         'accounting.closing.index' => 'accounting.balance',
+        'contributions.member'     => 'contributions.index',
         'accounting.chart'  => 'accounting.journal',
     ];
 

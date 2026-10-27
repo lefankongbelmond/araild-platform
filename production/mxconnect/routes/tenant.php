@@ -252,6 +252,11 @@ Route::middleware([
         // --- Module 7: contributions (arrears, cash payment, receipt) ---
         Route::get('cotisations', [ContributionController::class, 'index'])->name('contributions.index');
         Route::post('cotisations/{schedule}/paiement', [ContributionController::class, 'recordPayment'])->name('contributions.pay');
+        // Relevé par adhérent, encaissement au guichet, export, échéanciers glissants (2026-11-06)
+        Route::get('cotisations/export.csv', [ContributionController::class, 'export'])->name('contributions.export');
+        Route::post('cotisations/actualiser', [ContributionController::class, 'refresh'])->name('contributions.refresh');
+        Route::get('cotisations/adherent/{member}', [ContributionController::class, 'member'])->name('contributions.member');
+        Route::post('cotisations/adherent/{member}/encaissement', [ContributionController::class, 'collect'])->name('contributions.collect');
         Route::get('recus/{payment}', [ContributionController::class, 'receipt'])->name('contributions.receipt');
 
         // --- Module 8: Mobile Money initiation (facilitation) ---

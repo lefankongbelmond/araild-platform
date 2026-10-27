@@ -5,6 +5,7 @@
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">{{ $member->last_name }} {{ $member->first_name }}</h1>
       <p class="mt-1 text-sm text-ink/50 font-mono">{{ $member->member_code }}</p>
+      @acces('contributions.member')<a href="{{ route('contributions.member', $member) }}" class="mt-2 inline-block text-sm text-pine hover:underline">Cotisations : relevé et encaissement</a>@endacces
     </div>
     @php $badge = ['active'=>'pine','suspended'=>'clay','left'=>'ink/40','revoked'=>'ink/40'][$member->status->value] ?? 'ink/40'; @endphp
     <span class="rounded-full border border-{{ $badge }}/30 px-3 py-1 text-sm text-{{ $badge }}">{{ __('mxconnect.member.status_'.$member->status->value) }}</span>

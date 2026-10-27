@@ -24,10 +24,13 @@ class RightsVerificationService
             $reasons[] = 'member_inactive';
         }
 
-        // 2. contribution up to date (no overdue schedule on any validated subscription)
+        // 2. contribution up to date (no overdue schedule on any validated subscription).
+        // Depuis le 2026-11-06 : une échéance impayée dont la date est passée compte comme un
+        // retard même si la tâche de nuit ne l'a pas encore marquée « en retard » (cron absent).
         $hasArrears = $member->subscriptions()
             ->where('status', 'validated')
-            ->whereHas('schedules', fn ($q) => $q->where('status', 'overdue'))
+            ->whereHas('schedules', fn ($q) => $q->where(fn ($w) => $w->where('status', 'overdue')
+                ->orWhere(fn ($x) => $x->where('status', 'to_pay')->whereDate('due_date', '<', now()->toDateString()))))
             ->exists();
         if ($hasArrears) {
             $reasons[] = 'contribution_arrears';

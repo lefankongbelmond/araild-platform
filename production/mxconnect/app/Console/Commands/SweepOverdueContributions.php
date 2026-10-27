@@ -22,11 +22,9 @@ class SweepOverdueContributions extends Command
 
         Mutual::where('status', 'approved')->each(function (Mutual $mutual) use (&$total) {
             $mutual->run(function () use (&$total) {   // stancl: run closure inside tenant context
-                $count = ContributionSchedule::query()
-                    ->where('status', 'to_pay')
-                    ->whereDate('due_date', '<', now()->toDateString())
-                    ->update(['status' => 'overdue']);
-                $total += $count;
+                // Échéanciers glissants (2026-11-06) + échéances dépassées marquées en retard.
+                $r = app(\App\Services\ScheduleGenerationService::class)->refreshAll();
+                $total += $r['overdue'];
             });
         });
 
