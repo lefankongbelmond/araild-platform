@@ -301,6 +301,19 @@ Route::middleware([
         Route::get('comptabilite/grand-livre', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'ledger'])->name('accounting.ledger');
         Route::get('comptabilite/compte-de-resultat', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'income'])->name('accounting.income');
         Route::get('comptabilite/bilan', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'sheet'])->name('accounting.sheet');
+        // Opérations diverses (saisie ≠ validation), extournes, plan comptable, clôture (2026-11-05)
+        Route::get('comptabilite/operations', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'index'])->name('accounting.entries.index');
+        Route::post('comptabilite/operations', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'store'])->name('accounting.entries.store');
+        Route::post('comptabilite/ecritures/{entry}/validation', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'validateEntry'])->name('accounting.entries.validate');
+        Route::post('comptabilite/ecritures/{entry}/rejet', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'reject'])->name('accounting.entries.reject');
+        Route::post('comptabilite/ecritures/{entry}/extourne', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'reverse'])->name('accounting.entries.reverse');
+        Route::post('comptabilite/plan', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'storeAccount'])->name('accounting.accounts.store');
+        Route::post('comptabilite/plan/comptes-usuels', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'importAccounts'])->name('accounting.accounts.import');
+        Route::put('comptabilite/plan/{account}', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'updateAccount'])->name('accounting.accounts.update');
+        Route::delete('comptabilite/plan/{account}', [\App\Http\Controllers\Tenant\AccountingOperationController::class, 'destroyAccount'])->name('accounting.accounts.destroy');
+        Route::get('comptabilite/cloture', [\App\Http\Controllers\Tenant\FiscalClosingController::class, 'index'])->name('accounting.closing.index');
+        Route::post('comptabilite/cloture/{year}', [\App\Http\Controllers\Tenant\FiscalClosingController::class, 'close'])->whereNumber('year')->name('accounting.closing.close');
+        Route::post('comptabilite/cloture/{year}/reouverture', [\App\Http\Controllers\Tenant\FiscalClosingController::class, 'reopen'])->whereNumber('year')->name('accounting.closing.reopen');
         Route::get('comptabilite/etats/export.csv', [\App\Http\Controllers\Tenant\AccountingStatementController::class, 'export'])->name('accounting.statements.export');
 
         // --- Module 11: audit trail viewer ---

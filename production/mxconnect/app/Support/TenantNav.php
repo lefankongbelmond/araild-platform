@@ -36,6 +36,8 @@ class TenantNav
         'accounting.ledger' => 'accounting.balance',
         'accounting.income' => 'accounting.balance',
         'accounting.sheet'  => 'accounting.balance',
+        'accounting.closing.index' => 'accounting.balance',
+        'accounting.chart'  => 'accounting.journal',
     ];
 
     /** Menu regroupé par domaine : route => [libellé ou clé de traduction, icône]. */
@@ -64,6 +66,7 @@ class TenantNav
                 'budget.index'        => ['Budget', 'pie'],
                 'treasury.dashboard'  => ['mxconnect.treasury.title', 'wallet'],
                 'accounting.journal'  => ['mxconnect.accounting.journal', 'book'],
+                'accounting.entries.index' => ['Opérations diverses', 'book'],
                 'accounting.balance'  => ['États comptables', 'book'],
                 'solvency.dashboard'  => ['mxconnect.solvency.nav', 'chart'],
             ],

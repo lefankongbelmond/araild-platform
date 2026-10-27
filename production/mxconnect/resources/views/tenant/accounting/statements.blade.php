@@ -10,13 +10,7 @@
   $num = 'px-3 py-2 text-right tabular-nums whitespace-nowrap';
 @endphp
 <x-layouts.tenant :title="$title">
-  <div class="print:hidden flex flex-wrap items-center justify-between gap-2">
-    <a href="{{ route('treasury.dashboard') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.treasury.title') }}</a>
-    <span class="flex flex-wrap gap-3 text-sm">
-      <a href="{{ route('accounting.journal') }}" class="text-pine hover:underline">{{ __('mxconnect.accounting.journal') }}</a>
-      <a href="{{ route('accounting.chart') }}" class="text-pine hover:underline">{{ __('mxconnect.accounting.chart') }}</a>
-    </span>
-  </div>
+  @include('tenant.accounting._nav')
   <x-tenant.hero icon="book" kicker="Comptabilité SYSCOHADA" tone="violet">
     <x-slot:title>{{ $title }}</x-slot:title>
     <x-slot:subtitle>{{ tenant('name') }} — {{ $etat === 'sheet' ? 'situation au ' . $to->format('d/m/Y') : 'du ' . $from->format('d/m/Y') . ' au ' . $to->format('d/m/Y') }} (exercice {{ $year }}). Calculé à l’instant depuis le journal : écritures validées seulement ; montants en {{ $c->code }}, jamais convertis.</x-slot:subtitle>
@@ -51,6 +45,9 @@
     <button class="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white">Afficher</button>
   </form>
 
+  @if ($closed)
+    <div class="mt-4 rounded-md border border-ink/10 bg-mist px-4 py-3 text-sm text-ink/70">Exercice {{ $year }} clôturé le {{ $closed->closed_at?->format('d/m/Y') }} : les états de {{ $year }} sont présentés avant les écritures de clôture ; à partir de {{ $year + 1 }}, le résultat figure en compte 131 (bénéfice) ou 139 (perte).</div>
+  @endif
   @if ($pending > 0)
     <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">{{ $pending }} écriture(s) de la période attendent encore leur validation : elles ne sont pas comptées ici.</div>
   @endif

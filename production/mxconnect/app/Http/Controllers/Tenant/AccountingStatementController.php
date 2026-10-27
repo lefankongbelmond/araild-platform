@@ -142,6 +142,7 @@ class AccountingStatementController extends Controller
             'currency' => $this->currency(),
             'years'    => $this->statements->years(),
             'pending'  => $this->statements->pendingCount($p['from'], $p['to']),
+            'closed'   => \Illuminate\Support\Facades\Schema::hasColumn('fiscal_years', 'closed_at') ? $this->statements->closedYear($p['year']) : null,
         ]);
     }
 

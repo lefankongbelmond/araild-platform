@@ -76,6 +76,11 @@ class TreasuryController extends Controller
             'reference'    => ['nullable', 'string', 'max:60'],
         ]);
 
+        // Exercice clôturé (2026-11-05) : aucun mouvement ne peut y être daté.
+        if (app(AccountingService::class)->isYearClosed((int) \Illuminate\Support\Carbon::parse($data['moved_on'])->year)) {
+            return back()->withInput()->with('error', 'L’exercice ' . \Illuminate\Support\Carbon::parse($data['moved_on'])->year . ' est clôturé : choisissez une date dans un exercice ouvert.');
+        }
+
         // Guard: no movement can be dated onto a closed accounting day.
         $day = AccountingDay::whereDate('day', $data['moved_on'])->first();
         if ($day && $day->isClosed()) {

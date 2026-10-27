@@ -17,18 +17,36 @@ class AccountingController extends Controller
     /** SYSCOHADA chart of accounts. */
     public function chart()
     {
+        $accounts = Account::orderBy('number')->get();
+        // Comptes non supprimables : avec écritures, dans un budget, ou utilisés par la comptabilisation automatique / la clôture.
+        $cfg = config('mxconnect.accounting');
+        $system = array_map('strval', array_merge(array_keys($cfg['chart'] ?? []), array_values($cfg['mode_account'] ?? []),
+            array_values($cfg['source_income'] ?? []), array_values($cfg['source_expense'] ?? []), array_keys(AccountingService::CLOSING_ACCOUNTS)));
+        $used = AccountingEntry::pluck('debit_account_id')->merge(AccountingEntry::pluck('credit_account_id'))
+            ->merge(\App\Models\Tenant\BudgetLine::whereNotNull('account_id')->pluck('account_id'))
+            ->merge($accounts->whereIn('number', $system)->pluck('id'))->unique()->flip();
+
         return view('tenant.accounting.chart', [
-            'accounts' => Account::orderBy('number')->get()->groupBy('class'),
+            'accounts'  => $accounts->groupBy('class'),
+            'used'      => $used,
+            'canManage' => \App\Support\TenantAccess::can('accounting.accounts.store'),
+            'missingUsual' => count(array_diff(array_map('strval', array_keys(\App\Support\SyscohadaAccounts::USUAL)), $accounts->pluck('number')->all())),
         ]);
     }
 
     /** The journal (grand livre / journal). */
     public function journal(Request $request)
     {
+        $entries = AccountingEntry::with(['debitAccount', 'creditAccount', 'accountingDay'])->orderByDesc('id')->paginate(40);
+        $hasKind = \Illuminate\Support\Facades\Schema::hasColumn('accounting_entries', 'kind');
+
         return view('tenant.accounting.journal', [
-            'entries'  => AccountingEntry::with(['debitAccount', 'creditAccount', 'accountingDay'])
-                ->orderByDesc('id')->paginate(40),
-            'currency' => $this->currency(),
+            'entries'    => $entries,
+            'currency'   => $this->currency(),
+            // Écritures déjà extournées (extourne en attente ou validée) : pas de 2e extourne.
+            'reversed'   => $hasKind ? AccountingEntry::where('kind', 'reversal')->whereIn('status', ['captured', 'validated', 'posted'])
+                ->whereIn('reversed_entry_id', $entries->pluck('id'))->pluck('reversed_entry_id')->map(fn ($i) => (int) $i)->all() : [],
+            'canReverse' => $hasKind && \App\Support\TenantAccess::can('accounting.entries.reverse'),
         ]);
     }
 

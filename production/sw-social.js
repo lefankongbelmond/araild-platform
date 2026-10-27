@@ -1,7 +1,7 @@
 /* MX Connect — service worker du réseau social.
    Ne met en cache QUE des fichiers publics et statiques (logo, styles, scripts, polices)
    et une page hors ligne. Aucune page personnelle, aucune réponse d'API n'est stockée. */
-const VERSION = 'mx-social-2026.11.04';   // à changer à chaque livraison : purge les anciens caches
+const VERSION = 'mx-social-2026.11.05';   // à changer à chaque livraison : purge les anciens caches
 const STATIC = ['/hors-ligne.html', '/css/mx-social.css', '/js/mx-social.js', '/js/mx-social-plus.js', '/brand/mx-logo-full.webp', '/brand/mx-mark-128.webp',
                 '/brand/favicon.png', '/brand/icon-192.png', '/fonts/inter-latin.woff2'];
 

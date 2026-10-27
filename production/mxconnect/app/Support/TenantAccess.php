@@ -100,6 +100,15 @@ class TenantAccess
             'accounting.income'       => [$A, $C, $T, $U],
             'accounting.sheet'        => [$A, $C, $T, $U],
             'accounting.statements.export' => [$A, $C, $T, $U],
+            'accounting.entries.index'    => [$A, $C, $T, $U],   // opérations diverses (2026-11-05)
+            'accounting.entries.store'    => [$T],               // saisie : trésorier-comptable
+            'accounting.entries.validate' => [$A, $C],           // validation par une AUTRE personne
+            'accounting.entries.reject'   => [$A, $C],
+            'accounting.entries.reverse'  => [$T],               // extourne préparée, puis validée par A/C
+            'accounting.accounts.*'       => [$A, $T],           // plan comptable
+            'accounting.closing.index'    => [$A, $C, $T, $U],   // clôture d'exercice
+            'accounting.closing.close'    => [$A, $T],
+            'accounting.closing.reopen'   => [$A],
             'accounting.post-treasury' => [$T],
             'accounting.close'        => [$T],
             'budget.index'            => [$A, $C, $T, $U],
@@ -159,7 +168,9 @@ class TenantAccess
         'Recours et prestations (santé)' => ['claims.index' => 'Consulter', 'capacite.donnees-sante' => 'Voir le détail médical', 'claims.prestations.store' => 'Saisir', 'claims.prestations.validate' => 'Valider ou rejeter', 'alerts.index' => 'Alertes anti-fraude'],
         'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
         'Cotisations' => ['contributions.index' => 'Consulter', 'contributions.pay' => 'Encaisser', 'payments.initiate' => 'Lancer un paiement en ligne'],
-        'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse', 'budget.index' => 'Budget : consulter', 'budget.lines.update' => 'Budget : préparer', 'budget.adopt' => 'Budget : adopter', 'solvency.dashboard' => 'Solvabilité'],
+        'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse',
+            'accounting.entries.store' => 'Opérations diverses : saisir, préparer une extourne', 'accounting.entries.validate' => 'Opérations diverses : valider ou rejeter',
+            'accounting.accounts.store' => 'Plan comptable : ajouter, renommer', 'accounting.closing.close' => 'Clôturer un exercice', 'accounting.closing.reopen' => 'Rouvrir un exercice', 'budget.index' => 'Budget : consulter', 'budget.lines.update' => 'Budget : préparer', 'budget.adopt' => 'Budget : adopter', 'solvency.dashboard' => 'Solvabilité'],
         'Rapports' => ['reports.index' => 'Rapports d’activité (imprimer, CSV)', 'accounting.balance' => 'États comptables : balance, grand livre, compte de résultat, bilan'],
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],

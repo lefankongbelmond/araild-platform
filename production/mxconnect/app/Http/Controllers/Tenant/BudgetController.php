@@ -144,7 +144,8 @@ class BudgetController extends Controller
         $base = DB::table('accounting_entries as e')
             ->join('accounting_days as d', 'd.id', '=', 'e.accounting_day_id')
             ->whereYear('d.day', $year)
-            ->whereIn('e.status', ['validated', 'posted']);
+            ->whereIn('e.status', ['validated', 'posted'])
+            ->when(\Illuminate\Support\Facades\Schema::hasColumn('accounting_entries', 'kind'), fn ($q) => $q->where('e.kind', '!=', 'closing'));
         // Colonnes passées par la grammaire : l'alias « e » reçoit le préfixe des tables de la
         // mutuelle (mutuelles à tables préfixées), ce qu'une chaîne brute « e.… » ne ferait pas.
         $g = DB::connection()->getQueryGrammar();

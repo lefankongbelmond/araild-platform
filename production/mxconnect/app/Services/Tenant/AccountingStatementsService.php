@@ -46,9 +46,9 @@ class AccountingStatementsService
      *
      * @return array<int, array{0:int,1:int}> account_id => [débit, crédit]
      */
-    public function sums(?Carbon $from, ?Carbon $to): array
+    public function sums(?Carbon $from, ?Carbon $to, ?Carbon $cut = null): array
     {
-        $base = $this->entries($from, $to);
+        $base = $this->entries($from, $to, cut: $cut);
         $g = DB::connection()->getQueryGrammar();
         $debits = (clone $base)->selectRaw($g->wrap('e.debit_account_id') . ' as a, sum(' . $g->wrap('e.amount_minor') . ') as s')
             ->groupBy('e.debit_account_id')->pluck('s', 'a');
@@ -75,9 +75,9 @@ class AccountingStatementsService
     public function balance(Carbon $from, Carbon $to): array
     {
         $yearStart = $from->copy()->startOfYear();
-        $beforeYear = $this->sums(null, $yearStart->copy()->subDay());
-        $inYearBefore = $from->gt($yearStart) ? $this->sums($yearStart, $from->copy()->subDay()) : [];
-        $period = $this->sums($from, $to);
+        $beforeYear = $this->sums(null, $yearStart->copy()->subDay(), $yearStart);
+        $inYearBefore = $from->gt($yearStart) ? $this->sums($yearStart, $from->copy()->subDay(), $yearStart) : [];
+        $period = $this->sums($from, $to, $yearStart);
 
         $rows = [];
         $ran = 0;   // solde créditeur des comptes de gestion des exercices antérieurs
@@ -119,12 +119,13 @@ class AccountingStatementsService
         $result = in_array($account->class, self::RESULT_CLASSES, true);
         $openFrom = $result ? $from->copy()->startOfYear() : null;
         $before = (! $result || $from->gt($from->copy()->startOfYear()))
-            ? ($this->sums($openFrom, $from->copy()->subDay())[$account->id] ?? [0, 0]) : [0, 0];
+            ? ($this->sums($openFrom, $from->copy()->subDay(), $from->copy()->startOfYear())[$account->id] ?? [0, 0]) : [0, 0];
         $opening = $before[0] - $before[1];
 
         $lines = AccountingEntry::query()
             ->with(['debitAccount:id,number,label', 'creditAccount:id,number,label', 'accountingDay:id,day'])
             ->whereIn('status', ['validated', 'posted'])
+            ->when($this->hasKind(), fn ($q) => $q->where('kind', '!=', 'closing'))   // période dans l'exercice : avant clôture
             ->where(fn ($q) => $q->where('debit_account_id', $account->id)->orWhere('credit_account_id', $account->id))
             ->whereHas('accountingDay', fn ($q) => $q->whereBetween('day', [$from->toDateString(), $to->toDateString()]))
             ->get()
@@ -161,7 +162,7 @@ class AccountingStatementsService
     /** Compte de résultat simplifié : charges (6), produits (7), hors activités ordinaires (8). */
     public function income(Carbon $from, Carbon $to): array
     {
-        $sums = $this->sums($from, $to);
+        $sums = $this->sums($from, $to, $from->copy()->startOfYear());
         $out = ['charges' => [], 'produits' => [], 'hao_charges' => [], 'hao_produits' => []];
         foreach (Account::whereIn('class', self::RESULT_CLASSES)->orderBy('number')->get() as $a) {
             [$d, $c] = $sums[$a->id] ?? [0, 0];
@@ -196,8 +197,8 @@ class AccountingStatementsService
     public function balanceSheet(Carbon $at): array
     {
         $yearStart = $at->copy()->startOfYear();
-        $cumul = $this->sums(null, $at);
-        $year = $this->sums($yearStart, $at);
+        $cumul = $this->sums(null, $at, $yearStart);
+        $year = $this->sums($yearStart, $at, $yearStart);
 
         $sections = [
             'actif'  => ['immobilisations' => [], 'stocks' => [], 'creances' => [], 'tresorerie' => []],
@@ -252,14 +253,36 @@ class AccountingStatementsService
         ];
     }
 
-    /** Écritures retenues, jointes à leur journée comptable (date). */
-    private function entries(?Carbon $from, ?Carbon $to, array $statuses = ['validated', 'posted'])
+    /** Exercice clôturé (null si ouvert) : les états sont présentés avant écritures de clôture. */
+    public function closedYear(int $year): ?\App\Models\Tenant\FiscalYear
+    {
+        return \App\Models\Tenant\FiscalYear::where('label', (string) $year)->where('status', 'closed')->first();
+    }
+
+    /**
+     * Écritures retenues, jointes à leur journée comptable (date).
+     * Écritures de clôture (2026-11-05) : prises en compte seulement avant $cut (début de
+     * l'exercice présenté). Les états d'un exercice se lisent donc AVANT sa propre clôture,
+     * et les exercices suivants repartent des comptes de résultat 131 / 139.
+     */
+    private function entries(?Carbon $from, ?Carbon $to, array $statuses = ['validated', 'posted'], ?Carbon $cut = null)
     {
         return DB::table('accounting_entries as e')
             ->join('accounting_days as d', 'd.id', '=', 'e.accounting_day_id')
             ->whereIn('e.status', $statuses)
+            ->when($this->hasKind(), fn ($q) => $cut
+                ? $q->where(fn ($w) => $w->where('e.kind', '!=', 'closing')->orWhere('d.day', '<', $cut->toDateString()))
+                : $q)
             ->when($from, fn ($q) => $q->where('d.day', '>=', $from->toDateString()))
             ->when($to, fn ($q) => $q->where('d.day', '<=', $to->toDateString()));
+    }
+
+    private ?bool $hasKind = null;
+
+    /** Colonne « kind » présente (migration du 2026-11-05 appliquée) ? */
+    private function hasKind(): bool
+    {
+        return $this->hasKind ??= \Illuminate\Support\Facades\Schema::hasColumn('accounting_entries', 'kind');
     }
 
     private function g(string $column): string
