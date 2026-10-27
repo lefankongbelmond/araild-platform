@@ -32,11 +32,12 @@
     @endif
 
     @if ($types)
-      <div class="mx-field"><label class="mx-label" for="rq-sub">{{ $kind === 'engagement' ? 'Forme d’engagement' : 'Type de soutien' }} *</label>
-        <select class="mx-select" id="rq-sub" name="subtype" required>
-          <option value="">Choisissez…</option>
-          @foreach ($types as $k => $v)<option value="{{ $k }}" @selected(old('subtype') === $k)>{{ $v }}</option>@endforeach
-        </select>@error('subtype')<p class="mx-error">{{ $message }}</p>@enderror</div>
+      {{-- Maquettes 11 et 13 : un choix par carte (aucun choix présélectionné). --}}
+      <fieldset class="mx-field mx-rcards"><legend class="mx-label">{{ $kind === 'engagement' ? 'Comment souhaitez-vous contribuer ?' : 'Type de soutien' }} *</legend>
+        @foreach ($types as $k => $v)
+          <label @class(['mx-rcard', 'mx-rcard--sun' => $kind === 'support'])><input type="radio" name="subtype" value="{{ $k }}" @checked(old('subtype') === $k) required><span>{{ $v }}</span></label>
+        @endforeach
+        @error('subtype')<p class="mx-error">{{ $message }}</p>@enderror</fieldset>
     @endif
     @if ($kind === 'support')
       <p class="mx-xs mx-muted">MX-CONNECT ne collecte ni ne transfère aucun fonds : un soutien financier se convient directement avec l’organisation, après son accord.</p>
@@ -73,7 +74,7 @@
     @error('no_medical')<p class="mx-error">{{ $message }}</p>@enderror
 
     <div class="mx-row mx-row--wrap">
-      <button class="mx-btn mx-btn--primary"><x-mx.icon name="send" :size="16"/> Envoyer</button>
+      <button @class(['mx-btn', 'mx-btn--primary' => $kind !== 'support', 'mx-btn--sunfill' => $kind === 'support'])><x-mx.icon name="send" :size="16"/> {{ $kind === 'application' ? 'Envoyer ma candidature' : 'Envoyer ma demande' }}</button>
       <a class="mx-btn mx-btn--ghost" href="{{ $back }}">Annuler</a>
     </div>
   </form>

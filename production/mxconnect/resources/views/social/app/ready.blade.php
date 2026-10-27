@@ -8,10 +8,10 @@
   <div class="mx-ready__check"><x-mx.icon name="check" :size="50"/></div>
   <h1 class="mx-as__title mx-as__center">Votre compte est prêt !</h1>
   <p class="mx-as__lead mx-as__center">Bienvenue dans la communauté MX-CONNECT{{ $account ? ', ' . $account->first_name : '' }}.</p>
-  <div class="mx-steps">
-    <a class="mx-step" href="{{ route('social.settings') }}"><span class="mx-step__ic" style="background:var(--mx-sky-soft);color:var(--mx-sky)"><x-mx.icon name="user" :size="20"/></span><span style="flex:1"><b>Compléter mon profil</b><span>Ajoutez une photo et vos informations</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
-    <a class="mx-step" href="{{ route('social.discover') }}"><span class="mx-step__ic" style="background:var(--mx-green-soft);color:var(--mx-blue)"><x-mx.icon name="building" :size="20"/></span><span style="flex:1"><b>Découvrir les organisations</b><span>Trouvez des initiatives près de chez vous</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
-    <a class="mx-step" href="{{ route('social.home') }}"><span class="mx-step__ic" style="background:var(--mx-danger-soft);color:var(--mx-danger)"><x-mx.icon name="list" :size="20"/></span><span style="flex:1"><b>Explorer le fil d’actualité</b><span>Suivez les actualités et opportunités</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
+  <div class="mx-rsteps">
+    <a class="mx-rstep" href="{{ route('social.settings') }}"><span class="mx-rstep__ic" style="background:var(--mx-sky-soft);color:var(--mx-sky)"><x-mx.icon name="user" :size="20"/></span><span style="flex:1"><b>Compléter mon profil</b><span>Ajoutez une photo et vos informations</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
+    <a class="mx-rstep" href="{{ route('social.discover') }}"><span class="mx-rstep__ic" style="background:var(--mx-green-soft);color:var(--mx-blue)"><x-mx.icon name="building" :size="20"/></span><span style="flex:1"><b>Découvrir les organisations</b><span>Trouvez des initiatives près de chez vous</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
+    <a class="mx-rstep" href="{{ route('social.home') }}"><span class="mx-rstep__ic" style="background:var(--mx-danger-soft);color:var(--mx-danger)"><x-mx.icon name="list" :size="20"/></span><span style="flex:1"><b>Explorer le fil d’actualité</b><span>Suivez les actualités et opportunités</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
   </div>
   <div class="mx-as__grow"></div>
   <a class="mx-abtn" href="{{ route('social.home') }}">Commencer maintenant</a>

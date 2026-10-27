@@ -36,6 +36,7 @@
           @if ($project->seeks_volunteers)<a class="mx-btn mx-btn--primary" href="{{ $actionUrl('engagement') }}"><x-mx.icon name="hand" :size="16"/> Je m’engage</a>@endif
           @if ($project->seeks_partners)<a class="mx-btn mx-btn--ghost mx-btn--support" href="{{ $actionUrl('support') }}" style="color:var(--mx-sun)"><x-mx.icon name="gift" :size="16"/> Soutenir</a>@endif
         @endif
+        <a class="mx-btn mx-btn--ghost" href="#resultats"><x-mx.icon name="chart" :size="16"/> Voir les résultats</a>
         <button type="button" class="mx-btn mx-btn--ghost" data-copy="{{ route('social.project', $project) }}"><x-mx.icon name="share-out" :size="16"/> Partager</button>
       </div>
     </div>
@@ -48,7 +49,16 @@
   </section>
   @if ($isDemo)<p class="mx-xs mx-muted">Projet fictif de démonstration : aucune demande ne peut être envoyée.</p>@endif
 
-  <div class="mx-2col">
+  {{-- Application (maquettes 10 et 12) : onglets d'accès rapide aux sections réelles de la page. --}}
+  <nav class="mx-ptabs" aria-label="Sections du projet">
+    <a href="#apercu">Aperçu</a>
+    <a href="#resultats">Résultats</a>
+    <a href="#actualites">Activités</a>
+    @if ($project->documents->isNotEmpty())<a href="#documents">Rapports</a>@endif
+  </nav>
+  <script>(function(){var n=document.querySelector('.mx-ptabs');if(!n)return;var a=n.querySelectorAll('a');function on(h){a.forEach(function(x){x.classList.toggle('is-active',x.getAttribute('href')===h);});}on(location.hash||'#apercu');n.addEventListener('click',function(e){var l=e.target.closest('a');if(l)on(l.getAttribute('href'));});})();</script>
+
+  <div class="mx-2col" id="apercu">
     <div class="mx-stack">
       @if ($project->objectives || $project->description)
         <section class="mx-card mx-card__pad mx-stack">
@@ -125,7 +135,7 @@
         </section>
       @endif
       @if ($project->documents->isNotEmpty())
-        <section class="mx-card mx-stack" style="gap:0">
+        <section class="mx-card mx-stack" style="gap:0" id="documents">
           <div class="mx-card__head"><h2 class="mx-card__title"><x-mx.icon name="file" :size="18"/> Documents</h2></div>
           <div class="mx-docs" style="padding-top:12px">
             @foreach ($project->documents as $doc)

@@ -36,8 +36,11 @@
 
   <div class="mx-discover">
     <aside class="mx-stack">
+      {{-- Application (maquette 8) : filtres repliés sous un bouton « Filtres » ; site : toujours ouverts. --}}
+      <details class="mx-dfilters" open>
+      <summary class="mx-btn mx-btn--ghost mx-btn--sm"><x-mx.icon name="filter" :size="16"/> Filtres @if ($filtered)<span class="mx-count" style="position:static">•</span>@endif</summary>
       <form class="mx-card mx-card__pad mx-stack" method="GET" action="{{ route('social.discover') }}" style="gap:10px">
-        <b class="mx-row" style="gap:6px"><x-mx.icon name="filter" :size="16"/> Filtres</b>
+        <b class="mx-row mx-dfilters__title" style="gap:6px"><x-mx.icon name="filter" :size="16"/> Filtres</b>
         @if ($tab !== 'organisations')<input type="hidden" name="onglet" value="{{ $tab }}">@endif
         @if ($f['q'])<input type="hidden" name="q" value="{{ $f['q'] }}">@endif
         <div class="mx-field"><label class="mx-label" for="dc-pays">Pays</label>
@@ -53,7 +56,8 @@
         <div class="mx-row mx-row--wrap" style="gap:8px"><button class="mx-btn mx-btn--primary mx-btn--sm">Rechercher</button>
           @if ($filtered)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.discover', array_filter(['onglet' => $tab === 'organisations' ? null : $tab])) }}">Réinitialiser</a>@endif</div>
       </form>
-      <section class="mx-card mx-card__pad mx-stack" style="gap:10px">
+      </details>
+      <section class="mx-card mx-card__pad mx-stack mx-dstats" style="gap:10px">
         <b>Chiffres clés</b>
         <div class="mx-statgrid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
           <div><b>{{ $stats['organisations'] }}</b><span>Organisations</span></div>
@@ -73,7 +77,7 @@
       </section>
     </aside>
 
-    <section class="mx-stack" aria-live="polite">
+    <section class="mx-stack mx-dresults" aria-live="polite">
       <p class="mx-small mx-muted">{{ $items->total() }} résultat(s)@if($f['domaine']) · {{ $D[$f['domaine']] }}@endif</p>
       @if ($items->isEmpty())
         @include('social.partials.empty', ['icon' => 'compass', 'title' => 'Aucun résultat', 'text' => $filtered ? 'Essayez un autre domaine, une autre région ou d’autres mots-clés.' : 'Rien à afficher dans cette rubrique pour le moment.'])
@@ -99,4 +103,5 @@
       {{ $items->links('social.partials.pagination') }}
     </section>
   </div>
+  <script>(function(){var d=document.querySelector('.mx-dfilters');if(d&&document.documentElement.classList.contains('is-app')&&innerWidth<900&&!@json((bool) $filtered))d.open=false;})();</script>
 </x-layouts.social>
