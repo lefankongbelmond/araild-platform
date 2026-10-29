@@ -174,6 +174,11 @@ it('publie la liaison du domaine seulement avec une empreinte valide', function 
     $this->getJson('/.well-known/assetlinks.json')->assertOk()
         ->assertJsonPath('0.target.package_name', 'com.araild.mxconnect')
         ->assertJsonPath('0.target.sha256_cert_fingerprints.0', $fp);
+
+    // Ligne copiée telle quelle depuis Android Studio (signingReport) : préfixe ignoré, doublon retiré.
+    asSuperAdmin()->post(route('network.android.settings.save'), ['package' => 'com.araild.mxconnect', 'sha256' => "SHA-256: $fp\nSHA256: $fp", 'min' => 2, 'latest' => 3])
+        ->assertSessionHasNoErrors();
+    $this->getJson('/.well-known/assetlinks.json')->assertJsonCount(1, '0.target.sha256_cert_fingerprints');
 });
 
 it('réserve les réglages et les documents au super-admin ; le modérateur lit les retours', function () {
@@ -205,4 +210,18 @@ it('ouvre les pages publiques exigées par le store et l’écran « Mon profil 
     $this->actingAs($a, 'member')->get(route('social.app.menu'))->assertOk()->assertSee('Mes publications')->assertSee('Déconnexion');
     $this->get(route('social.app.ready'))->assertOk();
     $this->get(route('social.legal.history'))->assertOk()->assertSee(legalDoc('privacy')->label());
+});
+
+it('propose d’inviter un ami par WhatsApp et les réseaux, sans identifiant dans le lien', function () {
+    $this->get(route('social.invite'))->assertRedirect();   // réservé aux membres connectés
+
+    $a = account('Awa');
+    $link = route('social.register');
+    $html = $this->actingAs($a, 'member')->get(route('social.invite'))->assertOk()
+        ->assertSee('https://wa.me/?text=', false)
+        ->assertSee('facebook.com/sharer/sharer.php?u=' . rawurlencode($link), false)
+        ->assertSee('Awa vous invite')
+        ->getContent();
+    expect($html)->toContain(rawurlencode($link))->not->toContain(rawurlencode($link . '?'));   // lien nu, sans paramètre de suivi
+    $this->get(route('social.app.menu'))->assertSee('Inviter un ami');
 });

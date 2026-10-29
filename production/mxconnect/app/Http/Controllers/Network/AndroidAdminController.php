@@ -113,7 +113,9 @@ class AndroidAdminController extends Controller
             'store'   => ['nullable', 'url', 'max:300'],
             'message' => ['nullable', 'string', 'max:300'],
         ], ['latest.gte' => 'La dernière version doit être supérieure ou égale à la version minimale.']);
-        $prints = array_filter(preg_split('/[\s,;]+/', strtoupper((string) ($data['sha256'] ?? ''))));
+        // Collage direct depuis Android Studio (« SHA-256: AB:CD… ») ou keytool (« SHA256: … ») accepté.
+        $raw = preg_replace('/\bSHA-?256\s*:?/i', ' ', (string) ($data['sha256'] ?? ''));
+        $prints = array_values(array_unique(array_filter(preg_split('/[\s,;]+/', strtoupper($raw)))));
         foreach ($prints as $p) {
             if (! preg_match('/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/', $p)) {
                 return back()->withInput()->withErrors(['sha256' => "Empreinte invalide : {$p}. Format attendu : 32 octets en hexadécimal séparés par « : »."]);

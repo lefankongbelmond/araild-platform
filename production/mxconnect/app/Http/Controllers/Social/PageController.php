@@ -41,6 +41,21 @@ class PageController extends SocialController
         return $doc ? redirect()->route('social.legal.show', ['type' => 'privacy']) : view('social.privacy');
     }
 
+    /**
+     * Inviter un ami (2026-11-10) : lien d'inscription à partager (WhatsApp, Facebook, SMS…).
+     * Aucun suivi : le lien ne contient aucun identifiant, rien n'est enregistré.
+     */
+    public function invite()
+    {
+        $me = auth('member')->user();
+        $link = route('social.register');
+        $store = \App\Support\AndroidApp::storeUrl();
+        $text = $me->first_name . ' vous invite à rejoindre MX-CONNECT, le réseau des mutuelles de santé, des organisations et des citoyens engagés. '
+            . 'Inscription gratuite : ' . $link . ($store ? "\nApplication Android : " . $store : '');
+
+        return view('social.invite', ['link' => $link, 'text' => $text, 'store' => $store]);
+    }
+
     /** Centre d'aide (questions fréquentes) et formulaire de retour bêta (2026-11-09). */
     public function help()
     {

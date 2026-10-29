@@ -83,6 +83,7 @@
               <a href="{{ route('social.adhesions') }}"><x-mx.icon name="file" :size="18"/> Mes demandes d’adhésion</a>
               <a href="{{ route('social.requests') }}"><x-mx.icon name="briefcase" :size="18"/> Mes candidatures et engagements</a>
               <a href="{{ route('social.events') }}"><x-mx.icon name="calendar" :size="18"/> Événements</a>
+              <a href="{{ route('social.invite') }}"><x-mx.icon name="share-out" :size="18"/> Inviter un ami</a>
               <a href="{{ route('social.settings') }}"><x-mx.icon name="settings" :size="18"/> Paramètres</a>
               <form method="POST" action="{{ route('social.logout') }}">@csrf<button class="is-danger"><x-mx.icon name="logout" :size="18"/> Déconnexion</button></form>
             </div>
@@ -112,6 +113,7 @@
                 @foreach ($mine as [$key, $route, $icon, $label])
                   <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" :size="20"/> {{ $label }}</a>
                 @endforeach
+                <a href="{{ route('social.invite') }}" @class(['is-active' => $active === 'inviter'])><x-mx.icon name="share-out" :size="20"/> Inviter un ami</a>
                 <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" :size="20"/> Paramètres</a>
               @endif
               <a href="{{ route('social.about') }}"><x-mx.icon name="shield" :size="20"/> À propos et règles</a>
@@ -171,6 +173,7 @@
               <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" /> {{ $label }}</a>
             @endforeach
             <a href="{{ route('social.user', $viewer) }}" @class(['is-active' => $active === 'profil'])><x-mx.icon name="user" /> Mon profil</a>
+            <a href="{{ route('social.invite') }}" @class(['is-active' => $active === 'inviter'])><x-mx.icon name="share-out" /> Inviter un ami</a>
             <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" /> Paramètres</a>
           @endif
         </nav>
@@ -217,6 +220,13 @@
 
   <div class="mx-toasts" id="mx-toasts" aria-live="polite"></div>
   @include('social.partials.report-modal')
+  {{-- Application : l'en-tête se cache quand on descend et revient dès qu'on remonte (jamais tout en haut, ni menu ouvert). --}}
+  <script>(function(){var d=document.documentElement;if(!d.classList.contains('is-app'))return;var last=scrollY,tick=false;
+    function run(){tick=false;var y=Math.max(0,scrollY),open=document.querySelector('.mx-topbar details[open]');
+      if(y<60||open||y<last-6)d.classList.remove('mx-head-hidden');else if(y>last+6)d.classList.add('mx-head-hidden');
+      if(Math.abs(y-last)>6||y<60)last=y;}
+    addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(run);}},{passive:true});
+    document.addEventListener('focusin',function(e){if(e.target.closest&&e.target.closest('.mx-topbar'))d.classList.remove('mx-head-hidden');});})();</script>
   <script src="/js/mx-social.js?v={{ config('mxconnect.asset_version') }}" defer></script>
   <script src="/js/mx-social-plus.js?v={{ config('mxconnect.asset_version') }}" defer></script>
   {{ $scripts ?? '' }}

@@ -2,6 +2,7 @@
 @php
   $rows = [
     ['edit', 'Modifier mon profil', route('social.settings'), null],
+    ['share-out', 'Inviter un ami', route('social.invite'), 'WhatsApp, Facebook, SMS, e-mail…'],
     ['list', 'Mes publications', route('social.user', $me), null],
     ['building', 'Mes organisations', route('social.pages.mine'), 'Pages que je gère'],
     ['groups', 'Mes groupes', route('social.groups'), null],

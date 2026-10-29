@@ -8,7 +8,7 @@
     @csrf
     <section class="rounded-lg border border-ink/10 bg-white p-5 text-sm">
       <h2 class="text-base font-semibold">Liaison du domaine</h2>
-      <p class="mt-1 text-ink/60">Sans empreinte valide, l’application s’ouvre avec une barre d’adresse. L’empreinte SHA-256 se lit dans la console Play (Intégrité de l’application → Certificat de signature) ou avec <code>keytool -list -v</code> sur le certificat d’envoi.</p>
+      <p class="mt-1 text-ink/60">Sans empreinte valide, l’application s’ouvre avec une barre d’adresse. L’empreinte SHA-256 se lit dans la console Play (Intégrité de l’application → Certificat de signature) ou avec <code>keytool -list -v</code> sur le certificat d’envoi. Application installée depuis Android Studio : panneau Gradle → <code>app › Tasks › android › signingReport</code>, ligne « SHA-256 » (collez-la telle quelle). Après l’enregistrement, désinstallez puis réinstallez l’application.</p>
       <label class="mt-3 block font-medium">Nom du paquet<input name="package" required value="{{ old('package', $package) }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2"></label>
       <label class="mt-3 block font-medium">Empreintes SHA-256 du certificat (une par ligne)
         <textarea name="sha256" rows="3" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2 font-mono text-xs" placeholder="AB:CD:…">{{ old('sha256', $sha256) }}</textarea></label>

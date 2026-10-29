@@ -232,6 +232,7 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
         Route::get('compte/mes-acceptations', [Social\LegalController::class, 'history'])->name('legal.history');
         Route::get('app/pret', [Social\AppController::class, 'ready'])->name('app.ready');
         Route::get('compte/menu', [Social\AppController::class, 'menu'])->name('app.menu');
+        Route::get('compte/inviter', [Social\PageController::class, 'invite'])->name('invite');
 
         Route::get('fil/abonnements', [Social\FeedController::class, 'following'])->name('following');
         Route::get('enregistrements', [Social\FeedController::class, 'saved'])->name('saved');

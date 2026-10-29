@@ -137,10 +137,11 @@
 /* Projet (maquettes 10 et 12) : onglets d'accès aux sections, en mode application */
 .mx-ptabs { display: none; }
 @media (max-width: 899px) {
-  html.is-app .mx-ptabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 20; background: var(--mx-bg, #F4F6FA); padding: 6px 0; margin: 4px 0; }
+  html.is-app .mx-ptabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; position: sticky; top: 56px; transition: top .22s ease; z-index: 20; background: var(--mx-bg, #F4F6FA); padding: 6px 0; margin: 4px 0; }
   html.is-app .mx-ptabs a { flex: 1 0 auto; text-align: center; padding: 9px 12px; border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--mx-muted); background: var(--mx-surface); border: 1px solid var(--mx-border); text-decoration: none; }
   html.is-app .mx-ptabs a.is-active { color: #fff; background: var(--mx-navy); border-color: var(--mx-navy); }
-  html.is-app #apercu, html.is-app #resultats, html.is-app #actualites, html.is-app #documents { scroll-margin-top: 64px; }
+  html.is-app.mx-head-hidden .mx-ptabs { top: 0; }
+  html.is-app #apercu, html.is-app #resultats, html.is-app #actualites, html.is-app #documents { scroll-margin-top: 120px; }
 }
 
 /* Je m'engage / Soutenir (maquettes 11 et 13) : choix en cartes */
@@ -153,6 +154,21 @@
 .mx-rcard--sun:has(input:checked) { border-color: var(--mx-sun); background: var(--mx-sun-soft); }
 .mx-btn--sunfill { background: var(--mx-sun); color: #fff; border-color: var(--mx-sun); }
 .mx-btn--sunfill:hover { background: #C4661A; color: #fff; text-decoration: none; }
+
+/* Inviter un ami */
+.mx-share-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 380px) { .mx-share-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mx-share { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border: 1px solid var(--mx-border); border-radius: 14px; background: var(--mx-surface); color: var(--mx-text); font: 600 12.5px Inter, system-ui, sans-serif; text-align: center; text-decoration: none; cursor: pointer; min-width: 0; }
+.mx-share:hover { text-decoration: none; border-color: var(--mx-blue-2); }
+.mx-share__ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--mx-navy); }
+.mx-share--wa .mx-share__ic { background: #25D366; }
+.mx-share--fb .mx-share__ic { background: #1877F2; }
+.mx-share--tg .mx-share__ic { background: #229ED9; }
+.mx-share--x .mx-share__ic { background: #111; }
+.mx-share--li .mx-share__ic { background: #0A66C2; }
+.mx-share--sms .mx-share__ic { background: var(--mx-blue); }
+.mx-share--mail .mx-share__ic { background: var(--mx-sun); }
+.mx-share--copy .mx-share__ic { background: #E8EDF7; color: var(--mx-navy); }
 
 /* ---------- Mode application dans les pages du réseau (TWA / PWA installée) ---------- */
 .mx-tabbar { display: none; }
@@ -171,4 +187,7 @@
   html.is-app .mx-topbar .mx-show-sm { display: none !important; }
   html.is-app .mx-apphead-only { display: inline-flex; }
   html.is-app .mx-web-only { display: none !important; }                /* « + » remplacé par « Publier » de la barre du bas */
+  /* En-tête : masqué quand on descend, réaffiché dès qu'on remonte (classe posée par le script du gabarit). */
+  html.is-app .mx-topbar { position: sticky; top: 0; z-index: 50; transition: transform .22s ease; will-change: transform; }
+  html.is-app.mx-head-hidden .mx-topbar { transform: translateY(-100%); }
 }
