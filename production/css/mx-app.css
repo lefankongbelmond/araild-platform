@@ -58,13 +58,42 @@
 .mx-aor::before, .mx-aor::after { content: ""; flex: 1; height: 1px; background: var(--mx-border); }
 
 /* Démarrage (maquette 1) */
-.mx-splash { justify-content: space-between; text-align: center; }
-.mx-splash__logo { margin: 9vh auto 0; }
-.mx-splash__logo img { width: 132px; height: 132px; }
-.mx-splash__word { font-size: 34px; font-weight: 900; letter-spacing: .5px; color: var(--mx-navy); margin: 14px 0 4px; }
+.mx-splash { justify-content: flex-start; align-items: center; text-align: center; }
+.mx-splash__hero { margin: auto 0; padding-top: 4vh; }
+.mx-splash__brand { margin-top: 6px; }
+.mx-splash__word { font-size: 34px; font-weight: 900; letter-spacing: .5px; color: var(--mx-navy); margin: 0 0 4px; }
 .mx-splash__word b { color: var(--mx-brand-green); }
 .mx-splash__tag { color: var(--mx-blue); font-weight: 600; font-size: 15px; }
-.mx-splash__art { margin: 18px auto; width: 100%; max-width: 330px; }
+.mx-splash__status { color: var(--mx-muted); font-size: 14px; margin: 0; }
+.mx-ldots i { font-style: normal; animation: mx-dot 1.2s infinite; opacity: .2; }
+.mx-ldots i:nth-child(2) { animation-delay: .2s; } .mx-ldots i:nth-child(3) { animation-delay: .4s; }
+@keyframes mx-dot { 40% { opacity: 1; } }
+
+/* Réseau animé : logo au centre, six membres qui se connectent */
+.mx-net { position: relative; width: min(300px, 78vw); aspect-ratio: 1; margin: 0 auto 18px; }
+.mx-net__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mx-net__orbit { fill: none; stroke: #C9D6EA; stroke-width: 1.4; stroke-dasharray: 3 7; transform-origin: 160px 160px; animation: mx-orbit 24s linear infinite; }
+.mx-net__line { stroke: #B9C8E2; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: mx-draw .55s ease-out var(--d) forwards; }
+.mx-net__ring { fill: none; stroke: #DCE5F2; stroke-width: 1.4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: mx-draw 1s ease-in-out 1s forwards; }
+.mx-net__node { transform-box: fill-box; transform-origin: center; transform: scale(0); opacity: 0; animation: mx-pop .45s cubic-bezier(.34, 1.56, .64, 1) var(--d) forwards; }
+.mx-net__pulse { opacity: 0; animation: mx-pulse 1.6s ease-in-out var(--d) infinite; }
+.mx-net__logo { position: absolute; left: 50%; top: 50%; width: 38%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: #fff;
+  display: grid; place-items: center; box-shadow: 0 10px 30px rgba(11, 37, 89, .14); animation: mx-logo-in .6s cubic-bezier(.34, 1.56, .64, 1) both; }
+.mx-net__logo img { width: 82%; height: auto; }
+.mx-net__logo::before, .mx-net__logo::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(46, 158, 79, .45); animation: mx-ripple 2.4s ease-out .6s infinite; }
+.mx-net__logo::after { border-color: rgba(47, 111, 219, .4); animation-delay: 1.8s; }
+@keyframes mx-orbit { to { transform: rotate(360deg); } }
+@keyframes mx-draw { to { stroke-dashoffset: 0; } }
+@keyframes mx-pop { to { transform: scale(1); opacity: 1; } }
+@keyframes mx-pulse { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@keyframes mx-logo-in { from { transform: translate(-50%, -50%) scale(.6); opacity: 0; } }
+@keyframes mx-ripple { from { transform: scale(1); opacity: 1; } to { transform: scale(1.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .mx-net__orbit, .mx-net__pulse, .mx-net__logo::before, .mx-net__logo::after, .mx-ldots i { animation: none; }
+  .mx-net__line, .mx-net__ring { animation: none; stroke-dashoffset: 0; }
+  .mx-net__node { animation: none; transform: none; opacity: 1; }
+  .mx-net__logo { animation: none; }
+}
 .mx-splash__msg { color: var(--mx-navy); font-size: 15px; line-height: 1.5; margin: 0 0 18px; }
 .mx-spin { width: 26px; height: 26px; border: 3px solid var(--mx-blue-soft); border-top-color: var(--mx-blue); border-radius: 50%; margin: 0 auto 8px; animation: mx-spin .9s linear infinite; }
 @keyframes mx-spin { to { transform: rotate(360deg); } }
