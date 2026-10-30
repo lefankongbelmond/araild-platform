@@ -1,0 +1,155 @@
+1
+00:00:00,350 --> 00:00:07,947
+Bienvenue sur MX-CONNECT, le réseau qui relie les mutuelles de santé, les organisations et les citoyens engagés.
+
+2
+00:00:07,947 --> 00:00:11,814
+Je vous montre comment utiliser l’application, pas à pas.
+
+3
+00:00:12,314 --> 00:00:15,218
+Touchez l’icône MX-CONNECT sur votre téléphone.
+
+4
+00:00:15,218 --> 00:00:18,246
+L’application s’ouvre et vous connecte au réseau.
+
+5
+00:00:18,746 --> 00:00:23,229
+À la première ouverture, trois écrans présentent l’essentiel :
+
+6
+00:00:23,229 --> 00:00:25,977
+découvrir, vous engager et collaborer.
+
+7
+00:00:25,977 --> 00:00:28,507
+Touchez « Suivant », ou « Passer ».
+
+8
+00:00:29,007 --> 00:00:32,916
+Pour créer votre compte, touchez « Créer un compte ».
+
+9
+00:00:32,916 --> 00:00:39,332
+Indiquez votre nom, votre prénom et votre adresse e-mail ; le téléphone est facultatif.
+
+10
+00:00:39,332 --> 00:00:46,854
+Choisissez un mot de passe, cochez la politique de confidentialité, puis touchez « Créer mon compte ».
+
+11
+00:00:47,354 --> 00:00:53,551
+Lisez les règles de la communauté, cochez la case et touchez « Continuer ».
+
+12
+00:00:53,551 --> 00:00:56,690
+Rien n’est jamais coché à votre place.
+
+13
+00:00:57,190 --> 00:00:59,102
+Votre compte est prêt !
+
+14
+00:00:59,102 --> 00:01:01,846
+Touchez « Commencer maintenant ».
+
+15
+00:01:02,346 --> 00:01:03,412
+Voici l’accueil.
+
+16
+00:01:03,412 --> 00:01:08,542
+En haut, la recherche et les domaines : santé, protection sociale, éducation…
+
+17
+00:01:08,542 --> 00:01:11,207
+Faites défiler pour voir les actualités.
+
+18
+00:01:11,207 --> 00:01:15,937
+L’en-tête se cache quand vous descendez et revient quand vous remontez.
+
+19
+00:01:16,437 --> 00:01:20,206
+Pour publier, touchez le bouton vert « Publier ».
+
+20
+00:01:20,206 --> 00:01:27,050
+Écrivez votre message, ajoutez une photo ou une vidéo si vous le souhaitez, puis publiez.
+
+21
+00:01:27,550 --> 00:01:34,880
+L’onglet « Découvrir » rassemble les organisations, les projets, les événements et les opportunités.
+
+22
+00:01:34,880 --> 00:01:39,865
+Les filtres vous aident à trouver ce qui se passe près de chez vous.
+
+23
+00:01:40,365 --> 00:01:47,573
+Sur la page d’une organisation, touchez « Suivre » pour recevoir ses actualités dans votre fil.
+
+24
+00:01:48,073 --> 00:01:53,112
+Chaque projet présente son avancement, ses bénéficiaires et ses résultats.
+
+25
+00:01:53,112 --> 00:01:56,857
+Les résultats vérifiés ont été contrôlés par le réseau.
+
+26
+00:01:57,357 --> 00:01:59,774
+Pour aider, touchez « Je m’engage » :
+
+27
+00:01:59,774 --> 00:02:05,651
+choisissez votre forme de contribution, indiquez vos disponibilités et écrivez un message.
+
+28
+00:02:05,651 --> 00:02:07,545
+L’organisation vous répondra.
+
+29
+00:02:08,045 --> 00:02:11,488
+Vous représentez une entreprise ou une association ?
+
+30
+00:02:11,488 --> 00:02:14,798
+Touchez « Soutenir » pour proposer un partenariat.
+
+31
+00:02:14,798 --> 00:02:17,381
+MX-CONNECT ne collecte jamais d’argent.
+
+32
+00:02:17,881 --> 00:02:24,664
+L’onglet « Messages » vous permet d’écrire aux mutuelles, et la cloche affiche vos notifications.
+
+33
+00:02:25,164 --> 00:02:26,555
+Touchez « Profil » :
+
+34
+00:02:26,555 --> 00:02:33,649
+vous y retrouvez vos publications, vos organisations, vos groupes, vos opportunités et vos paramètres.
+
+35
+00:02:34,149 --> 00:02:43,060
+Pour faire grandir la communauté, touchez « Inviter un ami » et partagez le lien par WhatsApp, Facebook ou SMS.
+
+36
+00:02:43,560 --> 00:02:45,009
+Une question ?
+
+37
+00:02:45,009 --> 00:02:48,531
+Le Centre d’aide est là pour vous.
+
+38
+00:02:49,031 --> 00:02:52,305
+MX-CONNECT : connecter, collaborer, réussir.
+
+39
+00:02:52,305 --> 00:02:54,537
+À très bientôt sur le réseau !
