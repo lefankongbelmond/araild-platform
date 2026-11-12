@@ -1,0 +1,15 @@
+# Cartographie solidaire
+
+*Philosophie visuelle de la note A4 « MX-CONNECT — De la solidarité mutualiste à la Couverture Santé Universelle »*
+
+**Le principe.** Une page est un territoire. Chaque élément y occupe une place précise, comme on reporte sur une carte des bornes, des chemins et des zones de juridiction. La forme dit ce que les mots n’ont plus besoin d’expliquer. Deux cercles qui se recouvrent sans se confondre, une frontière tracée d’un trait fin, une zone partagée à peine plus sombre : la séparation et la complémentarité se lisent avant d’être lues. Chaque page doit donner l’impression d’avoir été arpentée, mesurée et dessinée à la main, avec la patience d’un relevé topographique.
+
+**Espace et forme.** Le papier est ivoire, chaud, jamais blanc pur. Les marges sont larges et la grille est stricte. Les blocs s’alignent sur une même ligne de départ, la respiration est égale entre les sections et l’asymétrie est assumée : une colonne de texte face à une colonne de silence. Les formes sont parfaites et rares. Ce sont le cercle, la ligne et le rectangle aux angles adoucis, rien de décoratif. Les filets ont l’épaisseur d’un trait de plume (un quart de point) et séparent sans enfermer. L’ensemble doit sembler le fruit d’une exécution de maître, où aucun alignement n’a été laissé au hasard.
+
+**Couleur et matière.** Une encre profonde, le bleu nuit, porte les titres et la structure. Deux couleurs de juridiction se partagent la carte : le vert de la solidarité communautaire et le bleu du dispositif public. Là où elles se superposent, elles produisent une troisième teinte, plus dense : le territoire commun. Une seule couleur d’alerte, l’ocre, est réservée aux précautions et aux limites. Les teintes de fond sont des lavis très clairs, comme une aquarelle posée sur un relevé, travaillés avec une retenue méticuleuse.
+
+**Échelle et rythme.** Le contraste d’échelle crée la hiérarchie. De très grands chiffres en serif éditorial répondent à de minuscules repères en chasse fixe : numéros de section, coordonnées, sources. Le rythme est celui d’un atlas : une planche de chiffres, une planche de texte, une planche de schémas, une planche d’images, sans que l’œil se lasse. Les repères systématiques (numérotation en chiffres romains, codes de figures, renvois de page) donnent à l’ensemble la rigueur d’une discipline scientifique.
+
+**Typographie.** Trois voix, jamais plus. Un serif fin et élégant pour les titres et les grands nombres, qui affirme sans élever la voix. Une linéale sobre pour le texte courant, lisible à petite taille. Une chasse fixe discrète pour les étiquettes et les repères, comme les annotations d’un cartographe. Le texte reste un élément visuel : courts paragraphes, listes resserrées, encadrés rares. Rien ne déborde, rien ne se chevauche, chaque mot a sa marge.
+
+**Exigence.** Le résultat doit pouvoir être posé sur le bureau d’un ministre et sembler avoir demandé des semaines de travail : chaque page vérifiée, chaque espace équilibré, chaque couleur calibrée. On n’ajoute pas un ornement pour combler un vide : on affine ce qui est déjà là jusqu’à ce que la page paraisse inévitable.
