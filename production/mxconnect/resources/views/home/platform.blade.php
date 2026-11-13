@@ -39,6 +39,7 @@
           <div class="h-cta">
             <a class="h-btn h-btn--grad" href="#fonctionnalites">Découvrir la plateforme {!! $arrow !!}</a>
             <a class="h-btn h-btn--ghost" href="{{ route('social.home') }}">Voir le réseau social <x-mx.icon name="users" :size="18"/></a>
+            <a class="h-btn h-btn--ghost" href="{{ route('appcenter.index') }}">Installer nos applications <x-mx.icon name="download" :size="18"/></a>
           </div>
           <div class="h-trust">
             <div class="h-trust__item"><span class="h-trust__ico"><x-mx.icon name="shield" :size="18"/></span><span><b>Sécurisé</b>Rôles, 2FA et audit</span></div>

@@ -19,6 +19,7 @@
       </details>
       <a href="{{ $home }}#tarifs">Tarifs</a>
       <a href="{{ route('social.home') }}">Actualités</a>
+      <a href="{{ route('appcenter.index') }}">Applications</a>
       <a href="{{ $home }}#contact">Contact</a>
       <div class="h-mobile-only" style="flex-direction:column">
         <a class="h-btn h-btn--ghost" href="{{ route('home.login') }}">Se connecter</a>

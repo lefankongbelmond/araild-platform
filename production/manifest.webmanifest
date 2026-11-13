@@ -1,17 +1,33 @@
 {
-  "name": "MX-CONNECT",
-  "short_name": "MX-CONNECT",
-  "description": "Le réseau social des mutuelles de santé — Ensemble pour une meilleure santé.",
+  "name": "MX-CONNECT Social",
+  "short_name": "MX Social",
+  "description": "Le réseau social de l’écosystème MX-CONNECT : citoyens, membres des mutuelles, organisations communautaires et acteurs du développement.",
   "lang": "fr",
+  "dir": "ltr",
   "id": "/fil",
   "start_url": "/app?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#F4F7FB",
-  "theme_color": "#021F5A",
+  "theme_color": "#0B2559",
+  "categories": ["social", "health", "news"],
   "icons": [
     { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "/brand/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+  ],
+  "screenshots": [
+    { "src": "/brand/appcenter/social-capture-large.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Le fil d’actualité de MX-CONNECT Social" },
+    { "src": "/brand/appcenter/social-capture-etroite.jpg", "sizes": "540x1168", "type": "image/jpeg", "form_factor": "narrow", "label": "MX-CONNECT Social sur téléphone" }
+  ],
+  "shortcuts": [
+    { "name": "Fil d’actualité", "url": "/fil?source=pwa", "icons": [{ "src": "/brand/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Messages", "url": "/messages?source=pwa", "icons": [{ "src": "/brand/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Découvrir", "url": "/decouvrir?source=pwa", "icons": [{ "src": "/brand/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "related_applications": [
+    { "platform": "webapp", "url": "https://m.araild.com/manifest.webmanifest" }
+  ],
+  "prefer_related_applications": false
 }

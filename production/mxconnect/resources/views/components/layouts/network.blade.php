@@ -24,6 +24,9 @@
           ['network.social.projects', 'Projets et offres', 'target', $MOD, 'network.social.projects*'],
           ['network.social.settings', 'Réglages du réseau', 'sliders', $MOD, 'network.social.settings*'],
       ],
+      'App Center' => [
+          ['network.appcenter.index', 'Applications et statistiques', 'grid', $MOD, 'network.appcenter.*'],
+      ],
       'Application Android' => [
           ['network.android.legal', 'Documents légaux', 'file', $SA, 'network.android.legal*'],
           ['network.android.feedback', 'Retours bêta', 'inbox', $MOD, 'network.android.feedback*'],
@@ -38,6 +41,7 @@
       ],
   ];
   $icons = [
+      'grid' => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
       'building' => '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1"/>',
       'pulse' => '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
       'chart' => '<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>',

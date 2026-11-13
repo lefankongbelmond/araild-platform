@@ -40,6 +40,13 @@ Route::middleware('central.only')->group(function () {
     Route::post('se-connecter/mutuelle', [\App\Http\Controllers\HomeController::class, 'mutualLogin'])->name('home.login.mutual')->middleware('throttle:social-auth');
     // Accueil du réseau social pour les visiteurs (ancienne page d'accueil).
     Route::get('communaute', [Social\PageController::class, 'landing'])->name('social.landing');
+
+    // App Center (2026-11-13) : présentation et installation des applications.
+    Route::get('applications', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'index'])->name('appcenter.index');
+    Route::post('applications/mutuelle', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'mutual'])->name('appcenter.mutual')->middleware('throttle:social-auth');
+    Route::post('applications/evenement', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'event'])->name('appcenter.event')->middleware('throttle:60,1');
+    Route::get('applications/{key}/android.apk', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'apk'])->name('appcenter.apk')->whereIn('key', ['mutuelle', 'social'])->middleware('throttle:20,1');
+    Route::get('applications/{key}/icone.png', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'icon'])->name('appcenter.icon')->whereIn('key', ['mutuelle', 'social']);
 });
 
 // Ancienne page de présentation : remplacée par la nouvelle page d'accueil.
@@ -82,6 +89,13 @@ Route::middleware('auth:network')->group(function () {
         Route::post('android/retours/{feedback}', [\App\Http\Controllers\Network\AndroidAdminController::class, 'feedbackStatus'])->name('android.feedback.status')->whereNumber('feedback');
         Route::get('android/reglages', [\App\Http\Controllers\Network\AndroidAdminController::class, 'settings'])->name('android.settings');
         Route::post('android/reglages', [\App\Http\Controllers\Network\AndroidAdminController::class, 'saveSettings'])->name('android.settings.save');
+        // App Center (2026-11-13) : applications installables, APK signé, statistiques anonymes
+        Route::get('app-center', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'index'])->name('appcenter.index');
+        Route::get('app-center/{key}', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'edit'])->name('appcenter.edit')->whereIn('key', ['mutuelle', 'social']);
+        Route::post('app-center/{key}', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'update'])->name('appcenter.update')->whereIn('key', ['mutuelle', 'social']);
+        Route::post('app-center/{key}/icone', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'icon'])->name('appcenter.icon')->whereIn('key', ['mutuelle', 'social']);
+        Route::post('app-center/{key}/apk', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'apk'])->name('appcenter.apk')->whereIn('key', ['mutuelle', 'social']);
+        Route::post('app-center/{key}/apk/retirer', [\App\Http\Controllers\Network\AppCenterAdminController::class, 'removeApk'])->name('appcenter.apk.remove')->whereIn('key', ['mutuelle', 'social']);
         Route::get('mutuelles/creer', [MutualController::class, 'create'])->name('mutuals.create');
         Route::post('mutuelles', [MutualController::class, 'store'])->name('mutuals.store');
         Route::post('mutuelles/{mutual}/agrement', [MutualController::class, 'approve'])->name('mutuals.approve');

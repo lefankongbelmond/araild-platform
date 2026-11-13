@@ -29,7 +29,7 @@
   $legalPending = $viewer ? app(\App\Services\Social\LegalService::class)->pendingFor($viewer)->count() : 0;
 @endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-app="social" data-app-endpoint="/applications/evenement">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -228,6 +228,9 @@
     addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(run);}},{passive:true});
     document.addEventListener('focusin',function(e){if(e.target.closest&&e.target.closest('.mx-topbar'))d.classList.remove('mx-head-hidden');});})();</script>
   <script src="/js/mx-social.js?v={{ config('mxconnect.asset_version') }}" defer></script>
+  {{-- App Center (2026-11-13) : ouverture en mode application = installation confirmée + utilisateur actif (anonyme). --}}
+  <script src="/js/mx-appcenter.js?v={{ config('mxconnect.asset_version') }}" defer></script>
+  <script>document.addEventListener('DOMContentLoaded', function () { if (window.MXApp) MXApp.launch('social', '/applications/evenement'); });</script>
   <script src="/js/mx-social-plus.js?v={{ config('mxconnect.asset_version') }}" defer></script>
   {{ $scripts ?? '' }}
 </body>

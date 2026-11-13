@@ -351,6 +351,12 @@ Route::middleware([
         Route::post('reclamations/{complaint}/statut', [ComplaintController::class, 'updateStatus'])->name('complaints.status');
     });
 
+    // --- App Center (2026-11-13) : MX-CONNECT MUTUELLE installable depuis le sous-domaine (public) ---
+    Route::get('installer', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'show'])->name('mutual-app.install');
+    Route::get('app-mutuelle.webmanifest', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'manifest'])->name('mutual-app.manifest');
+    Route::get('installer/icone.png', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'icon'])->name('mutual-app.icon');
+    Route::post('installer/evenement', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'event'])->name('mutual-app.event')->middleware('throttle:60,1');
+
     // --- Module 11: member PWA shell + manifest (public) ---
     Route::get('espace-membre', [PwaController::class, 'shell'])->name('pwa.shell');
     Route::get('espace-membre/manifest.json', [PwaController::class, 'manifest'])->name('pwa.manifest');
