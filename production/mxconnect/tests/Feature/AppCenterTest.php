@@ -80,6 +80,12 @@ function acApk(?array $cert, bool $v1 = false, bool $v2 = true, bool $manifest =
     return $path;
 }
 
+afterEach(function () {
+    if (tenancy()->initialized) {
+        tenancy()->end();   // sinon la transaction du test suivant reste ouverte sur la mauvaise connexion
+    }
+});
+
 beforeEach(function () {
     AppCenter::forget();
     AppCenterStat::query()->delete();

@@ -8,7 +8,6 @@
       Installée depuis le domaine principal ; c’est aussi le contenu de l’application Android (TWA).
     @endif
   </p>
-  @if (session('success'))<div class="mt-4 rounded-md bg-pine/10 px-4 py-2 text-sm text-pine">{{ session('success') }}</div>@endif
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-2 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
   <form method="POST" action="{{ route('network.appcenter.update', $app->key) }}" class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -27,8 +26,8 @@
       @php [$pv, $pd] = \App\Support\AppCenter::platformVersion(); @endphp
       <label class="mt-3 flex items-start gap-2"><input type="checkbox" name="version_auto" value="1" @checked(old('version_auto', $app->version_auto))> <span><b>Suivre la version de la plateforme</b> ({{ $pv ?? '—' }}{{ $pd ? ', ' . \Illuminate\Support\Carbon::parse($pd)->format('d/m/Y') : '' }}) : la version et la date se mettent à jour à chaque livraison. Décochez pour saisir une version vous-même.</span></label>
       <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label class="block font-medium">Version affichée<input name="version" maxlength="20" value="{{ old('version', $app->version) }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2 font-mono"></label>
-        <label class="block font-medium">Date de mise à jour<input type="date" name="released_on" value="{{ old('released_on', optional($app->released_on)->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2"></label>
+        <label class="block font-medium">Version affichée<input name="version" maxlength="20" value="{{ old('version', $app->version_auto ? ($pv ?? $app->version) : $app->version) }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2 font-mono"></label>
+        <label class="block font-medium">Date de mise à jour<input type="date" name="released_on" value="{{ old('released_on', $app->version_auto && $pd ? $pd : optional($app->released_on)->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border border-ink/15 px-2 py-2"></label>
       </div>
       <p class="mt-1 text-xs text-ink/50">Les statistiques « par version » utilisent la version affichée au moment de l’installation.</p>
       <label class="mt-3 block font-medium">Consigne ajoutée aux guides d’installation
