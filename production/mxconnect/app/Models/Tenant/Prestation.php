@@ -19,6 +19,7 @@ class Prestation extends Model implements Auditable
         'beneficiary_part_minor' => 'integer',
         'captured_by'            => 'integer',
         'validated_by'           => 'integer',
+        'decided_at'             => 'datetime',
     ];
 
     /** Origine d'une saisie : back-office de la mutuelle, ou portail du prestataire (2026-10-31). */
@@ -32,6 +33,16 @@ class Prestation extends Model implements Auditable
         $key = (string) (function_exists('tenant') ? tenant('id') : '');
 
         return self::$traceColumns[$key] ??= \Illuminate\Support\Facades\Schema::hasColumn('prestations', 'captured_by');
+    }
+
+    private static array $decisionColumns = [];
+
+    /** Colonnes decision_note / decided_at présentes ? (migration 2026_11_15 de la mutuelle) */
+    public static function hasDecisionColumns(): bool
+    {
+        $key = (string) (function_exists('tenant') ? tenant('id') : '');
+
+        return self::$decisionColumns[$key] ??= \Illuminate\Support\Facades\Schema::hasColumn('prestations', 'decision_note');
     }
 
     /** « Personne ne valide sa propre saisie » (administrateur compris). */

@@ -11,7 +11,7 @@
         <li class="flex flex-wrap items-center justify-between gap-3 py-3">
           <span><b>{{ $c->member?->last_name }} {{ $c->member?->first_name }}</b> <span class="text-xs text-ink/50">soins du {{ $c->opened_on?->format('d/m/Y') }}</span>
             <span class="block font-medium tabular-nums">{{ $currency->format((int) $c->due_minor) }}</span></span>
-          @if ($convention->inForce())
+          @if ($portal['bill'] ?? false)
             <form method="POST" action="{{ route('portal.invoices.store', $c->id) }}" enctype="multipart/form-data" class="grid w-full gap-2" style="max-width:22rem">@csrf
               <label class="sr-only" for="ref-{{ $c->id }}">Votre n° de facture</label>
               <input id="ref-{{ $c->id }}" name="provider_reference" maxlength="60" placeholder="Votre n° de facture" class="w-full rounded-md border border-ink/15 px-3 py-2 text-sm">
@@ -41,7 +41,7 @@
               @if ($inv->status === 'rejected' && $inv->decision_note)<div class="mt-1 text-clay">Motif : {{ $inv->decision_note }}</div>@endif</td>
             <td class="px-4 py-3 text-xs">
               @if ($inv->supporting_doc_path)<a class="text-pine underline" href="{{ route('portal.invoices.document', $inv->id) }}">Facture PDF</a>@endif
-              @if (in_array($inv->status, ['captured', 'processed'], true) && $convention->inForce())
+              @if (in_array($inv->status, ['captured', 'processed'], true) && ($portal['bill'] ?? false))
                 <form method="POST" action="{{ route('portal.invoices.document.store', $inv->id) }}" enctype="multipart/form-data" class="mt-1 flex flex-wrap items-center gap-2">@csrf
                   <label class="sr-only" for="doc-{{ $inv->id }}">Facture PDF</label>
                   <input id="doc-{{ $inv->id }}" type="file" name="document" accept="application/pdf,.pdf" required class="w-40 text-xs">

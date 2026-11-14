@@ -97,6 +97,9 @@ class MutualInstallController extends Controller
         'icon-maskable-512.png' => ['brand/icon-maskable-512.png', 'image/png'],
         'apple-touch-icon.png' => ['brand/apple-touch-icon.png', 'image/png'],
         'mx-mark-128.webp' => ['brand/mx-mark-128.webp', 'image/webp'],
+        // Lecteur de QR du portail prestataire (2026-11-15) : en production, le sous-domaine ne sert aucun /js.
+        'mx-scan.js' => ['js/mx-scan.js', 'text/javascript; charset=utf-8'],
+        'jsqr-1.4.0.min.js' => ['js/vendor/jsqr-1.4.0.min.js', 'text/javascript; charset=utf-8'],
     ];
 
     public function file(string $name)

@@ -4,7 +4,7 @@
    Ne met en cache QUE des fichiers publics et statiques (styles, polices, logo, icônes) et la
    page hors ligne. AUCUNE page de gestion, aucune réponse contenant des données d'adhérents,
    de cotisations ou de prestations n'est stockée sur l'appareil. */
-const VERSION = 'mx-mutuelle-2026.11.14';   // à changer à chaque livraison : purge les anciens caches
+const VERSION = 'mx-mutuelle-2026.11.15';   // à changer à chaque livraison : purge les anciens caches
 const OFFLINE = '/installer/hors-ligne';
 const STATIC = [OFFLINE, '/installer/fichiers/mx-mark-128.webp', '/installer/fichiers/icon-192.png'];
 

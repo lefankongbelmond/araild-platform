@@ -58,11 +58,14 @@ class ClaimAssessmentService
             return (int) $ceiling->ceiling_minor;   // per_act / per_stay: full ceiling each time
         }
 
-        // Annual: subtract mutual parts already granted this calendar year.
+        // Annual: subtract mutual parts already granted this calendar year — validated ones AND
+        // those still awaiting validation (captured / controlled). Since 2026-11-15 pending parts are
+        // reserved: two declarations close together can no longer both use the same remaining
+        // ceiling. A rejected prestation releases its reservation.
         $year = (int) substr($careDate, 0, 4);
 
         $alreadyGranted = Prestation::query()
-            ->where('status', 'validated')
+            ->whereIn('status', ['validated', 'captured', 'controlled'])
             ->whereYear('care_date', $year)
             ->when($ceiling->act_type_id, fn ($q) => $q->where('act_type_id', $actTypeId))
             ->whereHas('careClaim', fn ($q) => $q->where('member_id', $memberId))

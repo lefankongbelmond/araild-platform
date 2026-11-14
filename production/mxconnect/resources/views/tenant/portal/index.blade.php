@@ -21,7 +21,7 @@
           </div>
           <p data-scan-status role="status" aria-live="polite" class="text-xs text-pine"></p>
         </div>
-        <button class="w-full rounded-md bg-pine px-4 py-2.5 text-sm font-semibold text-white hover:bg-navy" @disabled(! $convention->inForce())>Vérifier les droits</button>
+        <button class="w-full rounded-md bg-pine px-4 py-2.5 text-sm font-semibold text-white hover:bg-navy" @disabled(! ($portal['act'] ?? false))>Vérifier les droits</button>
       </form>
       <p class="text-xs text-ink/45">Seul le verdict s’affiche : aucune donnée médicale. Chaque vérification est enregistrée au nom de votre compte.</p>
     </div>
@@ -63,8 +63,9 @@
     </div>
   </div>
   <x-slot:scripts>
-    {{-- Servis par la mutuelle elle-même (même origine : autorisé par la politique de sécurité). --}}
-    <script src="/js/vendor/jsqr-1.4.0.min.js" defer></script>
-    <script src="/js/mx-scan.js?v={{ config('mxconnect.asset_version') }}" defer></script>
+    {{-- Servis PAR L'APPLICATION sur l'adresse de la mutuelle (même origine, politique de sécurité) :
+         en production, le sous-domaine ne sert aucun fichier statique /js (correctif 2026-11-15). --}}
+    <script src="/installer/fichiers/jsqr-1.4.0.min.js" defer></script>
+    <script src="/installer/fichiers/mx-scan.js?v={{ config('mxconnect.asset_version') }}" defer></script>
   </x-slot:scripts>
 </x-layouts.tenant>

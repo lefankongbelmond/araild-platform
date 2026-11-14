@@ -48,7 +48,8 @@ class PrestationController extends Controller
             return back()->with('error', 'Vous avez saisi cette prestation : une autre personne doit la valider (contrôle « 4 yeux »).');
         }
 
-        $prestation->update(['status' => 'validated'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : []));
+        $prestation->update(['status' => 'validated'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
+            + (Prestation::hasDecisionColumns() ? ['decided_at' => now()] : []));
         return back()->with('success', __('mxconnect.prestation.validated'));
     }
 
@@ -60,7 +61,13 @@ class PrestationController extends Controller
         if ($prestation->isCapturedBy($request->user())) {
             return back()->with('error', 'Vous avez saisi cette prestation : une autre personne doit décider (contrôle « 4 yeux »).');
         }
-        $prestation->update(['status' => 'rejected'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : []));
+        // Motif obligatoire (2026-11-15) : il est montré au prestataire dans « Mes prises en charge ».
+        $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], [
+            'note.required' => 'Indiquez le motif du rejet : il sera communiqué au prestataire.',
+            'note.min'      => 'Le motif du rejet est trop court.',
+        ]);
+        $prestation->update(['status' => 'rejected'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
+            + (Prestation::hasDecisionColumns() ? ['decision_note' => trim($data['note']), 'decided_at' => now()] : []));
         return back()->with('success', __('mxconnect.prestation.rejected'));
     }
 

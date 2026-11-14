@@ -174,7 +174,7 @@ it('autorise la caméra uniquement sur le portail et sert le lecteur en local', 
     clinic('accueil@csi-a.test', 'CSI A');
     $res = as_('accueil@csi-a.test')->get($this->host . '/prestataire')->assertOk()
         ->assertSee('Scanner avec la caméra')->assertSee('Photo de la carte')
-        ->assertSee('/js/vendor/jsqr-1.4.0.min.js', false)->assertSee('/js/mx-scan.js', false);
+        ->assertSee('/installer/fichiers/jsqr-1.4.0.min.js', false)->assertSee('/installer/fichiers/mx-scan.js', false);   // servis par Laravel (2026-11-15)
     expect($res->headers->get('Permissions-Policy'))->toStartWith('camera=(self)');
     expect(asAdmin()->get($this->host . '/equipe')->headers->get('Permissions-Policy'))->toStartWith('camera=()');
     expect(file_exists(base_path('../js/vendor/jsqr-1.4.0.min.js')) && file_exists(base_path('../js/mx-scan.js')))->toBeTrue();

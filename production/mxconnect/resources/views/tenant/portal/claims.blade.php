@@ -23,7 +23,8 @@
             <td class="px-4 py-3 tabular-nums">{{ $currency->format($p->total_minor) }}</td>
             <td class="px-4 py-3 font-medium tabular-nums">{{ $currency->format($p->mutual_part_minor) }}</td>
             <td class="px-4 py-3 tabular-nums">{{ $currency->format($p->beneficiary_part_minor) }}</td>
-            <td class="px-4 py-3 text-xs {{ $p->status === 'validated' ? 'text-pine' : ($p->status === 'rejected' ? 'text-clay' : 'text-ink/60') }}">{{ $S[$p->status] ?? $p->status }}</td>
+            <td class="px-4 py-3 text-xs {{ $p->status === 'validated' ? 'text-pine' : ($p->status === 'rejected' ? 'text-clay' : 'text-ink/60') }}">{{ $S[$p->status] ?? $p->status }}
+              @if ($p->status === 'rejected')<div class="mt-1 text-clay" style="max-width:20rem">{{ $p->decision_note ? 'Motif : ' . $p->decision_note : 'Motif non communiqué (rejet antérieur au 15/11/2026) : contactez la mutuelle.' }}</div>@endif</td>
           </tr>
         @empty
           <tr><td colspan="7" class="px-4 py-10 text-center text-ink/45">Aucune prise en charge. Commencez par <a class="text-pine underline" href="{{ route('portal.index') }}">vérifier les droits</a> d’un adhérent.</td></tr>

@@ -52,7 +52,7 @@ class ProviderPortalController extends Controller
 
     public function verify(Request $request, DigitalCardService $cards)
     {
-        [$provider, $convention] = $this->context($request, true);
+        [$provider, $convention] = $this->context($request, 'act');
         $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => 'Saisissez le code adhérent ou collez le lien de la carte.']);
         $input = trim($data['code']);
 
@@ -86,7 +86,7 @@ class ProviderPortalController extends Controller
 
     public function declare(Request $request, int $check)
     {
-        [$provider, $convention] = $this->context($request, true);
+        [$provider, $convention] = $this->context($request, 'act');
         $c = $this->usableCheck($request, $provider, $check);
 
         return view('tenant.portal.declare', [
@@ -99,7 +99,7 @@ class ProviderPortalController extends Controller
 
     public function storeDeclaration(Request $request, int $check)
     {
-        [$provider, $convention] = $this->context($request, true);
+        [$provider, $convention] = $this->context($request, 'act');
         $c = $this->usableCheck($request, $provider, $check);
         $member = $c->member;
         $data = $request->validate([
@@ -120,6 +120,20 @@ class ProviderPortalController extends Controller
         $total = $this->amount($data['total']);
         if ($total <= 0) {
             return back()->withInput()->withErrors(['total' => 'Indiquez le montant total des soins.']);
+        }
+
+        // Double saisie probable (2026-11-15) : même établissement, même personne, même acte, même
+        // date, déjà déclarée et non rejetée => confirmation explicite exigée. Ce n'est PAS un refus :
+        // deux actes identiques le même jour peuvent être réels ; le contrôle anti-fraude de la
+        // mutuelle reçoit de toute façon un signal à examiner. Une prise en charge faite par un AUTRE
+        // établissement n'est jamais révélée ici (confidentialité du parcours de soins).
+        $twin = Prestation::where('provider_id', $provider->id)->where('act_type_id', (int) $data['act_type_id'])
+            ->whereDate('care_date', $data['care_date'])->where('status', '!=', 'rejected')
+            ->whereHas('careClaim', fn ($q) => $q->where('member_id', $member->id)
+                ->when($dependentId, fn ($w) => $w->where('dependent_id', $dependentId), fn ($w) => $w->whereNull('dependent_id')))
+            ->latest('id')->first();
+        if ($twin && ! $request->boolean('confirm_distinct')) {
+            return back()->withInput()->with('duplicate_of', $twin->id);
         }
 
         // Recours + prestation créés ensemble ; droits refusés => rien n'est enregistré.
@@ -182,15 +196,18 @@ class ProviderPortalController extends Controller
 
     public function requestPayment(Request $request, int $claim, InvoiceDocumentService $docs)
     {
-        [$provider, $convention] = $this->context($request, true);
+        [$provider, $convention] = $this->context($request, 'bill');
         $data = $request->validate(['provider_reference' => ['nullable', 'string', 'max:60']] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages());
         $c = CareClaim::findOrFail($claim);
-        abort_if(ProviderInvoice::where('provider_id', $provider->id)->where('care_claim_id', $c->id)->exists(), 422, 'Cette prise en charge est déjà facturée.');
-        $amount = (int) $c->prestations()->where('provider_id', $provider->id)->where('status', 'validated')->sum('mutual_part_minor');
-        abort_if($amount <= 0, 422, 'Aucune prestation validée à facturer.');
 
-        // Facture et pièce ensemble : un PDF refusé n'enregistre aucune demande.
-        DB::transaction(function () use ($provider, $c, $amount, $request, $data, $docs) {
+        // Facture et pièce ensemble : un PDF refusé n'enregistre aucune demande. Le recours est
+        // verrouillé pendant la transaction (2026-11-15) : un double clic ou deux postes en même
+        // temps ne peuvent pas créer deux demandes de paiement pour les mêmes soins.
+        $amount = DB::transaction(function () use ($provider, $c, $request, $data, $docs) {
+            CareClaim::whereKey($c->id)->lockForUpdate()->first();
+            abort_if(ProviderInvoice::where('provider_id', $provider->id)->where('care_claim_id', $c->id)->exists(), 422, 'Cette prise en charge est déjà facturée.');
+            $amount = (int) $c->prestations()->where('provider_id', $provider->id)->where('status', 'validated')->sum('mutual_part_minor');
+            abort_if($amount <= 0, 422, 'Aucune prestation validée à facturer.');
             $invoice = ProviderInvoice::create([
                 'provider_id' => $provider->id, 'care_claim_id' => $c->id, 'amount_minor' => $amount, 'status' => 'captured',
                 'captured_by' => $request->user()->id, 'provider_reference' => $data['provider_reference'] ?? null,
@@ -198,6 +215,8 @@ class ProviderPortalController extends Controller
             if ($request->hasFile('document')) {
                 $docs->attach($invoice, $request->file('document'));
             }
+
+            return $amount;
         });
 
         return back()->with('success', 'Demande de paiement transmise à la mutuelle (' . $this->currency()->format($amount) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
@@ -206,7 +225,7 @@ class ProviderPortalController extends Controller
     /** Joindre (ou remplacer) la facture PDF tant que la mutuelle n'a pas payé. */
     public function attachDocument(Request $request, int $invoice, InvoiceDocumentService $docs)
     {
-        [$provider, $convention] = $this->context($request, true);
+        [$provider, $convention] = $this->context($request, 'bill');
         $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
         abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, 'Cette facture est déjà en paiement : la pièce ne se modifie plus.');
         $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => 'Choisissez le fichier PDF de la facture.']);
@@ -226,18 +245,30 @@ class ProviderPortalController extends Controller
     // ---
 
     /**
-     * Prestataire représenté par le compte connecté et sa convention. Sans convention en
-     * vigueur : consultation seule ($act = false) ou refus ($act = true).
+     * Prestataire représenté par le compte connecté et sa convention.
+     *  - 'read' : consultation de son historique (toujours possible) ;
+     *  - 'act'  : vérifier, déclarer => convention EN VIGUEUR et établissement actif ;
+     *  - 'bill' : facturer des soins DÉJÀ validés => convention non désactivée par la mutuelle et
+     *             établissement actif, même si sa date de fin est passée (2026-11-15 : des soins
+     *             faits pendant la convention restent facturables après son échéance).
+     * Les vues reçoivent $portal = ['act' => bool, 'bill' => bool] (aucun bouton inutilisable).
      *
      * @return array{0:CareProvider,1:ProviderConvention}
      */
-    private function context(Request $request, bool $act = false): array
+    private function context(Request $request, string $mode = 'read'): array
     {
         $user = $request->user();
         $provider = $user->care_provider_id ? CareProvider::on('central')->find($user->care_provider_id) : null;
         $convention = ProviderConvention::forProvider($provider?->id);
         abort_unless($provider && $convention, 403, 'Ce compte n’est rattaché à aucun prestataire conventionné. Contactez la mutuelle.');
-        abort_if($act && ! $convention->inForce(), 403, 'La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.');
+
+        $state = [
+            'act'  => $provider->active !== false && $convention->inForce(),
+            'bill' => $provider->active !== false && (bool) $convention->active,
+        ];
+        view()->share('portal', $state);
+        abort_if($mode === 'act' && ! $state['act'], 403, 'La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.');
+        abort_if($mode === 'bill' && ! $state['bill'], 403, 'La convention de votre établissement a été suspendue par la mutuelle : la facturation en ligne est fermée. Contactez la mutuelle.');
 
         return [$provider, $convention];
     }

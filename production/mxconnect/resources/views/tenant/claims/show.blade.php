@@ -11,6 +11,8 @@
     <span class="rounded-full border px-3 py-1 text-sm {{ $claim->status === 'open' ? 'border-pine/30 text-pine' : 'border-ink/20 text-ink/50' }}">{{ __('mxconnect.claim.status_'.$claim->status) }}</span>
   </div>
 
+  @if ($errors->any())<div class="mt-4 rounded-md border border-clay/40 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
+
   {{-- Rights block feedback (prestation capture refused) --}}
   @if (session('rights_block'))
     <div class="mt-4 rounded-md border border-clay/40 bg-clay/5 px-4 py-3 text-sm text-clay">
@@ -56,8 +58,17 @@
                     <span class="text-xs text-ink/45" title="Contrôle « 4 yeux »">Votre saisie : à valider par une autre personne</span>
                   @elseif ($p->status === 'captured' && \App\Support\TenantAccess::can('claims.prestations.validate'))
                     <form method="POST" action="{{ route('claims.prestations.validate', [$claim, $p]) }}" class="inline">@csrf<button class="text-xs text-pine hover:underline">{{ __('mxconnect.prestation.validate') }}</button></form>
-                    <form method="POST" action="{{ route('claims.prestations.reject', [$claim, $p]) }}" class="inline">@csrf<button class="ml-2 text-xs text-clay hover:underline">{{ __('mxconnect.prestation.reject') }}</button></form>
+                    {{-- Rejet motivé (2026-11-15) : le motif est montré au prestataire, jamais de diagnostic. --}}
+                    <details class="ml-2 inline-block text-left align-top">
+                      <summary class="cursor-pointer text-xs text-clay hover:underline">{{ __('mxconnect.prestation.reject') }}</summary>
+                      <form method="POST" action="{{ route('claims.prestations.reject', [$claim, $p]) }}" class="mt-2 grid gap-2" style="min-width:14rem">@csrf
+                        <label class="text-xs text-ink/60" for="rej-{{ $p->id }}">Motif du rejet (visible par le prestataire, sans diagnostic)</label>
+                        <textarea id="rej-{{ $p->id }}" name="note" required minlength="5" maxlength="500" rows="2" class="w-full rounded-md border border-ink/15 px-2 py-1 text-xs"></textarea>
+                        <button class="rounded-md bg-clay px-3 py-1 text-xs font-semibold text-white">Confirmer le rejet</button>
+                      </form>
+                    </details>
                   @endif
+                  @if ($p->status === 'rejected' && $p->decision_note)<div class="mt-1 text-left text-xs text-ink/55" style="max-width:20rem">Motif : {{ $p->decision_note }}</div>@endif
                 </td>
               </tr>
             @empty

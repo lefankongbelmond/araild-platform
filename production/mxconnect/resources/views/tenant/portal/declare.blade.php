@@ -8,6 +8,11 @@
     <div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay"><b>Prise en charge refusée :</b>
       <ul class="mt-1 list-disc pl-5">@foreach (session('rights_block') as $r)<li>{{ __('mxconnect.rights.'.$r) }}</li>@endforeach</ul></div>
   @endif
+  @if (session('duplicate_of'))
+    <div class="mt-4 rounded-md border border-clay/30 bg-amber-50 px-4 py-3 text-sm text-ink" role="alert"><b>Déclaration peut-être en double.</b>
+      Votre établissement a déjà déclaré pour cette personne le même acte à la même date (prise en charge n° {{ session('duplicate_of') }}).
+      S’il s’agit bien d’un second acte réellement réalisé, cochez la case ci-dessous et déclarez de nouveau. La mutuelle en sera informée pour contrôle.</div>
+  @endif
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay"><ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
   <form method="POST" action="{{ route('portal.declare.store', $check->id) }}" class="mt-6 max-w-2xl space-y-4 rounded-lg border border-ink/10 bg-white p-5">
@@ -24,6 +29,9 @@
       <label class="block text-sm font-medium">Montant total des soins ({{ $currency->code }}) *<input name="total" required inputmode="decimal" maxlength="20" value="{{ old('total') }}" class="{{ $f }}" placeholder="Ex. 15 000"></label>
     </div>
     <p class="rounded-md bg-mist px-3 py-2 text-xs text-ink/60">La part de la mutuelle et la part à régler par le patient sont calculées selon la garantie de l’adhérent et affichées après l’enregistrement. La mutuelle valide ensuite la prise en charge ; vous pourrez alors en demander le paiement dans « Mes factures ». N’indiquez aucun diagnostic.</p>
-    <button class="rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">Déclarer</button>
+    @if (session('duplicate_of'))
+      <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_distinct" value="1" required class="mt-1"> Je confirme qu’il s’agit d’un acte distinct, réellement réalisé, et non d’une seconde saisie de la prise en charge n° {{ session('duplicate_of') }}.</label>
+    @endif
+    <button class="rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">{{ session('duplicate_of') ? 'Déclarer quand même' : 'Déclarer' }}</button>
   </form>
 </x-layouts.tenant>
