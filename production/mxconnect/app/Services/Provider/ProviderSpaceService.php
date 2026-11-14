@@ -56,6 +56,12 @@ class ProviderSpaceService
         'portal.invoices.store'         => 'invoices.bill',
         'portal.invoices.document.store'=> 'invoices.bill',
         'portal.invoices.document'      => 'invoices.view',
+        'portal.preauth'                => 'claims.view',
+        'portal.preauth.create'         => 'care.declare',
+        'portal.preauth.store'          => 'care.declare',
+        'portal.preauth.cancel'         => 'care.declare',
+        'portal.pharmacy'               => 'care.declare',
+        'portal.pharmacy.store'         => 'care.declare',
     ];
 
     // --- Mutuelles de l'établissement ---

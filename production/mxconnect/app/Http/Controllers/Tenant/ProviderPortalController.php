@@ -203,6 +203,152 @@ class ProviderPortalController extends Controller
             $p->id, $this->currency()->format($p->mutual_part_minor), $this->currency()->format($p->beneficiary_part_minor)));
     }
 
+    // ------------------------------------------------------------------ accords préalables (2026-11-19)
+
+    /** Mes demandes d'accord préalable (cet établissement seulement) et leurs décisions. */
+    public function preauths(Request $request)
+    {
+        [$provider, $convention] = $this->context($request);
+
+        return view('tenant.portal.preauths', [
+            'provider' => $provider, 'convention' => $convention, 'currency' => $this->currency(),
+            'items' => \App\Models\Tenant\Preauthorization::with(['member', 'dependent', 'actType'])->where('provider_id', $provider->id)
+                ->latest('id')->paginate(25),
+        ]);
+    }
+
+    public function preauthCreate(Request $request, int $check)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $c = $this->usableCheck($request, $provider, $check);
+
+        return view('tenant.portal.preauth-create', [
+            'provider' => $provider, 'check' => $c, 'member' => $c->member, 'currency' => $this->currency(),
+            'dependents' => $c->member->dependents()->where('status', 'active')->orderBy('first_name')->get(),
+            'acts' => ActType::orderBy('label')->get(),
+            'checkedDependent' => RightsCheck::hasIdentificationColumns() ? $c->dependent_id : null,
+        ]);
+    }
+
+    public function preauthStore(Request $request, int $check, \App\Services\Tenant\PreauthorizationService $service)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $c = $this->usableCheck($request, $provider, $check);
+        $member = $c->member;
+        $data = $request->validate([
+            'beneficiary'   => ['required', 'string'],
+            'act_type_id'   => ['required', 'integer'],
+            'planned_on'    => ['required', 'date', 'after_or_equal:today', 'before_or_equal:' . now()->addYear()->toDateString()],
+            'total'         => ['required', 'string', 'max:20'],
+            'clinical_info' => ['nullable', 'string', 'max:2000'],
+        ], ['planned_on.after_or_equal' => 'La date prévue ne peut pas être passée. Une urgence se déclare directement (régularisation ensuite).']);
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        $dependent = null;
+        if ($data['beneficiary'] !== 'member') {
+            $dependent = $member->dependents()->where('status', 'active')->whereKey((int) $data['beneficiary'])->first();
+            abort_unless($dependent, 422, 'Bénéficiaire inconnu.');
+        }
+        $total = $this->amount($data['total']);
+        if ($total <= 0) {
+            return back()->withInput()->withErrors(['total' => 'Indiquez le montant prévu des soins.']);
+        }
+        $p = $service->request([
+            'member' => $member, 'dependent' => $dependent, 'provider_id' => $provider->id, 'act_type_id' => (int) $data['act_type_id'],
+            'planned_on' => $data['planned_on'], 'estimated_minor' => $this->currency()->toMinor($total), 'clinical_info' => $data['clinical_info'] ?? null,
+        ], $request->user(), 'provider');
+
+        return redirect()->route('portal.preauth')->with('success', "Demande d’accord préalable n° {$p->id} envoyée à la mutuelle. Vous verrez sa décision ici.");
+    }
+
+    public function preauthCancel(Request $request, int $preauth, \App\Services\Tenant\PreauthorizationService $service)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $p = \App\Models\Tenant\Preauthorization::whereKey($preauth)->where('provider_id', $provider->id)->firstOrFail();
+        try {
+            $service->cancel($p, $request->user());
+        } catch (\App\Services\AccountingRefusal $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Demande retirée.');
+    }
+
+    // ------------------------------------------------------------------ pharmacie (2026-11-19)
+
+    /** Délivrance d'une ordonnance : n° d'ordonnance, prescripteur, médicaments délivrés. */
+    public function pharmacy(Request $request, int $check)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $c = $this->usableCheck($request, $provider, $check);
+
+        return view('tenant.portal.pharmacy', [
+            'provider' => $provider, 'check' => $c, 'member' => $c->member, 'currency' => $this->currency(),
+            'dependents' => $c->member->dependents()->where('status', 'active')->orderBy('first_name')->get(),
+            'acts' => ActType::orderBy('label')->get(),
+            'pharmacyActs' => ActType::whereIn('service_category_id', \App\Models\Tenant\ServiceCategory::where('family', 'pharmacy')->pluck('id'))->pluck('id')->all(),
+            'medicines' => \App\Models\Tenant\Medicine::orderBy('label')->get(['id', 'label', 'presentation', 'eligible', 'excluded', 'max_quantity']),
+            'checkedDependent' => RightsCheck::hasIdentificationColumns() ? $c->dependent_id : null,
+            'validity' => \App\Models\Tenant\MutualSetting::int('prescription_validity_days'),
+        ]);
+    }
+
+    public function pharmacyStore(Request $request, int $check, \App\Services\Tenant\PharmacyService $pharmacy)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $c = $this->usableCheck($request, $provider, $check);
+        $member = $c->member;
+        $data = $request->validate([
+            'beneficiary'      => ['required', 'string'],
+            'act_type_id'      => ['required', 'integer'],
+            'reference'        => ['required', 'string', 'max:60'],
+            'prescriber'       => ['required', 'string', 'max:160'],
+            'prescribed_on'    => ['required', 'date', 'before_or_equal:today'],
+            'renewals_allowed' => ['nullable', 'integer', 'between:0,12'],
+            'lines'            => ['required', 'array', 'min:1', 'max:20'],
+            'lines.*.medicine_id' => ['nullable', 'integer'],
+            'lines.*.prescribed'  => ['nullable', 'integer', 'min:1', 'max:9999'],
+            'lines.*.dispensed'   => ['nullable', 'integer', 'min:1', 'max:9999'],
+            'lines.*.unit_price'  => ['nullable', 'string', 'max:20'],
+        ], [
+            'reference.required' => 'Indiquez le numéro de l’ordonnance.', 'prescriber.required' => 'Indiquez le prescripteur.',
+            'prescribed_on.before_or_equal' => 'La date de l’ordonnance ne peut pas être dans le futur.',
+        ]);
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        $dependent = null;
+        if ($data['beneficiary'] !== 'member') {
+            $dependent = $member->dependents()->where('status', 'active')->whereKey((int) $data['beneficiary'])->first();
+            abort_unless($dependent, 422, 'Bénéficiaire inconnu.');
+        }
+        $lines = [];
+        foreach ($data['lines'] as $l) {
+            if (empty($l['medicine_id'])) {
+                continue;   // ligne vide du formulaire
+            }
+            if (empty($l['prescribed']) || empty($l['dispensed']) || ($l['unit_price'] ?? '') === '') {
+                return back()->withInput()->withErrors(['lines' => 'Pour chaque médicament, indiquez la quantité prescrite, la quantité délivrée et le prix unitaire.']);
+            }
+            $lines[] = ['medicine_id' => (int) $l['medicine_id'], 'quantity_prescribed' => (int) $l['prescribed'], 'quantity_dispensed' => (int) $l['dispensed'],
+                'unit_price_minor' => $this->currency()->toMinor($this->amount($l['unit_price']))];
+        }
+        try {
+            $res = $pharmacy->dispense($member, $dependent, $provider->id, (int) $data['act_type_id'], [
+                'reference' => $data['reference'], 'prescriber' => $data['prescriber'], 'prescribed_on' => $data['prescribed_on'],
+                'renewals_allowed' => (int) ($data['renewals_allowed'] ?? 0),
+            ], $lines, $request->user(), 'provider', $request->boolean('emergency'));
+        } catch (\App\Services\AccountingRefusal $e) {
+            return back()->withInput()->withErrors(['lines' => $e->getMessage()]);
+        }
+        if (! $res['ok']) {
+            return back()->withInput()->with('rights_block', $res['reasons']);
+        }
+        $p = $res['prestation'];
+
+        return redirect()->route('portal.claims')->with('success', sprintf(
+            'Délivrance enregistrée (prise en charge n° %d). Part mutuelle : %s ; à régler par le patient : %s%s. Elle sera validée par la mutuelle.',
+            $p->id, $this->currency()->format($p->mutual_part_minor), $this->currency()->format($p->beneficiary_part_minor),
+            $res['excluded'] > 0 ? ' (dont ' . $this->currency()->format($res['excluded']) . ' de médicaments non pris en charge)' : ''));
+    }
+
     public function claims(Request $request)
     {
         [$provider, $convention] = $this->context($request);

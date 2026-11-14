@@ -17,7 +17,15 @@ class CoverageRule extends Model implements Auditable
     use AuditableTrait;
 
     protected $guarded = [];
-    protected $casts = ['coverage_rate' => 'float', 'copay_rate' => 'float', 'emergency_exempt' => 'boolean', 'tariff_cap' => 'boolean', 'active' => 'boolean'];
+    protected $casts = ['coverage_rate' => 'float', 'copay_rate' => 'float', 'emergency_exempt' => 'boolean', 'tariff_cap' => 'boolean', 'active' => 'boolean',
+        'requires_authorization' => 'boolean', 'authorization_above_minor' => 'integer'];
+
+    /** Accord préalable exigé pour ce montant facturé ? (2026-11-19) */
+    public function needsAuthorization(int $totalMinor): bool
+    {
+        return (bool) $this->requires_authorization
+            && ($this->authorization_above_minor === null || $totalMinor > $this->authorization_above_minor);
+    }
 
     /** Catégories de bénéficiaires (calculées : âge, lien, élève, nouveau conjoint). */
     public const BENEFICIARY_CATEGORIES = [

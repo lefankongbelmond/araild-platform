@@ -41,7 +41,7 @@ Attribut CENTRAL `mutuals.is_test` (colonne virtuelle `data`) : MUTUELLE TEST, v
 
 `active` DROITS ACTIFS · `not_activated` DROITS NON ACTIVÉS · `waiting` DÉLAI DE CARENCE EN COURS · `limit_reached` PLAFOND ÉPUISÉ · `expired` ADHÉSION EXPIRÉE · `suspended` ADHÉSION SUSPENDUE · `not_covered` GARANTIE NON COUVERTE · `authorization` AUTORISATION ADMINISTRATIVE REQUISE.
 
-Le statut `authorization` est réservé à la livraison L3 (préautorisations). Il n'est encore jamais produit.
+Le statut `authorization` est produit depuis la livraison L3 (§ 10) : garantie soumise à accord préalable, sans accord utilisable, hors urgence.
 
 ### 3.2 `membership(member, dependent, date, providerId)`
 
@@ -192,3 +192,123 @@ Les adhésions en cours ne sont jamais touchées.
 - L'année des plafonds est l'année civile, pas l'année d'adhésion.
 - Les plafonds par prestataire et les plafonds par ordonnance (pharmacie) sont prévus en L3.
 - La catégorie « senior » n'existe que si l'âge senior est fixé dans la version.
+
+
+---
+
+# Livraison L3 (VERSION 2026.11.19) : accords préalables, pharmacie, médecin-conseil
+
+## 10. Accords préalables
+
+### 10.1 Paramètres (garantie d'une formule)
+
+`coverage_rules` reçoit trois colonnes :
+
+- `requires_authorization` : un accord préalable est exigé ;
+- `authorization_review` : `administrative` ou `medical` ;
+- `authorization_above_minor` : l'accord n'est exigé qu'au-delà de ce montant facturé (vide = toujours).
+
+Ces colonnes se règlent dans le catalogue, avec la garantie, et sont versionnées comme elle.
+
+### 10.2 Table `preauthorizations` (tenant)
+
+| Colonne | Rôle |
+|---|---|
+| `number` | AUT-AAAA-NNNNN, attribué à l'accord (séquentiel par année, sous verrou) |
+| `member_id`, `dependent_id`, `provider_id`, `act_type_id`, `coverage_rule_id`, `guarantee_version_id` | Objet de la demande |
+| `planned_on`, `estimated_minor`, `estimated_mutual_minor` | Soins prévus et estimation du moteur |
+| `approved_minor` | Part mutuelle accordée au plus (vide = calcul de la garantie) |
+| `review_type`, `status` | requested, approved, rejected, used, expired, cancelled |
+| `emergency` | Régularisation d'une urgence soignée sans accord |
+| `clinical_info` | DONNÉE DE SANTÉ : affichée seulement avec `capacite.donnees-sante`, exclue du journal d'audit |
+| `auto_checks` | Résultat des contrôles automatiques, sans donnée médicale |
+| `source`, `requested_by`, `decided_by`, `decided_at`, `decision_note`, `valid_until`, `prestation_id` | Traçabilité |
+
+### 10.3 Déroulement (`App\Services\Tenant\PreauthorizationService`)
+
+1. **Demande** : par le portail (`portal.preauth.create/store`, après une vérification des droits de moins de 12 h) ou par la mutuelle (`preauth.store`).
+2. **Contrôles automatiques** : `CoverageEngine::evaluate(..., skip_authorization)` à la date prévue. Le résultat est conservé (`auto_checks`).
+3. **Décision** (`decide`) :
+   - jamais par la personne qui a saisi la demande ;
+   - examen `medical` = rôle `medical_advisor` seulement ;
+   - un rejet exige un motif ;
+   - un accord reçoit son numéro, un montant accordé facultatif, et une validité : date choisie, sinon réglage `preauth_validity_days`, sinon sans limite.
+4. **Notification** : le prestataire voit la décision dans « Accords préalables » de son portail (numéro, montant, validité, motif). Aucun e-mail n'est envoyé.
+5. **Utilisation** : le moteur cherche un accord accordé, non utilisé et valide (`authorizationFor`) :
+   - pour ce bénéficiaire ;
+   - pour cet acte ou cette garantie (même `rule_key`) ;
+   - pour cet établissement.
+
+   La saisie le passe à `used` et le lie à la prestation : un accord ne sert qu'une fois. Une prestation rejetée le rend de nouveau utilisable (`releaseException`).
+
+### 10.4 Urgence (scénario 11)
+
+Si la garantie exige un accord, qu'aucun accord n'existe et que la case **Urgence** est cochée :
+
+- la prise en charge est calculée et enregistrée : les soins ne sont **jamais bloqués** ;
+- la prestation porte `authorization_missing = true` ;
+- une demande `emergency` est ouverte et liée à la prestation ;
+- un signal `emergency_without_authorization` est émis (à examiner, jamais un refus).
+
+La **validation** de la prestation attend que la régularisation soit examinée. Une régularisation accordée lève l'indicateur.
+
+## 11. Pharmacie
+
+### 11.1 Schéma (tenant)
+
+- `medicines` + `eligible` (liste positive), `excluded`, `generic`, `max_quantity` (par délivrance).
+- `prescriptions` : n°, prescripteur, date, renouvellements autorisés. L'empreinte `reference_key` est UNIQUE : sha256 du n° normalisé (majuscules, sans espaces ni ponctuation), du bénéficiaire et de la date.
+- `dispensations`, liées à une prestation.
+- `dispensation_lines` : quantités prescrite et délivrée, prix unitaire, ligne prise en charge ou non (`excluded`, `not_listed`), prix au-dessus de la référence.
+- Les lignes sont aussi copiées dans `prescribed_medicines` (statistiques existantes).
+- `mutual_settings` (clé → valeur ; clé absente = règle non appliquée) :
+  - `prescription_validity_days` ;
+  - `dispensation_watch_days` ;
+  - `preauth_validity_days`.
+
+### 11.2 Délivrance (`App\Services\Tenant\PharmacyService::dispense`)
+
+Tout se fait dans une transaction : l'ordonnance est créée ou relue SOUS VERROU (une collision d'unicité est relue). Puis :
+
+- **Refus** (`AccountingRefusal`) :
+  - ordonnance future ou périmée (selon le réglage) ;
+  - quantité délivrée supérieure à la quantité prescrite ;
+  - quantité cumulée (prestations non rejetées, toutes pharmacies) supérieure à prescrite × (1 + renouvellements). C'est le cas d'une **ordonnance déjà utilisée** (scénario 5).
+- **Hors base** (part du patient) :
+  - médicament exclu ou hors liste ;
+  - quantité au-delà de `max_quantity`.
+
+  Ce montant est transmis au moteur (`excluded_minor`). Le calcul classique le respecte aussi.
+- **Prise en charge** : par `ClaimCaptureService`, donc carence, plafonds de pharmacie, accord préalable et urgence s'appliquent.
+- **Signaux** (jamais des refus) :
+  - prix au-dessus du prix de référence (`above_reference_price`) ;
+  - même médicament délivré au même bénéficiaire dans les N jours (`close_redispensing`, si le réglage existe).
+
+Une prestation rejetée libère ses quantités.
+
+## 12. Médecin-conseil
+
+- Rôle `medical_advisor` (`TenantAccess::D`), ajouté aux rôles de chaque mutuelle par la migration.
+- MFA obligatoire. Rôle incompatible avec le trésorier-comptable.
+- Droits :
+  - recours et détail médical (`capacite.donnees-sante`) ;
+  - accords préalables (consulter, décider) ;
+  - dérogations (consulter, décider) ;
+  - registre des délivrances.
+- Il est seul à décider un examen médical.
+
+## 13. Routes et droits ajoutés
+
+| Route | Droit |
+|---|---|
+| `preauth.index`, `preauth.show` | A, C, B, D |
+| `preauth.store` | A, B |
+| `preauth.decide` | A, C, D |
+| `pharmacy.index` | A, C, B, D |
+| `pharmacy.policy`, `pharmacy.policy.update`, `pharmacy.medicines` | A |
+| `portal.preauth` | rôle provider ; droit d'établissement `claims.view` |
+| `portal.preauth.create/store/cancel`, `portal.pharmacy`, `portal.pharmacy.store` | rôle provider ; droit d'établissement `care.declare` |
+
+Migration TENANT `2026_11_19_000100_preauth_pharmacy` (additive).
+
+Tests : `tests/Feature/AccordsPrealablesPharmacieTest.php` (6 tests), dont les scénarios 5 et 11.

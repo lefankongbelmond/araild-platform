@@ -121,3 +121,9 @@ Chaque livraison suit le même circuit :
 - **Écart au plan, assumé.** Il n'y a pas de table `coverage_consumptions`. Le registre des consommations, ce sont les prestations elles-mêmes : elles gardent la garantie appliquée, le montant éligible, le ticket modérateur, le non couvert et la dérogation utilisée. La consommation est relue dans la transaction de saisie, après verrouillage de la ligne de l'adhérent. Un seul registre veut dire aucun risque de désaccord entre deux sources. Une prestation rejetée libère sa part sans écriture compensatoire.
 - **Préautorisation par garantie** : reportée en L3 avec le module des préautorisations. Le statut correspondant est prévu dans le moteur.
 - **Indicateur « test »** : posé sur la mutuelle par le super-admin (`is_test`). La réinitialisation reste en L6.
+
+**L3 livrée le 19/11/2026 (VERSION 2026.11.19).**
+- Accords préalables : workflow en 10 étapes, urgence régularisée a posteriori.
+- Pharmacie : ordonnances, délivrances, liste positive, double facturation.
+- Rôle de médecin-conseil.
+- Scénarios 5 et 11 couverts par des tests Pest.

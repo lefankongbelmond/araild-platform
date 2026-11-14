@@ -75,6 +75,12 @@ class FraudDetectionService
         return $fired;
     }
 
+    /** Signal posé par un autre contrôle (pharmacie, urgence sans accord : 2026-11-19). Jamais un refus. */
+    public function signal(Prestation $prestation, string $category, string $level, string $code): array
+    {
+        return $this->raise($prestation, $category, $level, $code);
+    }
+
     private function raise(Prestation $prestation, string $category, string $level, string $code): array
     {
         Alert::create([

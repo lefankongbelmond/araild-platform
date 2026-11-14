@@ -6,7 +6,10 @@
 
   @if (session('rights_block'))
     <div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay"><b>Prise en charge refusée :</b>
-      <ul class="mt-1 list-disc pl-5">@foreach (session('rights_block') as $r)<li>{{ __('mxconnect.rights.'.$r) }}</li>@endforeach</ul></div>
+      <ul class="mt-1 list-disc pl-5">@foreach (session('rights_block') as $r)<li>{{ __('mxconnect.rights.'.$r) }}</li>@endforeach</ul>
+      @if (in_array('authorization_required', session('rights_block'), true))
+        <p class="mt-2 text-ink">Ces soins demandent un <b>accord préalable</b> de la mutuelle : <a href="{{ route('portal.preauth.create', $check->id) }}" class="font-semibold text-pine underline">demander l’accord</a>. En cas d’<b>urgence</b>, cochez « Urgence » et déclarez : les soins ne sont jamais bloqués, la mutuelle régularise ensuite.</p>
+      @endif</div>
   @endif
   @if (session('duplicate_of'))
     <div class="mt-4 rounded-md border border-clay/30 bg-amber-50 px-4 py-3 text-sm text-ink" role="alert"><b>Déclaration peut-être en double.</b>

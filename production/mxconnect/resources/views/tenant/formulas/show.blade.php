@@ -45,7 +45,7 @@
                     <td class="py-2 pr-3"><b>{{ $r->label }}</b><div class="text-xs text-ink/50">{{ $r->category?->label ?? 'Toutes les prestations' }}</div>@unless ($r->active)<span class="text-xs text-clay">inactive</span>@endunless</td>
                     <td class="py-2 pr-3">{{ $bc[$r->beneficiary_category] ?? $r->beneficiary_category }}</td>
                     <td class="py-2 pr-3"><b>{{ $pct($r->coverage_rate) }}</b>@if ($r->copay_rate !== null)<div class="text-xs text-ink/50">TM {{ $pct($r->copay_rate) }}</div>@endif</td>
-                    <td class="py-2 pr-3 text-xs text-ink/60">{{ $r->emergency_exempt ? 'Urgence sans carence' : 'Carence même en urgence' }}@if ($r->accident_waiting_days !== null) · accident : {{ $r->accident_waiting_days }} j @endif @if ($r->tariff_cap) · tarif conventionnel @endif</td>
+                    <td class="py-2 pr-3 text-xs text-ink/60">{{ $r->emergency_exempt ? 'Urgence sans carence' : 'Carence même en urgence' }}@if ($r->accident_waiting_days !== null) · accident : {{ $r->accident_waiting_days }} j @endif @if ($r->tariff_cap) · tarif conventionnel @endif @if ($r->requires_authorization) · <b class="text-amber-700">accord préalable</b> ({{ $r->authorization_review === 'medical' ? 'médical' : 'administratif' }}@if ($r->authorization_above_minor !== null), au-delà de {{ $currency->format($r->authorization_above_minor) }}@endif) @endif</td>
                     <td class="py-2 text-right">
                       @if ($canEdit)
                         <details class="text-left"><summary class="cursor-pointer text-xs font-semibold text-pine">Modifier</summary>

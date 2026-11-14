@@ -120,6 +120,9 @@ class CoverageEngine
             'emergency' => (bool) ($opt['emergency'] ?? false), 'accident' => (bool) ($opt['accident'] ?? false),
             'exceptions' => $this->exceptions($member, $dependent, $date),
             'consumed' => fn (CoverageLimit $l, CoverageRule $r) => $this->consumed($l, $member, $dependent, $date, $version, $opt['exclude_prestation'] ?? null),
+            'excluded' => (int) ($opt['excluded_minor'] ?? 0),
+            'skip_authorization' => (bool) ($opt['skip_authorization'] ?? false),
+            'authorization' => fn (CoverageRule $r) => $this->authorizationFor($member, $dependent, $act, $r, $date, $providerId, $opt['preauthorization_id'] ?? null),
         ];
 
         return $this->compute($version, $ctx);
@@ -172,9 +175,29 @@ class CoverageEngine
             }
         }
 
-        // 4) Montants : éligible (tarif conventionnel si la garantie le prévoit), part au taux.
+        // 3 bis) Accord préalable (2026-11-19). Sans accord : AUTORISATION ADMINISTRATIVE REQUISE, sauf
+        // URGENCE — les soins ne sont jamais bloqués ; la prestation est marquée « à régulariser ».
+        $authorization = null;
+        $authMissing = false;
+        if (! ($ctx['skip_authorization'] ?? false) && $rule->needsAuthorization($total)) {
+            $authorization = isset($ctx['authorization']) ? ($ctx['authorization'])($rule) : null;
+            if (! $authorization) {
+                if ($ctx['emergency'] ?? false) {
+                    $authMissing = true;
+                } else {
+                    $r = $this->refusal('authorization', ['authorization_required'], $total, $version, $rule);
+                    $r['authorization_review'] = $rule->authorization_review;
+
+                    return $r;
+                }
+            }
+        }
+
+        // 4) Montants : éligible (hors lignes non prises en charge, puis tarif conventionnel si la
+        // garantie le prévoit), part au taux.
         $tariff = (int) ($act?->tariff_minor ?? 0);
-        $eligible = $rule->tariff_cap && $tariff > 0 ? min($total, $tariff) : $total;
+        $billedEligible = max(0, $total - (int) ($ctx['excluded'] ?? 0));
+        $eligible = $rule->tariff_cap && $tariff > 0 ? min($billedEligible, $tariff) : $billedEligible;
         $base = (int) round($eligible * ((float) $rule->coverage_rate) / 100);
 
         // 5) Plafonds (montant et/ou nombre) applicables à cette garantie.
@@ -219,6 +242,10 @@ class CoverageEngine
             return $r;
         }
 
+        // Accord préalable avec un montant accordé : la part de la mutuelle ne le dépasse pas.
+        if ($authorization && $authorization->approved_minor !== null) {
+            $mutual = min($mutual, (int) $authorization->approved_minor);
+        }
         $overLimit = $base - $mutual;
 
         return [
@@ -231,7 +258,28 @@ class CoverageEngine
             'limits' => $this->limitView($limits, $mutual), 'tariff' => $tariff ?: null,
             'waiting_days' => $waitDays, 'waiting_until' => $waitingUntil,
             'exception' => $usedException, 'exception_extra_used' => $extraUsed,
+            'authorization' => $authorization, 'authorization_missing' => $authMissing,
         ];
+    }
+
+    /**
+     * Accord préalable utilisable pour ces soins : accordé, non utilisé, valide à la date, pour ce
+     * bénéficiaire, cet acte (ou cette garantie) et, si connu, cet établissement.
+     */
+    public function authorizationFor(Member $member, ?Dependent $dependent, ?ActType $act, CoverageRule $rule, string $date, ?int $providerId, ?int $preauthId = null): ?\App\Models\Tenant\Preauthorization
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('preauthorizations')) {
+            return null;
+        }
+        $ruleIds = CoverageRule::where('rule_key', $rule->rule_key)->pluck('id');
+
+        return \App\Models\Tenant\Preauthorization::where('member_id', $member->id)->where('status', 'approved')->whereNull('prestation_id')
+            ->when($dependent, fn ($q) => $q->where('dependent_id', $dependent->id), fn ($q) => $q->whereNull('dependent_id'))
+            ->when($preauthId, fn ($q) => $q->whereKey($preauthId))
+            ->when($providerId, fn ($q) => $q->where('provider_id', $providerId))
+            ->where(fn ($q) => $q->where('act_type_id', $act?->id)->orWhereIn('coverage_rule_id', $ruleIds))
+            ->where(fn ($q) => $q->whereNull('valid_until')->orWhereDate('valid_until', '>=', $date))
+            ->orderBy('id')->first();
     }
 
     // ------------------------------------------------------------------ éléments du calcul
@@ -385,6 +433,7 @@ class CoverageEngine
             'version' => $version, 'rule' => $rule, 'rate' => $rule ? (float) $rule->coverage_rate : null, 'copay_rate' => $rule?->copay_rate,
             'billed' => $total, 'eligible' => 0, 'mutual' => 0, 'copay' => 0, 'non_covered' => $total, 'over_limit' => 0, 'patient' => $total,
             'limits' => [], 'tariff' => null, 'waiting_days' => null, 'waiting_until' => null, 'exception' => null, 'exception_extra_used' => 0,
+            'authorization' => null, 'authorization_missing' => false, 'authorization_review' => null,
         ];
     }
 

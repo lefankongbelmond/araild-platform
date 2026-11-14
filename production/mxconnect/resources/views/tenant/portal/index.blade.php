@@ -213,7 +213,12 @@
           </section>
 
           <div class="print:hidden">
-            @if ($portal['declare'] ?? true)<a href="{{ route('portal.declare', $result['check']->id) }}" class="inline-block rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">Déclarer une prise en charge</a>
+            @if ($portal['declare'] ?? true)
+              <div class="flex flex-wrap gap-2">
+                <a href="{{ route('portal.declare', $result['check']->id) }}" class="inline-block rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">Déclarer une prise en charge</a>
+                <a href="{{ route('portal.pharmacy', $result['check']->id) }}" class="inline-block rounded-md border border-pine px-5 py-2.5 text-sm font-semibold text-pine hover:bg-mist">Délivrer une ordonnance</a>
+                <a href="{{ route('portal.preauth.create', $result['check']->id) }}" class="inline-block rounded-md border border-ink/15 px-5 py-2.5 text-sm font-semibold text-ink/80 hover:bg-mist">Demander un accord préalable</a>
+              </div>
               <p class="mt-2 text-xs text-ink/50">Déclaration possible pendant 12 heures à partir de cette vérification.</p>
             @else<p class="text-xs text-ink/50">Votre rôle dans l’établissement ne comprend pas la déclaration des soins.</p>@endif
           </div>

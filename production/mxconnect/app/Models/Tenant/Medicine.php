@@ -13,6 +13,7 @@ class Medicine extends Model implements Auditable
     use SoftDeletes, AuditableTrait;
 
     protected $guarded = [];
+    protected $casts = ['eligible' => 'boolean', 'excluded' => 'boolean', 'generic' => 'boolean', 'max_quantity' => 'integer'];
 
     /** Catégories thérapeutiques (clé => [libellé, couleur du badge]). */
     public const CATEGORIES = [

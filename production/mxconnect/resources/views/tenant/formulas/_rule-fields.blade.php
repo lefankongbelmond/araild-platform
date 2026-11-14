@@ -16,3 +16,11 @@
   <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="tariff_cap" value="1" class="mt-1" @checked($r?->tariff_cap)> Base de calcul limitée au tarif conventionnel de l’acte</label>
   <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="active" value="1" class="mt-1" @checked($r ? $r->active : true)> Garantie active</label>
 </div>
+<fieldset class="rounded-md border border-ink/10 p-3 sm:col-span-2">
+  <legend class="px-1 text-sm font-medium">Accord préalable</legend>
+  <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="requires_authorization" value="1" class="mt-1" @checked($r?->requires_authorization)> Exiger un accord préalable de la mutuelle (sauf urgence : régularisation après les soins)</label>
+  <div class="mt-2 grid grid-cols-2 gap-2">
+    <label class="block text-sm font-medium">Examen<select name="authorization_review" class="{{ $f }}">@foreach (\App\Models\Tenant\Preauthorization::REVIEWS as $k => $t)<option value="{{ $k }}" @selected(($r?->authorization_review ?? 'administrative') === $k)>{{ $t }}</option>@endforeach</select></label>
+    <label class="block text-sm font-medium">Seulement au-delà de ({{ $currency->code }})<input name="authorization_above" inputmode="decimal" value="{{ $r && $r->authorization_above_minor !== null ? rtrim(rtrim(number_format($r->authorization_above_minor / (10 ** $currency->minor_unit), $currency->minor_unit, '.', ''), '0'), '.') : '' }}" class="{{ $f }}" placeholder="Vide = toujours"></label>
+  </div>
+</fieldset>

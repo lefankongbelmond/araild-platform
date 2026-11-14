@@ -117,3 +117,39 @@ Dans cette mutuelle seulement, le bouton **Charger les formules d'exemple** cré
 - FAMILLE est complète (taux, carences, plafond pharmacie) ;
 - les autres formules sont en brouillon, à compléter ;
 - aucune cotisation n'est fixée.
+
+## 11. Accords préalables (depuis le 19/11/2026)
+
+1. **Paramétrer.** Dans une garantie (Catalogue → formule → Modifier), cochez « Exiger un accord préalable ». Choisissez :
+   - l'examen : administratif, ou médical (médecin-conseil) ;
+   - éventuellement un montant : l'accord n'est exigé qu'au-delà.
+2. **Recevoir les demandes.** **Gestion des adhérents → Accords préalables**. Pour chaque demande s'affichent :
+   - les contrôles automatiques : droits, garantie, carence, plafonds ;
+   - la justification médicale, seulement pour les personnes habilitées.
+3. **Décider** : une autre personne que celle qui a saisi la demande. Pour un examen médical, seul le médecin-conseil décide.
+   - **Accorder** : un numéro AUT-… est attribué. Vous pouvez limiter la part de la mutuelle et fixer une date de validité.
+   - **Rejeter** : le motif est obligatoire et communiqué au prestataire.
+4. **Utilisation.** Le prestataire voit la décision dans son portail. L'accord sert une seule fois, pour son établissement.
+5. **Urgences.** Un prestataire peut soigner en urgence sans accord : les soins ne sont jamais bloqués. Une demande « Urgence » arrive alors dans la liste. La prise en charge ne peut être validée qu'après cet examen.
+
+Pour ajouter un **médecin-conseil** : Paramètres → Équipe et rôles → rôle « Médecin-conseil ».
+
+## 12. Pharmacie
+
+- **Politique pharmaceutique** (Gestion des adhérents → Pharmacie → Politique pharmaceutique) :
+  - validité d'une ordonnance ;
+  - délai de surveillance des délivrances rapprochées ;
+  - validité d'un accord préalable.
+
+  Un réglage vide n'est pas appliqué.
+- **Médicaments pris en charge** :
+  - « Liste » : médicament de la liste positive ;
+  - « Exclu » : jamais pris en charge ;
+  - « Générique » ;
+  - quantité maximale par ordonnance.
+
+  Le surplus et les médicaments hors liste restent à la charge du patient. La prescription n'est jamais modifiée.
+- **Plafonds de pharmacie** : dans chaque formule, avec les plafonds. « Par acte » correspond à une ordonnance délivrée.
+- **Registre des délivrances** : ordonnance, médicaments, lignes non prises en charge, état de la prise en charge.
+
+Une même ordonnance ne peut jamais être facturée deux fois, même dans une autre pharmacie. Les prix au-dessus du prix de référence et les délivrances rapprochées créent des alertes à examiner.

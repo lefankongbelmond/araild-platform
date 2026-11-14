@@ -18,6 +18,7 @@ class TenantNav
         'community_manager'    => 'Chargé de communication',
         'provider'             => 'Prestataire de soins',
         'auditor'              => 'Auditeur / contrôle interne',
+        'medical_advisor'      => 'Médecin-conseil',
     ];
 
     public const ROLE_DESCRIPTIONS = [
@@ -29,6 +30,7 @@ class TenantNav
         'community_manager'    => 'Page publique, publications, groupes, projets et messages du réseau social.',
         'provider'             => 'Prestataire de soins conventionné : uniquement son portail (vérifier les droits, déclarer ses prises en charge, suivre ses factures).',
         'auditor'              => 'Lecture seule : finances, registres, journal d’audit. Aucune donnée de santé, aucune saisie. Ne se cumule avec aucun autre rôle.',
+        'medical_advisor'      => 'Examine les accords préalables soumis à avis médical et les dérogations ; consulte le détail médical des recours. Ne paie pas.',
     ];
 
     /** Écrans sans entrée propre dans le menu : entrée à mettre en évidence. */
@@ -41,6 +43,10 @@ class TenantNav
         'accounting.chart'  => 'accounting.journal',
         'formulas.show'       => 'formulas.index',
         'formulas.categories' => 'formulas.index',
+        'preauth.show'        => 'preauth.index',
+        'pharmacy.policy'     => 'pharmacy.index',
+        'portal.preauth.create' => 'portal.preauth',
+        'portal.pharmacy'     => 'portal.index',
     ];
 
     /** Menu regroupé par domaine : route => [libellé ou clé de traduction, icône]. */
@@ -51,6 +57,7 @@ class TenantNav
                 'portal.index'    => ['Vérifier les droits', 'shield'],
                 'portal.claims'   => ['Mes prises en charge', 'clipboard'],
                 'portal.invoices' => ['Mes factures', 'receipt'],
+                'portal.preauth'  => ['Accords préalables', 'shield'],
             ],
             'Gestion des adhérents' => [
                 'members.index'       => ['mxconnect.member.plural', 'users'],
@@ -58,6 +65,8 @@ class TenantNav
                 'member-notifications.index' => ['Notifications aux membres', 'send'],
                 'subscriptions.index' => ['mxconnect.subscription.plural', 'file'],
                 'claims.index'        => ['mxconnect.claim.plural', 'clipboard'],
+                'preauth.index'       => ['Accords préalables', 'shield'],
+                'pharmacy.index'      => ['Pharmacie', 'pill'],
                 'alerts.index'        => ['mxconnect.alert.plural', 'bell'],
             ],
             'Facturation et finances' => [

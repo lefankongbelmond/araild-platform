@@ -49,6 +49,10 @@ class PrestationController extends Controller
         if ($prestation->isCapturedBy($request->user())) {
             return back()->with('error', 'Vous avez saisi cette prestation : une autre personne doit la valider (contrôle « 4 yeux »).');
         }
+        // Urgence soignée sans accord préalable (2026-11-19) : validation après la décision sur la régularisation.
+        if ($prestation->authorization_missing && \App\Models\Tenant\Preauthorization::where('prestation_id', $prestation->id)->where('status', 'requested')->exists()) {
+            return back()->with('error', 'Urgence soignée sans accord préalable : la demande de régularisation doit d’abord être examinée (Accords préalables).');
+        }
 
         $prestation->update(['status' => 'validated'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
             + (Prestation::hasDecisionColumns() ? ['decided_at' => now()] : []));

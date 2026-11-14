@@ -99,6 +99,13 @@ Route::middleware([
                 Route::post('factures/{claim}', 'requestPayment')->name('invoices.store');
                 Route::post('factures/{invoice}/piece', 'attachDocument')->name('invoices.document.store')->whereNumber('invoice');
                 Route::get('factures/{invoice}/piece', 'document')->name('invoices.document')->whereNumber('invoice');
+                // L3 (2026-11-19) : accords préalables et délivrances en pharmacie.
+                Route::get('accords', 'preauths')->name('preauth');
+                Route::get('accords/demander/{check}', 'preauthCreate')->name('preauth.create');
+                Route::post('accords/demander/{check}', 'preauthStore')->name('preauth.store')->middleware('throttle:30,1');
+                Route::post('accords/{preauth}/retirer', 'preauthCancel')->name('preauth.cancel')->whereNumber('preauth');
+                Route::get('pharmacie/{check}', 'pharmacy')->name('pharmacy');
+                Route::post('pharmacie/{check}', 'pharmacyStore')->name('pharmacy.store')->middleware('throttle:30,1');
             });
 
         // --- Mon mot de passe + Équipe et rôles (2026-10-30) ---
@@ -256,6 +263,20 @@ Route::middleware([
         Route::post('formules/{guarantee}/plafonds/{limit}/retirer', [$fc, 'destroyLimit'])->name('formulas.limits.destroy')->whereNumber(['guarantee', 'limit']);
         Route::post('formules/{guarantee}/carences', [$fc, 'storeWaiting'])->name('formulas.waiting.store')->whereNumber('guarantee');
         Route::post('formules/{guarantee}/carences/{waiting}/retirer', [$fc, 'destroyWaiting'])->name('formulas.waiting.destroy')->whereNumber(['guarantee', 'waiting']);
+
+        // Accords préalables (2026-11-19).
+        $pa = \App\Http\Controllers\Tenant\PreauthorizationController::class;
+        Route::get('accords-prealables', [$pa, 'index'])->name('preauth.index');
+        Route::post('accords-prealables', [$pa, 'store'])->name('preauth.store');
+        Route::get('accords-prealables/{preauth}', [$pa, 'show'])->name('preauth.show')->whereNumber('preauth');
+        Route::post('accords-prealables/{preauth}/decision', [$pa, 'decide'])->name('preauth.decide')->whereNumber('preauth');
+
+        // Pharmacie (2026-11-19).
+        $ph = \App\Http\Controllers\Tenant\PharmacyController::class;
+        Route::get('pharmacie', [$ph, 'index'])->name('pharmacy.index');
+        Route::get('pharmacie/politique', [$ph, 'policy'])->name('pharmacy.policy');
+        Route::post('pharmacie/politique', [$ph, 'updatePolicy'])->name('pharmacy.policy.update');
+        Route::post('pharmacie/medicaments', [$ph, 'updateMedicines'])->name('pharmacy.medicines');
 
         $ce = \App\Http\Controllers\Tenant\CoverageExceptionController::class;
         Route::get('derogations', [$ce, 'index'])->name('derogations.index');

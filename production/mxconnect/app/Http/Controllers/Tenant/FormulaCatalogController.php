@@ -382,6 +382,9 @@ class FormulaCatalogController extends Controller
             'tariff_cap'            => ['nullable', 'boolean'],
             'active'                => ['nullable', 'boolean'],
             'conditions'            => ['nullable', 'string', 'max:2000'],
+            'requires_authorization' => ['nullable', 'boolean'],
+            'authorization_review'  => ['nullable', Rule::in(['administrative', 'medical'])],
+            'authorization_above'   => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
         ] + $this->versionRules($guarantee), [
             'label.required' => 'Donnez un nom à la garantie (ex. « Consultations »).',
             'coverage_rate.required' => 'Indiquez le taux de prise en charge : aucun taux n’est appliqué par défaut.',
@@ -397,7 +400,13 @@ class FormulaCatalogController extends Controller
             'copay_rate' => $d['copay_rate'] ?? null, 'accident_waiting_days' => $d['accident_waiting_days'] ?? null,
             'emergency_exempt' => (bool) ($d['emergency_exempt'] ?? false), 'tariff_cap' => (bool) ($d['tariff_cap'] ?? false),
             'active' => (bool) ($d['active'] ?? false), 'conditions' => $d['conditions'] ?? null,
-        ];
+        ] + (\Illuminate\Support\Facades\Schema::hasColumn('coverage_rules', 'requires_authorization') ? [
+            // Accord préalable (2026-11-19) : examen administratif ou médical, au-delà d'un montant facturé.
+            'requires_authorization' => (bool) ($d['requires_authorization'] ?? false),
+            'authorization_review' => ($d['authorization_review'] ?? 'administrative') === 'medical' ? 'medical' : 'administrative',
+            'authorization_above_minor' => ($d['authorization_above'] ?? null) === null || $d['authorization_above'] === ''
+                ? null : $this->currency()->toMinor((float) $d['authorization_above']),
+        ] : []);
     }
 
     private function duplicateRule(GuaranteeVersion $v, array $d, ?int $except = null): bool

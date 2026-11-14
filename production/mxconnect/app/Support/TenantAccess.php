@@ -25,13 +25,14 @@ class TenantAccess
     public const M = 'community_manager';
     public const P = 'provider';
     public const U = 'auditor';
+    public const D = 'medical_advisor';   // médecin-conseil (2026-11-19)
 
     /** Tout le personnel de la mutuelle (le prestataire est extérieur). */
-    public const STAFF = [self::A, self::E, self::C, self::B, self::T, self::M, self::U];
+    public const STAFF = [self::A, self::E, self::C, self::B, self::T, self::M, self::U, self::D];
 
     public static function rules(): array
     {
-        [$A, $E, $C, $B, $T, $M, $P, $U] = [self::A, self::E, self::C, self::B, self::T, self::M, self::P, self::U];
+        [$A, $E, $C, $B, $T, $M, $P, $U, $D] = [self::A, self::E, self::C, self::B, self::T, self::M, self::P, self::U, self::D];
 
         return [
             // --- Tout le monde (y compris le prestataire) ---
@@ -62,8 +63,8 @@ class TenantAccess
             'subscriptions.validate'  => [$A, $C],
 
             // --- Recours (données de santé) ---
-            'claims.index'                 => [$A, $C, $B, $T],
-            'claims.show'                  => [$A, $C, $B, $T],
+            'claims.index'                 => [$A, $C, $B, $T, $D],
+            'claims.show'                  => [$A, $C, $B, $T, $D],
             'claims.create'                => [$B],
             'claims.store'                 => [$B],
             'claims.prestations.store'     => [$B],
@@ -74,14 +75,14 @@ class TenantAccess
             'claims.reimbursement.pay'     => [$T],
             'claims.invoice.create'        => [$A, $C, $B],
             'claims.invoice.pay'           => [$T],
-            'claims.invoice.document'      => [$A, $C, $B],   // pièce du prestataire : peut contenir des données de santé
+            'claims.invoice.document'      => [$A, $C, $B, $D],   // pièce du prestataire : peut contenir des données de santé
             'invoices.index'               => [$A, $C, $B, $T, $U],   // registre des factures des prestataires (2026-11-03)
             'invoices.export'              => [$A, $C, $T, $U],
             'invoices.reject'              => [$A, $C],
             'reports.*'                    => [$A, $C, $B, $T, $U],   // rapports d'activité (détail par acte : capacite.donnees-sante)
             'alerts.*'                     => [$A, $C],
             // Détail médical d'un recours (motif, actes) : le trésorier ne voit que les montants.
-            'capacite.donnees-sante'       => [$A, $C, $B],
+            'capacite.donnees-sante'       => [$A, $C, $B, $D],
 
             // --- Facturation, cotisations, finances ---
             'billing.*'               => [$A, $C, $B, $T],
@@ -170,11 +171,20 @@ class TenantAccess
             'formulas.*'              => [$A],
             // Dérogations : demande par le gestionnaire des prestations, décision par le contrôleur
             // (jamais par la personne qui a demandé : contrôlé dans le contrôleur).
-            'derogations.index'       => [$A, $C, $B],
+            'derogations.index'       => [$A, $C, $B, $D],
             'derogations.store'       => [$A, $B],
-            'derogations.approve'     => [$A, $C],
-            'derogations.reject'      => [$A, $C],
-            'derogations.revoke'      => [$A, $C],
+            'derogations.approve'     => [$A, $C, $D],
+            'derogations.reject'      => [$A, $C, $D],
+            'derogations.revoke'      => [$A, $C, $D],
+            // Accords préalables (2026-11-19) : demande par le gestionnaire des prestations, décision
+            // par une autre personne ; examen médical = médecin-conseil seulement (contrôlé dans le service).
+            'preauth.index'           => [$A, $C, $B, $D],
+            'preauth.show'            => [$A, $C, $B, $D],
+            'preauth.store'           => [$A, $B],
+            'preauth.decide'          => [$A, $C, $D],
+            // Pharmacie (2026-11-19) : registre des délivrances, politique pharmaceutique.
+            'pharmacy.index'          => [$A, $C, $B, $D],
+            'pharmacy.*'              => [$A],
             'team.*'                  => [$A],
             // (garanties, antennes, actes, médicaments, référentiels : écriture = administrateur, règle par défaut)
 
@@ -196,6 +206,7 @@ class TenantAccess
         'Rapports' => ['reports.index' => 'Rapports d’activité (imprimer, CSV)', 'accounting.balance' => 'États comptables : balance, grand livre, compte de résultat, bilan'],
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
+        'Accords préalables et pharmacie' => ['preauth.index' => 'Accords préalables : consulter', 'preauth.store' => 'Accords préalables : demander', 'preauth.decide' => 'Accords préalables : décider (examen médical : médecin-conseil)', 'pharmacy.index' => 'Registre des délivrances en pharmacie', 'pharmacy.policy' => 'Politique pharmaceutique et liste des médicaments'],
         'Formules et garanties' => ['formulas.index' => 'Catalogue des formules : consulter, simuler', 'formulas.rules.store' => 'Catalogue des formules : modifier (garanties, plafonds, carences)', 'derogations.index' => 'Dérogations : consulter', 'derogations.store' => 'Dérogations : demander', 'derogations.approve' => 'Dérogations : accorder ou refuser'],
         'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles'],
         'Portail prestataire' => ['portal.index' => 'Vérifier les droits, déclarer, suivre ses factures'],
