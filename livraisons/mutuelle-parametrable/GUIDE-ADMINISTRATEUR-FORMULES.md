@@ -1,6 +1,6 @@
 # Guide de l'administrateur : formules, garanties, plafonds, carences, dérogations
 
-MX-CONNECT, version 2026.11.21. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
+MX-CONNECT, version 2026.11.22. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
 
 ## 1. Où trouver le catalogue
 
@@ -174,3 +174,34 @@ Bon à savoir :
 - Tous les chiffres sont réels et calculés à l'instant. Dans la MUTUELLE TEST, ce sont les données d'essai.
 - Le taux de sinistralité compare la part payée par la mutuelle aux cotisations encaissées sur la même période. Au-delà de 100 %, la mutuelle paie plus qu'elle n'encaisse.
 - Le filtre par adhérent n'est proposé qu'aux personnes habilitées aux données de santé.
+
+## 14. Réinitialiser la MUTUELLE TEST (depuis le 22/11/2026)
+
+Seule une mutuelle marquée « mutuelle de test » par l'administration du réseau propose cette fonction. Dans une vraie mutuelle, elle n'existe pas.
+
+1. Dans le bandeau jaune **Environnement de test**, cliquez sur **Réinitialiser les données de test**. Ce lien est réservé à l'administrateur.
+2. La page indique **ce qui sera effacé**, avec le nombre de lignes : adhérents, cotisations, soins, pharmacie, trésorerie, comptabilité, réclamations, etc.
+
+   Elle indique aussi **ce qui est conservé** : l'équipe, les rôles, le plan comptable, les listes de référence, les prestataires conventionnés, les réglages et les journaux d'audit.
+3. Si vous voulez repartir de formules neuves, cochez **Effacer aussi les formules et garanties**. Laissez **recharger les formules d'exemple** coché pour retrouver les formules de la mission.
+4. Indiquez le **motif**, puis recopiez l'**identifiant** de la mutuelle affiché (par exemple `mutueltest`).
+5. Cliquez sur **Réinitialiser les données de test**, puis confirmez.
+
+Une **sauvegarde complète** de la mutuelle est faite juste avant. Si elle échoue, rien n'est effacé.
+
+L'opération est inscrite dans le **Journal d'audit** et dans l'historique de la mutuelle, visible par l'administration du réseau.
+
+Les comptes MX-CONNECT reliés à des adhérents d'essai sont déliés. Il faudra générer de nouveaux codes d'activation.
+
+L'administration du réseau peut faire la même opération depuis la fiche de la mutuelle.
+
+## 15. Rôle « gestionnaire des cotisations » et traces des accès aux données de santé
+
+- **Gestionnaire des cotisations** (Équipe et rôles) : pour la personne du guichet. Elle peut :
+  - consulter les adhérents et les souscriptions ;
+  - encaisser les cotisations et le droit d'adhésion ;
+  - tenir les échéanciers et les relevés ;
+  - demander l'annulation d'un encaissement.
+
+  Elle ne voit **ni la trésorerie, ni la comptabilité, ni les données de santé**. Ce rôle ne se cumule pas avec celui de contrôleur-validateur.
+- **Journal d'audit → Accès aux données de santé** : chaque ouverture d'un recours, d'un accord préalable, d'une pièce de prestataire ou du registre de la pharmacie, par une personne habilitée, est inscrite (qui, quoi, quand, adresse IP). Le contenu médical n'y est jamais recopié.

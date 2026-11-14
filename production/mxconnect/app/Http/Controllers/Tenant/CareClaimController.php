@@ -43,6 +43,7 @@ class CareClaimController extends Controller
 
     public function show(CareClaim $claim)
     {
+        \App\Support\HealthAccessLog::record('claim', $claim->id);
         $claim->load(['member', 'dependent', 'prestations.actType', 'reimbursement', 'invoices']);
 
         // Attach open alerts + provider names (central) for display.

@@ -142,3 +142,10 @@ Chaque livraison suit le même circuit :
 - Filtres : période, formule, prestataire, antenne, type de soins, statut, adhérent.
 - Graphique mensuel, export Excel (`.xlsx`) et impression ou PDF.
 - **Écart au plan, assumé** : il n'y a pas de filtre « région », car la région n'est pas enregistrée sur les fiches. L'antenne tient lieu de zone.
+
+**L6 livrée le 22/11/2026 (VERSION 2026.11.22). Mission terminée (L1 à L6).**
+- Réinitialisation sécurisée de la MUTUELLE TEST : super-administrateur, ou administrateur de la mutuelle de test. Elle exige une confirmation par saisie, un motif et une sauvegarde préalable. Les tables sont classées et un test vérifie le classement. Aucune autre mutuelle n'est touchée.
+- Rôle « gestionnaire des cotisations » (profil 4 de la Partie 7). Traçabilité des accès aux données de santé.
+- Les 12 scénarios de la Partie 10 sont couverts par des tests, y compris une preuve de concurrence pour le scénario 12. Voir § 23 de la documentation technique.
+- Bilan des 17 livrables de la mission : `BILAN-MISSION.md`.
+

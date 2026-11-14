@@ -19,6 +19,7 @@ class PharmacyController extends Controller
 {
     public function index(Request $request)
     {
+        \App\Support\HealthAccessLog::record('pharmacy_registry');
         $q = trim((string) $request->get('q'));
 
         return view('tenant.pharmacy.index', [

@@ -415,3 +415,124 @@ Tests : `tests/Feature/PortailAdherentTest.php` (4 tests, scénarios 1 et 9).
 | `reports.dashboard.export` | `/pilotage/export.xlsx` | idem |
 
 Tests : `tests/Feature/TableauDeBordPilotageTest.php` (2 tests, 101 vérifications). Ils couvrent les indicateurs, les filtres, les droits par rôle et le contenu du classeur Excel.
+
+---
+
+# Livraison L6 (VERSION 2026.11.22) : MUTUELLE TEST, rôles, sécurité, scénarios
+
+## 20. Réinitialisation de la MUTUELLE TEST
+
+Service `App\Services\TestDataResetService` (`inventory()`, `reset()`), deux entrées :
+
+| Qui | Écran | Route |
+|---|---|---|
+| Super-administrateur du réseau | Fiche de la mutuelle → « Réinitialiser les données de test » | `network.mutuals.test.reset` (droit `manageAccess`) |
+| Administrateur de la mutuelle | Bandeau « Environnement de test » → `/mutuelle-test` | `test-env.index`, `test-env.reset` (A seul) |
+
+**Garde-fous, tous vérifiés côté serveur :**
+1. La mutuelle doit être marquée `is_test`. Sinon refus, et l'écran de la mutuelle répond 404.
+2. L'identifiant (slug) de la mutuelle doit être saisi exactement, et le motif doit compter au moins 5 caractères.
+3. **Chaque table de la mutuelle est classée** dans l'une de trois listes :
+   - `KEEP` : personnes, rôles, plan comptable, listes de référence, conventions, réglages, journaux d'audit ;
+   - `FORMULAS` : formules, versions, garanties, plafonds, carences, effacées seulement si l'option est cochée ;
+   - `RESET` : toute l'activité.
+
+   Une table non classée bloque l'opération. Un test lit toutes les migrations des mutuelles et vérifie qu'aucune table n'est oubliée : toute nouvelle table devra être classée.
+4. **Sauvegarde SQL complète de la mutuelle avant tout effacement** (`BackupService::dumpMutual`, export PHP limité aux tables de la mutuelle, préfixe compris).
+   - Elle est rangée dans `storage/app/test-resets/<slug>-AAAAMMJJ_HHMMSS.sql`, côté plateforme, jamais dans le stockage de la mutuelle. Les 5 dernières sont gardées.
+   - Si la sauvegarde échoue, rien n'est effacé.
+5. L'effacement se fait dans **une transaction**, avec les clés étrangères suspendues le temps de vider. Un verrou empêche deux réinitialisations simultanées. Tout se passe dans `$mutual->run()` : aucune autre mutuelle n'est touchée.
+6. **Côté réseau** :
+   - les liens compte ↔ adhérent (`member_links`) et les codes d'activation de cette mutuelle sont supprimés ;
+   - les demandes d'adhésion en ligne sont gardées, mais déliées de la fiche (`member_id` vidé) ;
+   - les pièces PDF des factures de prestataires sont supprimées seulement si le stockage est bien celui de la mutuelle (suffixe `tenant<id>` vérifié).
+7. **Traces** :
+   - historique de la mutuelle, action `test_reset`, avec motif, auteur, nombre de lignes et nom de la sauvegarde ;
+   - `audit_logs` de la mutuelle, action `test_data_reset`, avec le détail par table.
+
+   Les journaux `audits` et `audit_logs` ne sont jamais effacés.
+8. **Option « recharger les formules d'exemple »** : `ExampleFormulaService::load()`, après effacement des formules.
+
+## 21. Rôle « gestionnaire des cotisations » (profil 4 de la Partie 7)
+
+`contribution_manager`, lettre `K` dans `TenantAccess`. Libellé et description dans `TenantNav`.
+
+- **Droits** :
+  - adhérents et souscriptions en lecture ;
+  - cotisations : liste, relevé, export, encaissement au guichet, ancien bouton « payer », échéanciers, droit d'adhésion, demande d'annulation.
+- **Pas de droit sur** : trésorerie, comptabilité, recours (santé), rapports, tableau de bord, équipe, formules.
+- **Incompatible** avec le contrôleur-validateur : qui encaisse ne valide pas les annulations.
+- **MFA obligatoire.**
+- **Création du rôle** :
+  - par le paramétrage initial des nouvelles mutuelles (`config('mxconnect.mutual_roles')`) ;
+  - par la migration TENANT `2026_11_22_000100_contribution_manager_role` pour les mutuelles existantes.
+
+Correspondance des 10 profils de la mission :
+
+| Profil de la mission | MX-CONNECT |
+|---|---|
+| 1. Super administrateur | `super_admin` (espace réseau, MFA) |
+| 2. Administrateur de mutuelle | `mutual_admin` |
+| 3. Gestionnaire des adhésions | `enrollment_agent` |
+| 4. Gestionnaire des cotisations | `contribution_manager` (nouveau) |
+| 5. Gestionnaire des prestations | `benefits_manager` |
+| 6. Médecin-conseil | `medical_advisor` |
+| 7. Auditeur | `auditor` (lecture seule, sans santé, exclusif) |
+| 8. Responsable financier | `treasurer_accountant` |
+| 9. Prestataire de santé | espace prestataire central (`provider_accounts`, `ProviderAccess`) + rôle `provider` dans la mutuelle |
+| 10. Adhérent | compte MX-CONNECT + portail « Mon adhésion » |
+
+## 22. Sécurité (Partie 7)
+
+| Exigence | Mise en œuvre |
+|---|---|
+| Authentification sécurisée | Mots de passe hachés, MFA TOTP obligatoire pour tout le personnel, les prestataires et le réseau ; mot de passe provisoire à changer |
+| Sessions | Session fermée si le compte est désactivé (`TenantAccountGuard`) ou le rattachement prestataire retiré ; MFA propre à chaque espace |
+| Réinitialisation du mot de passe | Par l'administrateur (personnel), par e-mail (membres, prestataires), MFA réinitialisable |
+| Permissions côté serveur | `TenantRouteAccess` sur CHAQUE route (route non classée = refus) ; test de couverture ; `ProviderAccess` pour les prestataires |
+| Accès inter-mutuelles | Base ou préfixe par mutuelle (stancl) ; portail adhérent : lien vérifié sinon 404 (scénario 9) ; réinitialisation limitée à la mutuelle |
+| Journalisation | `audits` (modifications), `rights_checks`, `beneficiary_searches`, `provider_lookups`, `audit_logs` |
+| **Traçabilité des accès aux données de santé** (nouveau) | `App\Support\HealthAccessLog` : ouverture d'un recours, d'un accord préalable, d'une pièce de prestataire ou du registre pharmacie par une personne habilitée → `audit_logs` (`health_data_view`, qui, quoi, quand, IP ; une fois par 10 min et par dossier ; aucune donnée médicale copiée). Visible dans **Journal d'audit** (A, C, U) |
+| Données médicales limitées | Capacité `capacite.donnees-sante` (A, C, B, D) ; `clinical_info` exclue de l'audit ; notifications et portail sans donnée médicale |
+| Sauvegardes | `BackupService` (toutes les bases, 7 conservées) + sauvegarde avant réinitialisation de la MUTUELLE TEST |
+| Documents médicaux | Pièces des prestataires sur disque privé de la mutuelle, `%PDF-` contrôlé, téléchargement `sandbox`/`no-store`, droit `claims.invoice.document` (pas le trésorier) |
+
+## 23. Les 12 scénarios de la Partie 10 et leurs tests
+
+| Scénario | Test (fichier → cas) |
+|---|---|
+| 1. Adhérent actif consulte ses garanties | `PortailAdherentTest` → « scénario 1 » |
+| 2. Carence non expirée | `MoteurPriseEnChargeTest` → « scénario 2 et 11 » |
+| 3. Plafond disponible | `MoteurPriseEnChargeTest` → « scénario 3 » |
+| 4. Dépassement du plafond annuel | `MoteurPriseEnChargeTest` → « scénario 4 » |
+| 5. Double facturation d'une ordonnance | `AccordsPrealablesPharmacieTest` → « scénario 5 » |
+| 6. Couverture expirée | `MoteurPriseEnChargeTest` → « scénario 6 » |
+| 7. Modification de formule → nouvelle version | `MoteurPriseEnChargeTest` → « scénario 7 » ; `CatalogueFormulesTest` (par l'interface) |
+| 8. Dérogation justifiée | `MoteurPriseEnChargeTest` → « scénario 8 » ; `CatalogueFormulesTest` (4 yeux, retrait) |
+| 9. Accès à une autre mutuelle | `PortailAdherentTest` → « scénario 9 » |
+| 10. Renouvellement continu | `MoteurPriseEnChargeTest` → « scénario 10 » |
+| 11. Urgence sans autorisation préalable | `AccordsPrealablesPharmacieTest` → « scénario 11 » ; `MoteurPriseEnChargeTest` (carence) |
+| 12. Deux demandes simultanées sur le même plafond | `MoteurPriseEnChargeTest` → « scénario 12 » (successives) **et « scénario 12 (simultané) »**. Une autre connexion tient le verrou de l'adhérent, comme une saisie concurrente en cours. La 2e demande attend puis échoue sans rien consommer ; une fois le verrou libéré, elle ne prend que le reste réel |
+
+Commande pour rejouer les scénarios :
+
+```
+vendor/bin/pest --filter "scénario"
+```
+
+Ajouter `MX_TEST_STORAGE=prefix` pour les rejouer sur une mutuelle à tables préfixées.
+
+**Autres vérifications de la Partie 10 :**
+- **Affichage mobile** : navigateur réel à 320, 360, 768 et 1366 px à chaque livraison.
+- **Sécurité des API et permissions** : matrice par route et tests de refus (`Lot7DroitsPortailTest`, `GestionnaireCotisationsTest`, etc.).
+- **Migrations** : additives, rejouées en base dédiée et en tables préfixées.
+- **Cohérence des calculs** : tests du moteur, de la comptabilité (balance et bilan équilibrés) et du tableau de bord.
+- **Performances** : requêtes groupées, jamais une requête par adhérent dans les tableaux de bord.
+
+**Non mesuré : la charge** (nombre d'utilisateurs simultanés sur l'hébergement LWS).
+
+Tests ajoutés en L6 :
+- `MutuelleTestReinitialisationTest` (4) ;
+- `GestionnaireCotisationsTest` (2) ;
+- `TraceAccesSanteTest` (1) ;
+- 1 cas dans `MoteurPriseEnChargeTest`.

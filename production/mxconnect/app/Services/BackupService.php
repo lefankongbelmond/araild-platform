@@ -59,6 +59,24 @@ class BackupService
         return $this->record($results, $elapsedMinutes);
     }
 
+    /**
+     * Sauvegarde SQL d'UNE mutuelle (ses seules tables, préfixe compris), en PHP pur : utilisée avant
+     * une opération destructive comme la réinitialisation de la MUTUELLE TEST (2026-11-22).
+     */
+    public function dumpMutual(Mutual $mutual, string $path): bool
+    {
+        $ok = false;
+        try {
+            $mutual->run(function () use (&$ok, $path) {
+                $ok = $this->phpDump(config('database.default'), $path) && is_file($path) && filesize($path) > 0;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return $ok;
+    }
+
     /** Ne garde que les N dernières sauvegardes locales (quota d'hébergement). */
     private function prune(int $keep): void
     {

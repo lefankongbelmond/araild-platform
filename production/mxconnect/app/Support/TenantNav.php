@@ -19,6 +19,7 @@ class TenantNav
         'provider'             => 'Prestataire de soins',
         'auditor'              => 'Auditeur / contrôle interne',
         'medical_advisor'      => 'Médecin-conseil',
+        'contribution_manager' => 'Gestionnaire des cotisations',
     ];
 
     public const ROLE_DESCRIPTIONS = [
@@ -31,6 +32,7 @@ class TenantNav
         'provider'             => 'Prestataire de soins conventionné : uniquement son portail (vérifier les droits, déclarer ses prises en charge, suivre ses factures).',
         'auditor'              => 'Lecture seule : finances, registres, journal d’audit. Aucune donnée de santé, aucune saisie. Ne se cumule avec aucun autre rôle.',
         'medical_advisor'      => 'Examine les accords préalables soumis à avis médical et les dérogations ; consulte le détail médical des recours. Ne paie pas.',
+        'contribution_manager' => 'Encaisse les cotisations au guichet, tient les échéanciers et les relevés des adhérents, demande l’annulation d’un encaissement. Pas de trésorerie, de comptabilité ni de donnée de santé.',
     ];
 
     /** Écrans sans entrée propre dans le menu : entrée à mettre en évidence. */

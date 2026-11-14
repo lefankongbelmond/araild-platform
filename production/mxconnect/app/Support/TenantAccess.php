@@ -26,13 +26,14 @@ class TenantAccess
     public const P = 'provider';
     public const U = 'auditor';
     public const D = 'medical_advisor';   // médecin-conseil (2026-11-19)
+    public const K = 'contribution_manager';   // gestionnaire des cotisations (2026-11-22)
 
     /** Tout le personnel de la mutuelle (le prestataire est extérieur). */
-    public const STAFF = [self::A, self::E, self::C, self::B, self::T, self::M, self::U, self::D];
+    public const STAFF = [self::A, self::E, self::C, self::B, self::T, self::M, self::U, self::D, self::K];
 
     public static function rules(): array
     {
-        [$A, $E, $C, $B, $T, $M, $P, $U, $D] = [self::A, self::E, self::C, self::B, self::T, self::M, self::P, self::U, self::D];
+        [$A, $E, $C, $B, $T, $M, $P, $U, $D, $K] = [self::A, self::E, self::C, self::B, self::T, self::M, self::P, self::U, self::D, self::K];
 
         return [
             // --- Tout le monde (y compris le prestataire) ---
@@ -40,8 +41,8 @@ class TenantAccess
             'account.password.update' => [...self::STAFF, $P],
 
             // --- Adhérents ---
-            'members.index'           => [$A, $E, $C, $B, $T, $U],
-            'members.show'            => [$A, $E, $C, $B, $T, $U],
+            'members.index'           => [$A, $E, $C, $B, $T, $U, $K],
+            'members.show'            => [$A, $E, $C, $B, $T, $U, $K],
             'members.create'          => [$A, $E],
             'members.store'           => [$A, $E],
             'members.update'          => [$A, $E],
@@ -52,14 +53,15 @@ class TenantAccess
             'members.card'            => [$A, $E, $C],
             'members.portal.*'        => [$A, $E],   // portail adhérent : code d'activation, retrait (2026-11-20)
             'member-requests.*'       => [$A, $E],   // demandes de modification faites depuis le portail
+            'test-env.*'              => [$A],       // MUTUELLE TEST : réinitialisation des données d'essai (2026-11-22)
             'cards.index'             => [$A, $E, $C],
             'cards.batch'             => [$A, $E],
             'cards.printed'           => [$A, $E],
             'member-notifications.*'  => [$A, $E, $M],
 
             // --- Souscriptions (saisie ≠ validation) ---
-            'subscriptions.index'     => [$A, $E, $C, $B, $T, $U],
-            'subscriptions.show'      => [$A, $E, $C, $B, $T, $U],
+            'subscriptions.index'     => [$A, $E, $C, $B, $T, $U, $K],
+            'subscriptions.show'      => [$A, $E, $C, $B, $T, $U, $K],
             'subscriptions.create'    => [$A, $E],
             'subscriptions.store'     => [$A, $E],
             'subscriptions.validate'  => [$A, $C],
@@ -88,17 +90,17 @@ class TenantAccess
 
             // --- Facturation, cotisations, finances ---
             'billing.*'               => [$A, $C, $B, $T],
-            'contributions.index'     => [$A, $E, $C, $T, $U],
-            'contributions.receipt'   => [$A, $E, $C, $T, $U],
-            'contributions.pay'       => [$T],
-            'contributions.member'    => [$A, $E, $C, $T, $U],   // relevé d'un adhérent (2026-11-06)
-            'contributions.export'    => [$A, $E, $C, $T, $U],   // CSV pour les relances
-            'contributions.collect'   => [$T],                   // encaissement au guichet
-            'contributions.refresh'   => [$A, $T],               // échéanciers glissants
-            'contributions.cancel.request' => [$T],              // annulation d'un encaissement : demande (2026-11-07)
+            'contributions.index'     => [$A, $E, $C, $T, $U, $K],
+            'contributions.receipt'   => [$A, $E, $C, $T, $U, $K],
+            'contributions.pay'       => [$T, $K],
+            'contributions.member'    => [$A, $E, $C, $T, $U, $K],   // relevé d'un adhérent (2026-11-06)
+            'contributions.export'    => [$A, $E, $C, $T, $U, $K],   // CSV pour les relances
+            'contributions.collect'   => [$T, $K],                   // encaissement au guichet
+            'contributions.refresh'   => [$A, $T, $K],               // échéanciers glissants
+            'contributions.cancel.request' => [$T, $K],              // annulation d'un encaissement : demande (2026-11-07)
             'contributions.cancel.approve' => [$A, $C],          // … décision par une AUTRE personne
             'contributions.cancel.reject'  => [$A, $C],
-            'contributions.fee'       => [$A, $T],               // appeler le droit d'adhésion
+            'contributions.fee'       => [$A, $T, $K],               // appeler le droit d'adhésion
             'payments.initiate'       => [$A, $E, $T],
             'treasury.dashboard'      => [$A, $C, $T, $U],
             'treasury.movements'      => [$A, $C, $T, $U],
@@ -211,7 +213,7 @@ class TenantAccess
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
         'Accords préalables et pharmacie' => ['preauth.index' => 'Accords préalables : consulter', 'preauth.store' => 'Accords préalables : demander', 'preauth.decide' => 'Accords préalables : décider (examen médical : médecin-conseil)', 'pharmacy.index' => 'Registre des délivrances en pharmacie', 'pharmacy.policy' => 'Politique pharmaceutique et liste des médicaments'],
         'Formules et garanties' => ['formulas.index' => 'Catalogue des formules : consulter, simuler', 'formulas.rules.store' => 'Catalogue des formules : modifier (garanties, plafonds, carences)', 'derogations.index' => 'Dérogations : consulter', 'derogations.store' => 'Dérogations : demander', 'derogations.approve' => 'Dérogations : accorder ou refuser'],
-        'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles'],
+        'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles', 'test-env.index' => 'MUTUELLE TEST : réinitialiser les données d’essai'],
         'Portail prestataire' => ['portal.index' => 'Vérifier les droits, déclarer, suivre ses factures'],
     ];
 

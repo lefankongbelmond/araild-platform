@@ -160,6 +160,7 @@ Route::middleware('auth:network')->group(function () {
         Route::get('mutuelles/{mutual}', [MutualController::class, 'show'])->name('mutuals.show');
         Route::post('mutuelles/{mutual}/administrateur', [MutualController::class, 'admin'])->name('mutuals.admin');
         Route::post('mutuelles/{mutual}/test', [MutualController::class, 'testFlag'])->name('mutuals.test');
+        Route::post('mutuelles/{mutual}/test/reinitialiser', [MutualController::class, 'testReset'])->name('mutuals.test.reset');
 
         // --- Phase 2 / Module 14: disaster-recovery drill log ---
         Route::get('pra', [DrTestController::class, 'index'])->name('dr.index');

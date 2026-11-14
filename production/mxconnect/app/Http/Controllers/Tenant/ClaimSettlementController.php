@@ -116,6 +116,7 @@ class ClaimSettlementController extends Controller
     public function invoiceDocument(CareClaim $claim, ProviderInvoice $invoice, \App\Services\Tenant\InvoiceDocumentService $docs)
     {
         abort_unless($invoice->care_claim_id === $claim->id, 404);
+        \App\Support\HealthAccessLog::record('invoice_document', $invoice->id);
 
         return $docs->download($invoice);
     }

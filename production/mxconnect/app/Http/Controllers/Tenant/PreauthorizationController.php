@@ -44,6 +44,7 @@ class PreauthorizationController extends Controller
 
     public function show(Preauthorization $preauth)
     {
+        \App\Support\HealthAccessLog::record('preauthorization', $preauth->id);
         $preauth->load(['member', 'dependent', 'actType', 'rule', 'prestation']);
 
         return view('tenant.preauth.show', [

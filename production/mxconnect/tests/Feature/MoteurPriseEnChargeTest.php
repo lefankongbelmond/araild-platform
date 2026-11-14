@@ -247,6 +247,38 @@ it('scénario 12 : deux demandes successives sur le même plafond ne consomment 
     expect($this->mutual->run(fn () => (int) Prestation::sum('mutual_part_minor')))->toBe(30000);
 });
 
+it('scénario 12 (simultané) : tant qu’une demande tient le plafond, une 2e demande ne peut pas le consommer', function () {
+    mpcCapture($this->ids['pharma']->id, 40000);                                           // 28 000 ; reste 2 000
+    // Demande A « en cours » : une AUTRE connexion à la base de la mutuelle tient le verrou de l'adhérent,
+    // exactement comme la transaction de saisie (lockForUpdate) d'une requête concurrente.
+    [$cfg, $table] = $this->mutual->run(fn () => [\DB::connection()->getConfig(), \DB::connection()->getTablePrefix() . 'members']);
+    $other = new PDO("mysql:host={$cfg['host']};port={$cfg['port']};dbname={$cfg['database']}", $cfg['username'], $cfg['password'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $other->beginTransaction();
+    $other->prepare("SELECT id FROM `{$table}` WHERE id = ? FOR UPDATE")->execute([$this->ids['m']->id]);
+
+    // Demande B : elle attend le verrou (1 s ici) et échoue sans rien consommer.
+    $blocked = false;
+    try {
+        $this->mutual->run(function () {
+            \DB::statement('SET SESSION innodb_lock_wait_timeout = 1');   // même connexion que la saisie
+            $claim = CareClaim::create(['member_id' => $this->ids['m']->id, 'dependent_id' => $this->ids['child']->id, 'opened_on' => $this->today, 'status' => 'open']);
+            app(ClaimCaptureService::class)->capture($claim, ['act_type_id' => $this->ids['pharma']->id, 'provider_id' => 1, 'care_date' => $this->today,
+                'total_minor' => 10000], \App\Models\Tenant\User::where('email', 'saisie@equipe.test')->first());
+        });
+    } catch (\Illuminate\Database\QueryException $e) {
+        $blocked = str_contains($e->getMessage(), 'Lock wait timeout');
+    }
+    expect($blocked)->toBeTrue();
+    expect($this->mutual->run(fn () => (int) Prestation::sum('mutual_part_minor')))->toBe(28000);
+
+    // A se termine : B passe ensuite et ne prend que le reste réel du plafond.
+    $other->rollBack();
+    $b = mpcCapture($this->ids['pharma']->id, 10000, [], $this->ids['child']->id);
+    expect($b['prestation']->mutual_part_minor)->toBe(2000);
+    expect($this->mutual->run(fn () => (int) Prestation::sum('mutual_part_minor')))->toBe(30000);
+});
+
 it('estime au portail selon la formule paramétrée et refuse avec le statut du moteur', function () {
     $conv = conventioned();
     tenancy()->end();

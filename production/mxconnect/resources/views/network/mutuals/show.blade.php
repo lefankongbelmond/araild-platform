@@ -1,7 +1,7 @@
 @php
   $tones = ['pending' => 'bg-amber-50 text-amber-800 ring-amber-200', 'approved' => 'bg-leaf-50 text-leaf-700 ring-leaf-100', 'suspended' => 'bg-clay/10 text-clay ring-clay/20'];
   $labels = ['pending' => 'En attente d’agrément', 'approved' => 'Agréée', 'suspended' => 'Suspendue'];
-  $actions = ['approved' => 'Agréée', 'suspended' => 'Suspendue', 'reactivated' => 'Réactivée', 'test_on' => 'Marquée MUTUELLE TEST', 'test_off' => 'Marquage « test » retiré'];
+  $actions = ['approved' => 'Agréée', 'suspended' => 'Suspendue', 'reactivated' => 'Réactivée', 'test_on' => 'Marquée MUTUELLE TEST', 'test_off' => 'Marquage « test » retiré', 'test_reset' => 'Données de test réinitialisées'];
   $domain = $mutual->domains->first()?->domain;
   $f = 'mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-pine focus:ring-4 focus:ring-pine/10';
 @endphp
@@ -107,6 +107,29 @@
           <label class="mt-3 block text-sm font-medium">Motif *<input name="note" required minlength="5" maxlength="300" class="{{ $f }}" placeholder="{{ $isTest ? 'Ex. fin des essais' : 'Ex. mutuelle d’essai de la plateforme' }}"></label>
           <button class="mt-3 h-11 w-full rounded-xl {{ $isTest ? 'bg-clay' : 'bg-navy' }} px-4 text-sm font-bold text-white" onclick="return confirm('{{ $isTest ? 'Retirer le marquage « test » ?' : 'Marquer cette mutuelle comme MUTUELLE TEST ?' }}')">{{ $isTest ? 'Retirer le marquage « test »' : 'Marquer comme mutuelle de test' }}</button>
         </form>
+
+        @if ($isTest)
+          <form id="reinitialiser" method="POST" action="{{ route('network.mutuals.test.reset', $mutual) }}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-clay/20 sm:p-6"
+                onsubmit="return window.confirm('Effacer définitivement les données d’essai de {{ addslashes($mutual->name) }} ? Une sauvegarde est faite avant.')">@csrf
+            <h2 class="text-lg font-bold text-clay">Réinitialiser les données de test</h2>
+            <p class="mt-1 text-sm text-ink/60">Efface l’activité d’essai : adhérents, cotisations, soins, pharmacie, trésorerie, comptabilité, réclamations. <b>Conservés</b> : équipe et rôles, plan comptable, listes de référence, conventions, réglages, journaux d’audit. Une sauvegarde SQL de la mutuelle est faite avant ; si elle échoue, rien n’est effacé. Aucune autre mutuelle n’est touchée.</p>
+            @if ($testInventory)
+              @php $rows = array_filter($testInventory['reset']); @endphp
+              <p class="mt-3 text-sm font-medium text-navy">Seront effacés : {{ number_format(array_sum($rows), 0, ',', ' ') }} ligne(s){{ $testInventory['links'] ? ' · ' . $testInventory['links'] . ' compte(s) adhérent délié(s)' : '' }}</p>
+              @if ($rows)
+                <ul class="mt-1 text-xs text-ink/60">
+                  @foreach ($rows as $t => $n)<li>{{ \App\Services\TestDataResetService::LABELS[$t] ?? $t }} : {{ number_format($n, 0, ',', ' ') }}</li>@endforeach
+                </ul>
+              @endif
+              @if ($testInventory['unclassified'])<p class="mt-2 text-sm text-clay">Bloqué : table(s) non classée(s) {{ implode(', ', $testInventory['unclassified']) }}.</p>@endif
+            @endif
+            <label class="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" name="formulas" value="1" @checked(old('formulas'))> Effacer aussi les formules et garanties ({{ array_sum($testInventory['formulas'] ?? []) }} ligne(s))</label>
+            <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="examples" value="1" @checked(old('examples', true))> … puis recharger les formules d’exemple</label>
+            <label class="mt-3 block text-sm font-medium">Motif *<input name="note" required minlength="5" maxlength="300" value="{{ old('note') }}" class="{{ $f }}" placeholder="Ex. remise à zéro avant la démonstration"></label>
+            <label class="mt-3 block text-sm font-medium">Pour confirmer, saisissez <b>{{ $mutual->slug }}</b> *<input name="confirm" required autocomplete="off" class="{{ $f }}"></label>
+            <button class="mt-3 h-11 w-full rounded-xl bg-clay px-4 text-sm font-bold text-white">Réinitialiser les données de test</button>
+          </form>
+        @endif
       @endcan
 
       <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink/[.06] sm:p-6">

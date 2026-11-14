@@ -251,6 +251,9 @@ Route::middleware([
         Route::post('formules/categories', [$fc, 'storeCategory'])->name('formulas.categories.store');
         Route::post('formules/categories/actes', [$fc, 'mapActs'])->name('formulas.categories.map');
         Route::post('formules/exemples', [$fc, 'examples'])->name('formulas.examples');
+        // MUTUELLE TEST : réinitialisation des données d'essai (2026-11-22)
+        Route::get('mutuelle-test', [\App\Http\Controllers\Tenant\TestEnvironmentController::class, 'index'])->name('test-env.index');
+        Route::post('mutuelle-test/reinitialiser', [\App\Http\Controllers\Tenant\TestEnvironmentController::class, 'reset'])->name('test-env.reset');
         Route::get('formules/{guarantee}', [$fc, 'show'])->name('formulas.show')->whereNumber('guarantee');
         Route::post('formules/{guarantee}/fiche', [$fc, 'update'])->name('formulas.update')->whereNumber('guarantee');
         Route::post('formules/{guarantee}/parametres', [$fc, 'params'])->name('formulas.params')->whereNumber('guarantee');

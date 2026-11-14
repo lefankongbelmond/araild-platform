@@ -33,7 +33,7 @@ return [
     'contact_email' => env('MXCONNECT_CONTACT_EMAIL'),
 
     // Version des fichiers CSS/JS (force le rechargement après une mise à jour).
-    'asset_version' => '2026.11.21',
+    'asset_version' => '2026.11.22',
 
     // Réseau social : médias téléversés
     'social' => [
@@ -85,6 +85,7 @@ return [
         'provider',
         'auditor',          // Auditeur / contrôle interne : lecture seule, sans données de santé (2026-10-31)
         'medical_advisor',  // Médecin-conseil : examen médical des accords préalables (2026-11-19)
+        'contribution_manager', // Gestionnaire des cotisations : guichet et relevés, sans trésorerie ni comptabilité (2026-11-22)
     ],
 
     // Maker-checker: role pairs that must NEVER be held by the same user.
@@ -94,6 +95,7 @@ return [
         ['controller_validator', 'treasurer_accountant'],   // qui valide ne paie pas (2026-10-31)
         ['benefits_manager', 'treasurer_accountant'],       // qui saisit les soins ne paie pas (2026-10-31)
         ['medical_advisor', 'treasurer_accountant'],        // l'avis médical reste séparé du paiement (2026-11-19)
+        ['contribution_manager', 'controller_validator'],   // qui encaisse ne valide pas les annulations (2026-11-22)
     ],
 
     // Rôles qui ne se cumulent avec AUCUN autre : l'auditeur reste indépendant,
@@ -105,7 +107,7 @@ return [
     'mfa_required_roles' => [
         'super_admin', 'security_admin',
         'mutual_admin', 'treasurer_accountant', 'controller_validator', 'benefits_manager',
-        'enrollment_agent', 'community_manager', 'provider', 'auditor', 'medical_advisor',
+        'enrollment_agent', 'community_manager', 'provider', 'auditor', 'medical_advisor', 'contribution_manager',
     ],
 
     // Reminder cadence (days relative to due date) for contribution reminders.

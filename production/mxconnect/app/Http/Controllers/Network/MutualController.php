@@ -60,7 +60,23 @@ class MutualController extends Controller
             'admins'  => $admins,
             'history' => collect($mutual->status_history ?? [])->reverse()->values(),
             'byId'    => $byId,
+            'testInventory' => $this->testInventory($mutual),
         ]);
+    }
+
+    /** Ce qu'effacerait la réinitialisation (seulement pour la MUTUELLE TEST). */
+    private function testInventory(Mutual $mutual): ?array
+    {
+        if (! \App\Support\TestEnvironment::of($mutual)) {
+            return null;
+        }
+        try {
+            return app(\App\Services\TestDataResetService::class)->inventory($mutual);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     public function create()
@@ -153,6 +169,30 @@ class MutualController extends Controller
         return back()->with('success', $data['is_test']
             ? "{$mutual->name} est désormais la MUTUELLE TEST : environnement d’essai, formules d’exemple autorisées."
             : "{$mutual->name} n’est plus marquée comme mutuelle de test.");
+    }
+
+    /**
+     * Réinitialiser les données d'essai de la MUTUELLE TEST (2026-11-22) : confirmation par saisie de
+     * l'identifiant, motif, sauvegarde préalable obligatoire (voir TestDataResetService).
+     */
+    public function testReset(Request $request, Mutual $mutual, \App\Services\TestDataResetService $resets)
+    {
+        $this->authorize('manageAccess', $mutual);
+        $data = $request->validate([
+            'confirm'  => ['required', 'string', 'max:80'],
+            'note'     => ['required', 'string', 'min:5', 'max:300'],
+            'formulas' => ['nullable', 'boolean'],
+            'examples' => ['nullable', 'boolean'],
+        ], ['confirm.required' => 'Saisissez l’identifiant de la mutuelle pour confirmer.', 'note.required' => 'Indiquez le motif.']);
+        $user = $request->user('network');
+        try {
+            $r = $resets->reset($mutual, $data['confirm'], $data['note'], ['formulas' => (bool) ($data['formulas'] ?? false), 'examples' => (bool) ($data['examples'] ?? false)],
+                $user->id, $user->name . ' (réseau)');
+        } catch (\App\Services\AccountingRefusal $e) {
+            return back()->withErrors(['confirm' => $e->getMessage()])->withInput();
+        }
+
+        return back()->with('success', "Données de test réinitialisées : {$r['deleted']} ligne(s) effacée(s). Sauvegarde préalable : {$r['backup']}.");
     }
 
     /**

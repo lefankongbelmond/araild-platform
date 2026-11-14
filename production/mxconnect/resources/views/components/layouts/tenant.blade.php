@@ -179,7 +179,7 @@
 
       <div class="px-4 sm:px-6">
         @if (\App\Support\TestEnvironment::active())
-          <div role="note" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"><b>Environnement de test</b> — MUTUELLE TEST : données d’essai, sans valeur réelle.</div>
+          <div role="note" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"><b>Environnement de test</b> — MUTUELLE TEST : données d’essai, sans valeur réelle. @if (\Illuminate\Support\Facades\Route::has('test-env.index') && \App\Support\TenantAccess::can('test-env.index')) <a href="{{ route('test-env.index') }}" class="font-medium underline">Réinitialiser les données de test</a>@endif</div>
         @endif
         @foreach (['success' => 'leaf', 'error' => 'clay'] as $key => $c)
           @if (session($key))
