@@ -82,9 +82,9 @@
     @if ($mutualApp)
     <link rel="manifest" href="/app-mutuelle.webmanifest">
     <meta name="theme-color" content="#0B2559">
-    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
-    <script src="/js/mx-appcenter.js?v={{ config('mxconnect.asset_version') }}" defer></script>
-    <script>document.addEventListener('DOMContentLoaded', function () { if (window.MXApp) { MXApp.registerWorker('/sw-mutuelle.js'); MXApp.launch('mutuelle', '/installer/evenement'); } });</script>
+    <link rel="apple-touch-icon" href="/installer/fichiers/apple-touch-icon.png">
+    <script src="/installer/fichiers/mx-appcenter.js?v={{ config('mxconnect.asset_version') }}" defer></script>
+    <script>document.addEventListener('DOMContentLoaded', function () { if (window.MXApp) { MXApp.registerWorker('/app-mutuelle-sw.js'); MXApp.launch('mutuelle', '/installer/evenement'); } });</script>
     @endif
     <style>
       @font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url({{ $base }}/fonts/inter-latin.woff2) format("woff2")}

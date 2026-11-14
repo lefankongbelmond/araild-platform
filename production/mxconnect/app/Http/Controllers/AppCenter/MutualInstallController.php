@@ -45,10 +45,11 @@ class MutualInstallController extends Controller
         $name = trim((string) tenant('name')) ?: 'Mutuelle';
         $short = mb_strlen($name) <= 15 ? $name : Str::ucfirst((string) tenant('slug'));
         $icons = [
-            ['src' => '/brand/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'],
-            ['src' => '/brand/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
-            ['src' => '/brand/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+            ['src' => '/installer/fichiers/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'],
+            ['src' => '/installer/fichiers/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
+            ['src' => '/installer/fichiers/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
         ];
+        $central = rtrim((string) config('app.url'), '/');
         if ($app->icon_path) {
             array_unshift($icons, ['src' => '/installer/icone.png?v=' . optional($app->updated_at)->timestamp, 'sizes' => '512x512', 'type' => 'image/png']);
         }
@@ -68,11 +69,11 @@ class MutualInstallController extends Controller
             'categories' => ['business', 'finance', 'health'],
             'icons' => $icons,
             'screenshots' => [
-                ['src' => '/brand/appcenter/mutuelle-capture-large.jpg', 'sizes' => '1280x800', 'type' => 'image/jpeg', 'form_factor' => 'wide', 'label' => 'Gestion des adhérents dans MX-CONNECT Mutuelle'],
+                ['src' => $central . '/brand/appcenter/mutuelle-capture-large.jpg', 'sizes' => '1280x800', 'type' => 'image/jpeg', 'form_factor' => 'wide', 'label' => 'Gestion des adhérents dans MX-CONNECT Mutuelle'],
             ],
             'shortcuts' => [
-                ['name' => 'Adhérents', 'url' => '/adherents?source=pwa', 'icons' => [['src' => '/brand/icon-192.png', 'sizes' => '192x192']]],
-                ['name' => 'Cotisations', 'url' => '/cotisations?source=pwa', 'icons' => [['src' => '/brand/icon-192.png', 'sizes' => '192x192']]],
+                ['name' => 'Adhérents', 'url' => '/adherents?source=pwa', 'icons' => [['src' => '/installer/fichiers/icon-192.png', 'sizes' => '192x192']]],
+                ['name' => 'Cotisations', 'url' => '/cotisations?source=pwa', 'icons' => [['src' => '/installer/fichiers/icon-192.png', 'sizes' => '192x192']]],
             ],
             'related_applications' => [['platform' => 'webapp', 'url' => request()->getSchemeAndHttpHost() . '/app-mutuelle.webmanifest']],
             'prefer_related_applications' => false,
@@ -82,6 +83,53 @@ class MutualInstallController extends Controller
             'Content-Type' => 'application/manifest+json; charset=utf-8',
             'Cache-Control' => 'public, max-age=3600',
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Fichiers servis PAR L'APPLICATION sur le sous-domaine (2026-11-14) : en production, les
+     * fichiers statiques ne sont servis que par le domaine principal ; or le script, les icônes du
+     * manifeste et le service worker doivent venir de la MÊME adresse que la mutuelle.
+     */
+    private const FILES = [
+        'mx-appcenter.js' => ['js/mx-appcenter.js', 'text/javascript; charset=utf-8'],
+        'icon-192.png' => ['brand/icon-192.png', 'image/png'],
+        'icon-512.png' => ['brand/icon-512.png', 'image/png'],
+        'icon-maskable-512.png' => ['brand/icon-maskable-512.png', 'image/png'],
+        'apple-touch-icon.png' => ['brand/apple-touch-icon.png', 'image/png'],
+        'mx-mark-128.webp' => ['brand/mx-mark-128.webp', 'image/webp'],
+    ];
+
+    public function file(string $name)
+    {
+        abort_unless(isset(self::FILES[$name]), 404);
+        [$rel, $type] = self::FILES[$name];
+        $path = public_path($rel);
+        abort_unless(is_file($path), 404);
+
+        return response()->file($path, ['Content-Type' => $type, 'Cache-Control' => 'public, max-age=86400', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    /** Service worker de l'application de la mutuelle (portée « / » du sous-domaine). */
+    public function worker()
+    {
+        $path = public_path('sw-mutuelle.js');
+        abort_unless(is_file($path), 404);
+
+        return response(file_get_contents($path), 200, [
+            'Content-Type' => 'text/javascript; charset=utf-8',
+            'Service-Worker-Allowed' => '/',
+            'Cache-Control' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /** Page « Pas de connexion » mise en cache par le service worker. */
+    public function offline()
+    {
+        $path = public_path('hors-ligne-mutuelle.html');
+        abort_unless(is_file($path), 404);
+
+        return response(file_get_contents($path), 200, ['Content-Type' => 'text/html; charset=utf-8', 'Cache-Control' => 'no-cache']);
     }
 
     public function event(Request $request)
@@ -106,6 +154,6 @@ class MutualInstallController extends Controller
             ]);
         }
 
-        return redirect('/brand/icon-512.png');
+        return $this->file('icon-512.png');
     }
 }

@@ -356,6 +356,9 @@ Route::middleware([
     Route::get('app-mutuelle.webmanifest', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'manifest'])->name('mutual-app.manifest');
     Route::get('installer/icone.png', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'icon'])->name('mutual-app.icon');
     Route::post('installer/evenement', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'event'])->name('mutual-app.event')->middleware('throttle:60,1');
+    Route::get('installer/fichiers/{name}', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'file'])->name('mutual-app.file')->where('name', '[a-z0-9.\-]+');
+    Route::get('installer/hors-ligne', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'offline'])->name('mutual-app.offline');
+    Route::get('app-mutuelle-sw.js', [\App\Http\Controllers\AppCenter\MutualInstallController::class, 'worker'])->name('mutual-app.worker');
 
     // --- Module 11: member PWA shell + manifest (public) ---
     Route::get('espace-membre', [PwaController::class, 'shell'])->name('pwa.shell');

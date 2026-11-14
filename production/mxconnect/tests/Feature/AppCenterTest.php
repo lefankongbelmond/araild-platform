@@ -206,11 +206,20 @@ it('rend l’espace de chaque mutuelle installable depuis son sous-domaine', fun
 
     $this->get($host . '/installer?appareil=android')->assertOk()
         ->assertSee('Installer MX-CONNECT MUTUELLE')->assertSee('Mutuelle Équipe')
-        ->assertSee('rel="manifest" href="/app-mutuelle.webmanifest"', false)->assertSee("/sw-mutuelle.js", false);
+        ->assertSee('rel="manifest" href="/app-mutuelle.webmanifest"', false)->assertSee('/app-mutuelle-sw.js', false)
+        ->assertSee(rtrim(config('app.url'), '/') . '/css/mx-apps.css', false)->assertSee('/installer/fichiers/mx-appcenter.js', false)
+        ->assertDontSee('href="/css/', false)->assertDontSee('src="/js/', false)->assertDontSee('src="/brand/', false);
+    // Fichiers servis par l'application sur le sous-domaine (en production, le statique n'y est pas servi).
+    $this->get($host . '/installer/fichiers/mx-appcenter.js')->assertOk()->assertHeader('Content-Type', 'text/javascript; charset=utf-8');
+    $this->get($host . '/installer/fichiers/icon-192.png')->assertOk()->assertHeader('Content-Type', 'image/png');
+    $this->get($host . '/installer/fichiers/inconnu.js')->assertNotFound();
+    $this->get($host . '/app-mutuelle-sw.js')->assertOk()->assertHeader('Service-Worker-Allowed', '/')->assertSee("'/installer/hors-ligne'", false);
+    $this->get($host . '/installer/hors-ligne')->assertOk()->assertSee('Pas de connexion Internet');
     $m = $this->get($host . '/app-mutuelle.webmanifest')->assertOk()->json();
     expect($m['name'])->toBe('Mutuelle Équipe · MX-CONNECT Mutuelle')->and($m['id'])->toBe('/?app=mx-mutuelle')
-        ->and($m['start_url'])->toBe('/?source=pwa')->and($m['scope'])->toBe('/')->and($m['display'])->toBe('standalone');
-    $this->get($host . '/connexion')->assertOk()->assertSee('/app-mutuelle.webmanifest', false);
+        ->and($m['start_url'])->toBe('/?source=pwa')->and($m['scope'])->toBe('/')->and($m['display'])->toBe('standalone')
+        ->and($m['icons'][0]['src'])->toBe('/installer/fichiers/icon-192.png');
+    $this->get($host . '/connexion')->assertOk()->assertSee('/app-mutuelle.webmanifest', false)->assertSee('/installer/fichiers/mx-appcenter.js', false);
 
     $device = str_repeat('cd', 16);
     $this->postJson($host . '/installer/evenement', ['event' => 'installed', 'os' => 'windows', 'browser' => 'edge', 'device' => $device])->assertNoContent();
