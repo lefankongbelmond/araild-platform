@@ -16,7 +16,8 @@ class ProviderConvention extends Model implements Auditable
     use AuditableTrait;
 
     protected $guarded = [];
-    protected $casts = ['active' => 'boolean', 'starts_on' => 'date', 'ends_on' => 'date', 'care_provider_id' => 'integer'];
+    protected $casts = ['active' => 'boolean', 'starts_on' => 'date', 'ends_on' => 'date', 'signed_on' => 'date', 'care_provider_id' => 'integer',
+        'transmission_days' => 'integer', 'payment_days' => 'integer', 'history' => 'array'];
 
     public const TYPES = [
         'hospital' => 'Hôpital', 'clinic' => 'Clinique', 'health_center' => 'Centre de santé',

@@ -40,11 +40,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // Invités non connectés : page de connexion du bon contexte.
         $middleware->redirectGuestsTo(fn (Request $request) => match (true) {
             $request->routeIs('social.*')                              => route('social.login'),
+            $request->routeIs('pro.*')                                 => route('pro.login'),
             function_exists('tenancy') && tenancy()->initialized        => route('tenant.login'),
             default                                                     => route('network.login'),
         });
         // Utilisateur déjà connecté sur une page « invité » (connexion…).
-        $middleware->redirectUsersTo(fn (Request $request) => $request->routeIs('social.*') ? route('social.home') : '/');
+        $middleware->redirectUsersTo(fn (Request $request) => match (true) {
+            $request->routeIs('social.*') => route('social.home'),
+            $request->routeIs('pro.*')    => route('pro.dashboard'),
+            default                       => '/',
+        });
 
         // Sensitive-role MFA gate, usable as ->middleware('mfa').
         $middleware->alias([

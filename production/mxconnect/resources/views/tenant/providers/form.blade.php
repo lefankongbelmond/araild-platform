@@ -34,16 +34,7 @@
       <p class="rounded-md bg-mist px-3 py-2 text-sm"><b>{{ $provider?->name }}</b> · {{ $T[$provider?->type] ?? '' }}@if($provider?->locality) · {{ $provider->locality }}@endif<span class="block text-xs text-ink/55">Fiche du registre du réseau, gérée par une autre structure : seule la convention se modifie ici.</span></p>
     @endif
 
-    <fieldset class="grid gap-4 sm:grid-cols-2">
-      <legend class="mb-2 font-semibold text-sm">La convention</legend>
-      <label class="block text-sm font-medium">N° de convention<input name="reference" maxlength="60" value="{{ old('reference', $convention->reference) }}" class="{{ $f }}"></label>
-      <div></div>
-      <label class="block text-sm font-medium">Début<input type="date" name="starts_on" value="{{ old('starts_on', $convention->starts_on?->toDateString()) }}" class="{{ $f }}"></label>
-      <label class="block text-sm font-medium">Fin<input type="date" name="ends_on" value="{{ old('ends_on', $convention->ends_on?->toDateString()) }}" class="{{ $f }}"></label>
-      <label class="block text-sm font-medium">Contact<input name="contact_name" maxlength="120" value="{{ old('contact_name', $convention->contact_name) }}" class="{{ $f }}"></label>
-      <label class="block text-sm font-medium">Téléphone du contact<input name="contact_phone" maxlength="30" value="{{ old('contact_phone', $convention->contact_phone) }}" class="{{ $f }}"></label>
-      <label class="block text-sm font-medium sm:col-span-2">Notes (tarifs convenus, conditions…)<textarea name="notes" rows="3" maxlength="2000" class="{{ $f }}">{{ old('notes', $convention->notes) }}</textarea></label>
-    </fieldset>
+    @include('tenant.providers._convention-fields', ['convention' => $convention, 'f' => $f])
     <div class="flex gap-3">
       <button class="rounded-md bg-pine px-5 py-2 text-sm font-medium text-white hover:bg-navy">{{ $editing ? 'Enregistrer' : 'Ajouter le prestataire' }}</button>
       <a href="{{ route('providers.index') }}" class="px-3 py-2 text-sm text-ink/60 hover:underline">Annuler</a>

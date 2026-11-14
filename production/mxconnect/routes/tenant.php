@@ -47,6 +47,10 @@ Route::middleware([
         Route::get('connexion', [AuthController::class, 'showLogin'])->name('tenant.login');
         Route::post('connexion', [AuthController::class, 'login'])->middleware('throttle:5,1');
     });
+    // Entrée depuis l'espace prestataire central (jeton à usage unique, 60 s) — 2026-11-16.
+    Route::get('prestataire/entree/{token}', \App\Http\Controllers\Tenant\ProviderEntryController::class)
+        ->where('token', '[A-Za-z0-9]{64}')->name('portal.entry')->middleware('throttle:20,1');
+
     Route::middleware('auth:web')->group(function () {
         Route::post('deconnexion', [AuthController::class, 'logout'])->name('tenant.logout');
         Route::get('mfa/activation', [AuthController::class, 'enroll'])->name('tenant.mfa.enroll');
@@ -73,6 +77,10 @@ Route::middleware([
                 Route::get('{convention}/modifier', 'edit')->name('edit');
                 Route::post('{convention}/modifier', 'update')->name('update');
                 Route::post('{convention}/activation', 'toggle')->name('toggle');
+                Route::post('{convention}/acces-responsable', 'grantAccess')->name('access');
+                // Demandes d'affiliation venues de l'espace prestataire central (2026-11-16).
+                Route::post('demandes/{affiliation}/accepter', 'approveAffiliation')->name('affiliations.approve')->whereNumber('affiliation');
+                Route::post('demandes/{affiliation}/refuser', 'rejectAffiliation')->name('affiliations.reject')->whereNumber('affiliation');
             });
 
         // --- Portail des prestataires de soins (rôle « provider » uniquement) ---

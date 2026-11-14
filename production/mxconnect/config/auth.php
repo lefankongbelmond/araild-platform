@@ -26,6 +26,12 @@ return [
             'driver' => 'session',
             'provider' => 'public_accounts',
         ],
+
+        // Espace prestataire central (2026-11-16) : personnel des établissements de soins.
+        'provider' => [
+            'driver' => 'session',
+            'provider' => 'provider_accounts',
+        ],
     ],
 
     'providers' => [
@@ -40,6 +46,10 @@ return [
         'public_accounts' => [
             'driver' => 'eloquent',
             'model' => App\Models\Central\PublicAccount::class,
+        ],
+        'provider_accounts' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Provider\ProviderAccount::class,
         ],
     ],
 
@@ -61,6 +71,14 @@ return [
             'provider' => 'public_accounts',
             'connection' => 'central',
             'table' => 'public_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        // Espace prestataire (lien par e-mail, 60 min).
+        'provider_accounts' => [
+            'provider' => 'provider_accounts',
+            'connection' => 'central',
+            'table' => 'provider_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

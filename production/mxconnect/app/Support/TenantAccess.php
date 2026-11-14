@@ -229,8 +229,29 @@ class TenantAccess
     public static function can(string $route, ?User $user = null): bool
     {
         $user ??= auth('web')->user();
+        if (! $user instanceof User || ! self::allows($route, $user->getRoleNames()->all())) {
+            return false;
+        }
+        // Compte ouvert depuis l'espace prestataire central (2026-11-16) : en plus du rôle
+        // « Prestataire de soins », le droit de la personne DANS son établissement est exigé.
+        $perm = \App\Services\Provider\ProviderSpaceService::PORTAL_ROUTE_PERMS[$route] ?? null;
+        if ($perm !== null && ($user->provider_account_id ?? null)) {
+            return in_array($perm, self::linkedPermissions($user), true);
+        }
 
-        return $user instanceof User && self::allows($route, $user->getRoleNames()->all());
+        return true;
+    }
+
+    /** Droits d'établissement d'un compte rattaché (lus une fois par requête). */
+    public static function linkedPermissions(User $user): array
+    {
+        $key = 'provider_perms_' . $user->id;
+        $attrs = request()->attributes;
+        if (! $attrs->has($key)) {
+            $attrs->set($key, app(\App\Services\Provider\ProviderSpaceService::class)->linkedPermissions($user) ?? []);
+        }
+
+        return $attrs->get($key);
     }
 
     /** Refuse (403) si l'utilisateur connecté n'a pas accès à la route courante (ou donnée). */

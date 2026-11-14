@@ -33,8 +33,9 @@
             <div class="text-3xl text-pine" aria-hidden="true">✓</div>
             <div class="mt-1 text-lg font-semibold text-pine">Droits ouverts</div>
             <div class="mt-1 text-sm">{{ $result['member']->last_name }} {{ $result['member']->first_name }} · <span class="font-mono">{{ $result['member']->member_code }}</span></div>
-            <a href="{{ route('portal.declare', $result['check']->id) }}" class="mt-4 inline-block rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">Déclarer une prise en charge</a>
+            @if ($portal['declare'] ?? true)<a href="{{ route('portal.declare', $result['check']->id) }}" class="mt-4 inline-block rounded-md bg-pine px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy">Déclarer une prise en charge</a>
             <p class="mt-2 text-xs text-ink/50">Déclaration possible pendant 12 heures à partir de cette vérification.</p>
+            @else<p class="mt-3 text-xs text-ink/50">Votre rôle dans l’établissement ne comprend pas la déclaration des soins.</p>@endif
           </div>
         @else
           <div class="rounded-lg border border-clay/30 bg-clay/5 p-5 text-center" role="status">

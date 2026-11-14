@@ -175,6 +175,30 @@ body.h-body { background: #fff; font-size: 16px; }
   .h-band__grid { grid-template-columns: repeat(2, 1fr); } .h-band__intro { grid-column: 1 / -1; }
   .h-stat:nth-child(2), .h-stat:nth-child(4) { border-left: 0; padding-left: 0; }
 }
+/* En-tête : neuf liens + deux actions depuis l'App Center (2026-11-13) — resserré pour rester
+   dans l'écran entre 1281 et 1600 px (sinon « Demander une démo » sortait de l'écran) ; menu ☰ dès 1280 px. */
+@media (max-width: 1600px) {
+  .h-header__in { gap: 18px; }
+  .h-nav { gap: 16px; }
+  .h-nav > a, .h-nav summary { font-size: 14px; }
+  .h-actions .h-btn { padding-left: 18px; padding-right: 18px; }
+}
+@media (max-width: 1440px) {
+  .h-logo__tag { display: none; }
+  .h-nav { gap: 14px; }
+}
+@media (max-width: 1340px) {
+  .h-header__in { gap: 14px; }
+  .h-nav { gap: 10px; }
+}
+@media (max-width: 1280px) {
+  .h-nav, .h-actions .h-login, .h-actions .h-btn { display: none; }
+  .h-burger { display: inline-flex; margin-left: auto; }
+  .h-header.is-open .h-nav { display: flex; position: absolute; top: 84px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; background: #fff; border-bottom: 1px solid var(--mx-border); padding: 8px 24px 18px; box-shadow: var(--mx-shadow-lg); }
+  .h-header.is-open .h-nav > a, .h-header.is-open .h-nav summary { padding: 12px 0; border-bottom: 1px solid var(--mx-border); font-size: 15px; }
+  .h-header.is-open .h-drop__menu { position: static; box-shadow: none; border: 0; padding: 0 0 0 10px; }
+  .h-header.is-open .h-nav .h-mobile-only { display: flex; }
+}
 @media (max-width: 1020px) {
   .h-nav, .h-actions .h-login, .h-actions .h-btn { display: none; }
   .h-burger { display: inline-flex; margin-left: auto; }

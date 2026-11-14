@@ -1,6 +1,6 @@
 # MX-CONNECT — Portail prestataire V2 : audit technique, diagnostic et plan de développement
 
-Version de référence auditée : **2026.11.14**. Phase 1 livrée en **2026.11.15**.
+Version de référence auditée : **2026.11.14**. Phase 1 livrée en **2026.11.15**, phase 2 en **2026.11.16**.
 Ce document répond à l'étape « audit d'abord » du cahier des charges « Portail prestataire V2 ».
 
 ---
@@ -42,10 +42,11 @@ Le portail n'est pas une application séparée. C'est un espace du back-office d
 | A12 | Le statut `controlled` des prestations existe mais n'est jamais posé. | Info | Phase 4 (circuit d'accord préalable) |
 | A13 | Recherche seulement par code ou QR ; aucune recherche par nom, téléphone ou pièce. | Info | Phase 3 (recherche encadrée, voir § 4) |
 | A14 | Aucune notification au prestataire quand la mutuelle valide, rejette ou paie. | Info | Phase 6 |
-| A15 | Les comptes du prestataire sont créés par la mutuelle ; l'établissement ne gère pas ses utilisateurs. | Info | Phase 2 |
-| A16 | Un établissement conventionné avec plusieurs mutuelles a un compte par mutuelle, sans vue d'ensemble. | Structurant | **Décision à prendre** (§ 3) |
+| A15 | Les comptes du prestataire sont créés par la mutuelle ; l'établissement ne gère pas ses utilisateurs. | Info | **Corrigé (phase 2)** : personnel et droits gérés par l'établissement |
+| A16 | Un établissement conventionné avec plusieurs mutuelles a un compte par mutuelle, sans vue d'ensemble. | Structurant | **Corrigé (phase 2)** : espace prestataire central |
+| A17 | En-tête du site (page d'accueil, « Se connecter »…) : entre 1021 et 1600 px, « Demander une démo » sortait de l'écran depuis l'ajout du lien « Applications » (13/11). | Moyenne | **Corrigé (phase 2)** : en-tête resserré, menu ☰ jusqu'à 1280 px |
 
-## 3. Décision d'architecture à prendre avant la phase 2
+## 3. Décision d'architecture — **prise : option B, espace central** (fondateur, 15/11/2026)
 
 **Comptes prestataires : par mutuelle (actuel) ou espace prestataire central multi-mutuelles ?**
 
@@ -81,7 +82,7 @@ Autres points à confirmer :
 | Phase | Contenu | Schéma (migrations additives) | Livraison |
 |---|---|---|---|
 | **1. Audit et corrections** | Anomalies A1–A7 | `prestations.decision_note`, `decided_at` | **2026.11.15 — faite** |
-| **2. Profil et tableau de bord** | Fiche établissement (coordonnées, horaires, spécialités, documents de convention), utilisateurs de l'établissement et rôles, tableau de bord avec indicateurs réels (vérifications, prises en charge par statut, montants à facturer, factures en attente ou payées, délais moyens), graphiques et alertes. | Selon la décision du § 3 : `provider_accounts` + `provider_account_roles` (central) ou `provider_staff_roles` (tenant) ; `care_providers` complété | 1 livraison |
+| **2. Profil et tableau de bord** — **2026.11.16, faite** (voir `DOCUMENTATION-TECHNIQUE-ESPACE-PRESTATAIRE.md`) | Fiche établissement (coordonnées, horaires, spécialités, documents de convention), utilisateurs de l'établissement et rôles, tableau de bord avec indicateurs réels (vérifications, prises en charge par statut, montants à facturer, factures en attente ou payées, délais moyens), graphiques et alertes. | Selon la décision du § 3 : `provider_accounts` + `provider_account_roles` (central) ou `provider_staff_roles` (tenant) ; `care_providers` complété | 1 livraison |
 | **3. Identification et droits** | Recherche encadrée (carte, n°, QR, nom + date de naissance, téléphone, pièce), statuts détaillés (actif, suspendu, en observation, cotisations en retard, plafond atteint, hors réseau), simulation de couverture avant soins (« estimation »), bon de prise en charge imprimable | `coverage_estimates` (ou calcul à la volée journalisé) | 1 livraison |
 | **4. Soins et accords préalables** | Demandes d'accord (types, 9 statuts, circuit, urgence), feuille de soins électronique + PDF, catalogue d'actes et tarifs par convention, CIM-10 protégée, hospitalisation (séjour, plafond par séjour), orientation, pharmacie (ordonnance, délivrance), laboratoire | `care_authorizations`, `authorization_events`, `care_sheets`, `care_sheet_lines`, `diagnoses` (chiffré), `hospital_stays`, `referrals`, `prescriptions`, `dispensations`, `lab_orders`, `convention_tariffs` (avec dates) | 2 livraisons |
 | **5. Facturation et paiements** | Factures à lignes, bordereaux d'envoi groupés (lot + PDF), rejets partiels et renvoi, statuts distincts validée/payée, paiements confirmés seulement, exports CSV | `invoice_batches`, `provider_invoice_lines`, `invoice_events` | 1 livraison |

@@ -10,7 +10,7 @@
     <div class="h-wrap">
       <div class="h-center"><span class="h-eyebrow">Se connecter</span><h1 class="h-title">Choisissez votre espace</h1>
         <p class="h-sub">Chaque profil dispose de son propre espace sécurisé.</p></div>
-      <div class="h-login-grid">
+      <div class="h-login-grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))">
         <div class="h-login-card">
           <span class="h-mod__ico h-mod__ico--g"><x-mx.icon name="users" :size="22"/></span>
           <h2>Membre / grand public</h2>
@@ -29,6 +29,13 @@
             @error('mutuelle')<p class="h-err" style="color:var(--mx-danger);font-size:13px">{{ $message }}</p>@enderror
             <button class="h-btn h-btn--grad">Aller à mon espace</button>
           </form>
+        </div>
+        <div class="h-login-card">
+          <span class="h-mod__ico h-mod__ico--g"><x-mx.icon name="building" :size="22"/></span>
+          <h2>Établissement de soins</h2>
+          <p>Hôpitaux, centres de santé, pharmacies, laboratoires conventionnés : un seul compte pour vérifier les droits et suivre vos prises en charge dans toutes vos mutuelles.</p>
+          <a class="h-btn h-btn--grad" href="{{ route('pro.login') }}">Espace prestataire</a>
+          <a href="{{ route('pro.register') }}" style="text-align:center;font-size:14px">Inscrire mon établissement</a>
         </div>
         <div class="h-login-card">
           <span class="h-mod__ico h-mod__ico--b"><x-mx.icon name="shield" :size="22"/></span>

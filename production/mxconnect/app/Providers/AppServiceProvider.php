@@ -40,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // Back-office des mutuelles : @acces('nom.de.route') … @endacces (matrice App\Support\TenantAccess).
         \Illuminate\Support\Facades\Blade::if('acces', fn (string $route) => \App\Support\TenantAccess::can($route));
+        // Espace prestataire : @droit('permission') … @enddroit (App\Support\ProviderAccess).
+        \Illuminate\Support\Facades\Blade::if('droit', fn (string $perm) => \App\Support\ProviderAccess::allowed($perm));
+        // Journal d'audit : les actions de l'espace prestataire sont attribuées à la personne connectée.
+        config(['audit.user.guards' => array_values(array_unique(array_merge((array) config('audit.user.guards', ['web', 'api']), ['provider'])))]);
 
         // Strict model behaviour outside production. Lazy-loading prevention (the
         // aggressive N+1 catcher) is opt-in via config so it doesn't break views

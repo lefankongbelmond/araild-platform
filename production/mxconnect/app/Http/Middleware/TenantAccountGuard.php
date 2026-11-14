@@ -24,6 +24,15 @@ class TenantAccountGuard
 
             return redirect()->route('tenant.login')->withErrors(['email' => __('mxconnect.auth.inactive')]);
         }
+        // Compte ouvert depuis l'espace prestataire : personne ou rattachement désactivé dans
+        // l'établissement => session fermée tout de suite (2026-11-16).
+        if ($user && ($user->provider_account_id ?? null) && \App\Support\TenantAccess::linkedPermissions($user) === []) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->away(rtrim((string) config('app.url'), '/') . '/espace-prestataire/connexion');
+        }
         if ($user && ($user->must_change_password ?? false)
             && ! $request->routeIs('account.password', 'account.password.update', 'tenant.logout', 'tenant.mfa.*')) {
             return redirect()->route('account.password')->with('error', 'Choisissez votre mot de passe personnel avant de continuer.');

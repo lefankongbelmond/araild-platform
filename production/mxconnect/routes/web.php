@@ -47,6 +47,61 @@ Route::middleware('central.only')->group(function () {
     Route::post('applications/evenement', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'event'])->name('appcenter.event')->middleware('throttle:60,1');
     Route::get('applications/{key}/android.apk', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'apk'])->name('appcenter.apk')->whereIn('key', ['mutuelle', 'social'])->middleware('throttle:20,1');
     Route::get('applications/{key}/icone.png', [\App\Http\Controllers\AppCenter\AppCenterController::class, 'icon'])->name('appcenter.icon')->whereIn('key', ['mutuelle', 'social']);
+
+    // --- Espace prestataire central (Portail prestataire V2, phase 2 — 2026-11-16) ---
+    // Établissements de soins : un compte par personne, rôles dans l'établissement, plusieurs
+    // mutuelles. Les soins restent dans la base de chaque mutuelle (entrée par jeton).
+    Route::prefix('espace-prestataire')->name('pro.')->group(function () {
+        $auth = \App\Http\Controllers\Provider\AuthController::class;
+        Route::middleware('guest:provider')->group(function () use ($auth) {
+            Route::get('connexion', [$auth, 'showLogin'])->name('login');
+            Route::post('connexion', [$auth, 'login'])->name('login.store')->middleware('throttle:5,1');
+            Route::get('inscription', [$auth, 'showRegister'])->name('register');
+            Route::post('inscription', [$auth, 'register'])->name('register.store')->middleware('throttle:5,10');
+            Route::get('mot-de-passe-oublie', [$auth, 'forgot'])->name('forgot');
+            Route::post('mot-de-passe-oublie', [$auth, 'sendReset'])->name('forgot.send')->middleware('throttle:5,10');
+            Route::get('reinitialiser/{token}', [$auth, 'showReset'])->name('reset');
+            Route::post('reinitialiser', [$auth, 'reset'])->name('reset.update')->middleware('throttle:5,10');
+        });
+        Route::middleware('auth:provider')->group(function () use ($auth) {
+            Route::post('deconnexion', [$auth, 'logout'])->name('logout');
+            Route::get('mot-de-passe', [$auth, 'showPassword'])->name('password');
+            Route::post('mot-de-passe', [$auth, 'updatePassword'])->name('password.update')->middleware('throttle:5,1');
+            Route::get('double-authentification', [$auth, 'enroll'])->name('mfa.enroll');
+            Route::post('double-authentification', [$auth, 'confirm'])->name('mfa.confirm')->middleware('throttle:10,1');
+            Route::get('verification', [$auth, 'challenge'])->name('mfa.challenge');
+            Route::post('verification', [$auth, 'verify'])->name('mfa.verify')->middleware('throttle:10,1');
+        });
+
+        Route::middleware(['auth:provider', \App\Http\Middleware\ProviderSpaceGuard::class])->group(function () use ($auth) {
+            $space = \App\Http\Controllers\Provider\SpaceController::class;
+            Route::get('/', [$space, 'dashboard'])->name('dashboard');
+            Route::post('etablissement-en-cours', [$space, 'switch'])->name('switch');
+            Route::get('ouvrir/{target}', [$space, 'go'])->name('go')->whereIn('target', ['verify', 'claims', 'invoices']);
+            Route::post('ouvrir/{target}/{mutual}', [$space, 'open'])->name('open')->whereIn('target', ['verify', 'claims', 'invoices'])->middleware('throttle:30,1');
+            Route::get('mutuelles', [$space, 'mutuals'])->name('mutuals');
+            Route::get('mutuelles/{mutual}', [$space, 'mutual'])->name('mutuals.show');
+            Route::post('affiliations', [$space, 'requestAffiliation'])->name('affiliations.store')->middleware('throttle:10,1');
+            Route::post('affiliations/{affiliation}/retrait', [$space, 'withdraw'])->name('affiliations.withdraw')->whereNumber('affiliation');
+
+            $est = \App\Http\Controllers\Provider\EstablishmentController::class;
+            Route::get('etablissement', [$est, 'show'])->name('profile');
+            Route::post('etablissement', [$est, 'update'])->name('profile.update');
+            Route::post('etablissement/banque', [$est, 'bank'])->name('bank.update');
+            Route::get('personnel', [$est, 'staff'])->name('staff');
+            Route::post('personnel', [$est, 'storeStaff'])->name('staff.store')->middleware('throttle:20,1');
+            Route::post('personnel/{membership}', [$est, 'updateStaff'])->name('staff.update')->whereNumber('membership');
+            Route::post('personnel/{membership}/mot-de-passe', [$est, 'resetStaff'])->name('staff.reset')->whereNumber('membership')->middleware('throttle:10,1');
+            Route::get('documents', [$est, 'documents'])->name('documents');
+            Route::post('documents', [$est, 'storeDocument'])->name('documents.store')->middleware('throttle:20,1');
+            Route::get('documents/{document}', [$est, 'download'])->name('documents.download')->whereNumber('document');
+            Route::post('documents/{document}/supprimer', [$est, 'destroyDocument'])->name('documents.destroy')->whereNumber('document');
+
+            Route::get('parametres', [$auth, 'settings'])->name('settings');
+            Route::post('parametres', [$auth, 'updateSettings'])->name('settings.update');
+            Route::post('parametres/mot-de-passe', [$auth, 'changePassword'])->name('settings.password')->middleware('throttle:5,1');
+        });
+    });
 });
 
 // Ancienne page de présentation : remplacée par la nouvelle page d'accueil.

@@ -39,6 +39,12 @@ class AuthController extends Controller
             Auth::guard('web')->logout();
             throw ValidationException::withMessages(['email' => __('mxconnect.auth.inactive')]);
         }
+        // Compte ouvert depuis l'espace prestataire central (2026-11-16) : on n'y entre QUE par
+        // l'espace prestataire (double authentification et droits de l'établissement contrôlés là-bas).
+        if (Auth::guard('web')->user()->provider_account_id ?? null) {
+            Auth::guard('web')->logout();
+            throw ValidationException::withMessages(['email' => 'Ce compte s’utilise depuis l’espace prestataire MX-CONNECT : connectez-vous sur ' . rtrim((string) config('app.url'), '/') . '/espace-prestataire.']);
+        }
 
         $request->session()->regenerate();
         $request->session()->put('mfa_passed', false);

@@ -262,13 +262,19 @@ class ProviderPortalController extends Controller
         $convention = ProviderConvention::forProvider($provider?->id);
         abort_unless($provider && $convention, 403, 'Ce compte n’est rattaché à aucun prestataire conventionné. Contactez la mutuelle.');
 
+        $canAct = $provider->active !== false && $convention->inForce();
+        $canBill = $provider->active !== false && (bool) $convention->active;
+        // Compte ouvert depuis l'espace prestataire central (2026-11-16) : les boutons suivent aussi
+        // les droits de la personne dans son établissement (la route est déjà contrôlée par TenantAccess).
         $state = [
-            'act'  => $provider->active !== false && $convention->inForce(),
-            'bill' => $provider->active !== false && (bool) $convention->active,
+            'act'     => $canAct,
+            'bill'    => $canBill && \App\Support\TenantAccess::can('portal.invoices.store', $user),
+            'declare' => \App\Support\TenantAccess::can('portal.declare', $user),
+            'space'   => $user->provider_account_id ? rtrim((string) config('app.url'), '/') . '/espace-prestataire' : null,
         ];
         view()->share('portal', $state);
-        abort_if($mode === 'act' && ! $state['act'], 403, 'La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.');
-        abort_if($mode === 'bill' && ! $state['bill'], 403, 'La convention de votre établissement a été suspendue par la mutuelle : la facturation en ligne est fermée. Contactez la mutuelle.');
+        abort_if($mode === 'act' && ! $canAct, 403, 'La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.');
+        abort_if($mode === 'bill' && ! $canBill, 403, 'La convention de votre établissement a été suspendue par la mutuelle : la facturation en ligne est fermée. Contactez la mutuelle.');
 
         return [$provider, $convention];
     }
