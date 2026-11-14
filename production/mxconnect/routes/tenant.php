@@ -355,6 +355,9 @@ Route::middleware([
 
         // --- Registre des factures des prestataires (2026-11-03) ---
         // --- Rapports d'activité (2026-11-03) ---
+        // Tableau de bord de pilotage (2026-11-20) : même droit que les rapports (règle « reports.* »).
+        Route::get('pilotage', [\App\Http\Controllers\Tenant\PilotageController::class, 'index'])->name('reports.dashboard');
+        Route::get('pilotage/export.xlsx', [\App\Http\Controllers\Tenant\PilotageController::class, 'export'])->name('reports.dashboard.export');
         Route::get('rapports', [\App\Http\Controllers\Tenant\ReportController::class, 'index'])->name('reports.index');
         Route::get('rapports/export.csv', [\App\Http\Controllers\Tenant\ReportController::class, 'export'])->name('reports.export');
         Route::get('factures-prestataires', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'index'])->name('invoices.index');

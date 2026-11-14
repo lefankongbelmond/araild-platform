@@ -371,3 +371,47 @@ Tests : `tests/Feature/AccordsPrealablesPharmacieTest.php` (6 tests), dont les s
 Migration TENANT `2026_11_20_000100_member_portal` : `member_change_requests`, `complaint_messages`, et `complaints` (canal `online`, `category`, `public_account_id`).
 
 Tests : `tests/Feature/PortailAdherentTest.php` (4 tests, scénarios 1 et 9).
+
+---
+
+# Livraison L5 (VERSION 2026.11.21) : tableau de bord de pilotage
+
+## 17. Architecture
+
+- **Service** `App\Services\Tenant\PilotageService::build($from, $to, $filtres)`. Il complète le rapport d'activité (`ActivityReportService`, inchangé) ; il ne le remplace pas.
+- **Chiffres réels** uniquement, calculés à la demande dans la base de la mutuelle. Aucune table ni migration. Montants en unités mineures de la devise de la mutuelle, sans conversion.
+- **Requêtes groupées** (par statut, par version, par garantie, par prestataire, par recours), jamais une requête par adhérent. Le SQL brut se limite à des noms de colonnes : compatible avec les tables préfixées.
+- **Écran** `tenant/reports/dashboard` (URL `/pilotage`), en tête du menu (groupe « Pilotage »). La page d'arrivée après connexion ne change pas (`TenantAccess::home` saute `reports.dashboard`).
+- **Export Excel** : `App\Support\SimpleXlsx`, un vrai classeur `.xlsx` (Office Open XML) écrit sans bibliothèque externe. Il exige l'extension PHP `zip` ; sinon l'export bascule en CSV. **PDF** : bouton « Imprimer ou PDF » (impression du navigateur, filtres masqués).
+
+## 18. Définitions des indicateurs
+
+| Indicateur | Calcul |
+|---|---|
+| Adhérents | Fiches du périmètre filtré. Bénéficiaires = adhérents actifs ou suspendus + ayants droit actifs |
+| Adhésions actives | Souscription validée, en vigueur, sans échéance échue impayée |
+| Adhésions suspendues | Fiche « suspendue », ou souscription validée avec une échéance échue impayée (même règle que la vérification des droits) |
+| Adhésions expirées | Fiche « sortie » ou « radiée », ou aucune souscription en cours |
+| En attente | Souscription saisie, non validée |
+| Cotisations attendues | Échéances de cotisation (hors droit d'adhésion) dont la date tombe dans la période |
+| Taux de recouvrement | Payé sur ces échéances ÷ attendu. « Encaissé sur la période » = paiements datés de la période, quelle que soit l'échéance. Les encaissements annulés sont exclus |
+| Prestations facturées | Montant total de toutes les prestations de la période, quel que soit leur statut |
+| Prise en charge | Part mutuelle des prestations **validées** |
+| Tickets modérateurs | `copay_minor` des prestations validées (à défaut, la part de l'adhérent) |
+| Taux de sinistralité | Prise en charge ÷ cotisations encaissées sur la période |
+| Par formule / par garantie | Prestations validées groupées par version de formule, puis par garantie (`coverage_rule_id`). Les formules sans garanties détaillées sont sur une ligne « Formules à taux unique » |
+| Pharmacie | Délivrances de la période : nombre, montant, non pris en charge, part mutuelle validée, médicaments les plus délivrés |
+| Plafonds consommés | Plafonds ANNUELS en montant des versions en cours. Pour chaque titulaire (famille ou bénéficiaire) : parts mutuelle saisies, contrôlées et validées de l'année civile. On compte les titulaires à ≥ 80 % et à 100 % |
+
+## 19. Filtres, droits, routes
+
+- **Filtres** : période (mois en cours ou précédent, trimestre, année en cours ou précédente, dates au choix), formule, prestataire, antenne (zone), type de soins (catégorie de la bibliothèque), statut de traitement, et adhérent (n°).
+- **Région** : non enregistrée sur les fiches. L'antenne tient lieu de zone géographique.
+- **Données de santé** : le détail par garantie, la pharmacie, le filtre par adhérent et les feuilles Excel correspondantes exigent `capacite.donnees-sante` (A, C, B, D). Pour les autres, le filtre par adhérent est ignoré côté serveur.
+
+| Route | URL | Droit |
+|---|---|---|
+| `reports.dashboard` | `/pilotage` | A, C, B, T, U (règle `reports.*`) |
+| `reports.dashboard.export` | `/pilotage/export.xlsx` | idem |
+
+Tests : `tests/Feature/TableauDeBordPilotageTest.php` (2 tests, 101 vérifications). Ils couvrent les indicateurs, les filtres, les droits par rôle et le contenu du classeur Excel.

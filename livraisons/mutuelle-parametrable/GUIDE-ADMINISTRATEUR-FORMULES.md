@@ -1,6 +1,6 @@
 # Guide de l'administrateur : formules, garanties, plafonds, carences, dérogations
 
-MX-CONNECT, version 2026.11.18. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
+MX-CONNECT, version 2026.11.21. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
 
 ## 1. Où trouver le catalogue
 
@@ -153,3 +153,24 @@ Pour ajouter un **médecin-conseil** : Paramètres → Équipe et rôles → rô
 - **Registre des délivrances** : ordonnance, médicaments, lignes non prises en charge, état de la prise en charge.
 
 Une même ordonnance ne peut jamais être facturée deux fois, même dans une autre pharmacie. Les prix au-dessus du prix de référence et les délivrances rapprochées créent des alertes à examiner.
+
+## 13. Tableau de bord de pilotage (depuis le 21/11/2026)
+
+Menu **Pilotage → Tableau de bord**. Accès : administrateur, contrôleur, gestionnaire des prestations, trésorier, auditeur.
+
+1. **Choisissez la période** (ce mois-ci, le mois dernier, ce trimestre, cette année, l'année dernière ou des dates au choix), puis les filtres utiles : formule, établissement, antenne, type de soins, statut de traitement. Cliquez sur **Afficher**.
+2. **Lisez les cartes** :
+   - adhérents : actifs, suspendus, expirés ;
+   - cotisations attendues et taux de recouvrement ;
+   - prise en charge et tickets modérateurs ;
+   - taux de sinistralité.
+3. **Graphique mois par mois** : cotisations encaissées et part de la mutuelle. Survolez ou touchez un mois pour voir ses montants.
+4. **Consommation** : par formule, par établissement et, pour les personnes habilitées aux données de santé, par garantie et en pharmacie.
+5. **Plafonds consommés** : nombre de familles ou de bénéficiaires ayant atteint 80 % ou la totalité d'un plafond annuel.
+6. **Exporter** : **Exporter (Excel)** télécharge un classeur avec les filtres appliqués, une feuille par tableau. **Imprimer ou PDF** imprime la page ou l'enregistre en PDF.
+
+Bon à savoir :
+
+- Tous les chiffres sont réels et calculés à l'instant. Dans la MUTUELLE TEST, ce sont les données d'essai.
+- Le taux de sinistralité compare la part payée par la mutuelle aux cotisations encaissées sur la même période. Au-delà de 100 %, la mutuelle paie plus qu'elle n'encaisse.
+- Le filtre par adhérent n'est proposé qu'aux personnes habilitées aux données de santé.

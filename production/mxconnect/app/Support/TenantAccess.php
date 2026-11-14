@@ -206,7 +206,7 @@ class TenantAccess
         'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse',
             'accounting.entries.store' => 'Opérations diverses : saisir, préparer une extourne', 'accounting.entries.validate' => 'Opérations diverses : valider ou rejeter',
             'accounting.accounts.store' => 'Plan comptable : ajouter, renommer', 'accounting.closing.close' => 'Clôturer un exercice', 'accounting.closing.reopen' => 'Rouvrir un exercice', 'budget.index' => 'Budget : consulter', 'budget.lines.update' => 'Budget : préparer', 'budget.adopt' => 'Budget : adopter', 'solvency.dashboard' => 'Solvabilité'],
-        'Rapports' => ['reports.index' => 'Rapports d’activité (imprimer, CSV)', 'accounting.balance' => 'États comptables : balance, grand livre, compte de résultat, bilan'],
+        'Rapports' => ['reports.dashboard' => 'Tableau de bord de pilotage (filtres, Excel, impression)', 'reports.index' => 'Rapports d’activité (imprimer, CSV)', 'accounting.balance' => 'États comptables : balance, grand livre, compte de résultat, bilan'],
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
         'Accords préalables et pharmacie' => ['preauth.index' => 'Accords préalables : consulter', 'preauth.store' => 'Accords préalables : demander', 'preauth.decide' => 'Accords préalables : décider (examen médical : médecin-conseil)', 'pharmacy.index' => 'Registre des délivrances en pharmacie', 'pharmacy.policy' => 'Politique pharmaceutique et liste des médicaments'],
@@ -295,6 +295,10 @@ class TenantAccess
     {
         foreach (TenantNav::groups() as $items) {
             foreach (array_keys($items) as $route) {
+                // L5 : le tableau de bord de pilotage (en tête du menu) ne change pas la page d'arrivée.
+                if ($route === 'reports.dashboard') {
+                    continue;
+                }
                 if (\Route::has($route) && self::can($route, $user)) {
                     return route($route);
                 }

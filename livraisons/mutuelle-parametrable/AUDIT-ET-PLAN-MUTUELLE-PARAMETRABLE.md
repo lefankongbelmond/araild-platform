@@ -136,3 +136,9 @@ Chaque livraison suit le même circuit :
 - Notifications sans donnée médicale.
 - Scénarios 1 et 9 couverts par des tests Pest.
 - Guide de l'adhérent : `GUIDE-ADHERENT.md`.
+
+**L5 livrée le 21/11/2026 (VERSION 2026.11.21).**
+- Tableau de bord de pilotage (`/pilotage`) : adhésions, cotisations, prestations, consommation par formule, par garantie et en pharmacie, plafonds consommés, taux de sinistralité.
+- Filtres : période, formule, prestataire, antenne, type de soins, statut, adhérent.
+- Graphique mensuel, export Excel (`.xlsx`) et impression ou PDF.
+- **Écart au plan, assumé** : il n'y a pas de filtre « région », car la région n'est pas enregistrée sur les fiches. L'antenne tient lieu de zone.

@@ -59,6 +59,9 @@ class TenantNav
                 'portal.invoices' => ['Mes factures', 'receipt'],
                 'portal.preauth'  => ['Accords préalables', 'shield'],
             ],
+            'Pilotage' => [
+                'reports.dashboard'   => ['Tableau de bord', 'chart'],
+            ],
             'Gestion des adhérents' => [
                 'members.index'       => ['mxconnect.member.plural', 'users'],
                 'cards.index'         => ['Cartes de membre', 'card'],
