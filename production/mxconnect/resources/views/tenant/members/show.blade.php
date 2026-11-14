@@ -60,6 +60,26 @@
       </div>
     </div>
 
+    {{-- Portail adhérent (2026-11-20) : compte MX-CONNECT relié, code d'activation --}}
+    @acces('members.portal.code')
+    @php $portalLink = \App\Http\Controllers\Tenant\MemberPortalAdminController::linkFor($member); @endphp
+    <section class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">
+      <h2 class="font-medium">Portail adhérent</h2>
+      @if ($portalLink)
+        <p class="text-sm">Relié au compte MX-CONNECT de <b>{{ $portalLink->account?->first_name }} {{ $portalLink->account?->last_name }}</b>. L’adhérent consulte ses garanties, prestations et cotisations dans son compte.</p>
+        <form method="POST" action="{{ route('members.portal.revoke', $member) }}" onsubmit="return confirm('Retirer l’accès au portail pour ce compte ?')">@csrf
+          <button class="rounded-md border border-clay/40 px-3 py-1.5 text-xs font-semibold text-clay hover:bg-mist">Retirer l’accès</button></form>
+      @else
+        <p class="text-sm text-ink/70">Pas encore relié. Remettez un code d’activation à l’adhérent : il le saisit dans son compte MX-CONNECT (Mon adhésion) avec sa date de naissance. Valable 30 jours, une seule fois.</p>
+        @if (session('portal_code'))
+          <div class="rounded-md border border-amber-200 bg-amber-50 p-3 text-center" role="status"><div class="text-xs text-amber-800">Code d’activation (affiché une seule fois)</div><div class="mt-1 font-mono text-xl font-bold tracking-wider">{{ session('portal_code')['code'] }}</div><div class="text-xs text-amber-800">valable jusqu’au {{ session('portal_code')['expires'] }}</div></div>
+        @endif
+        <form method="POST" action="{{ route('members.portal.code', $member) }}">@csrf
+          <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ session('portal_code') ? 'Générer un nouveau code' : 'Générer un code d’activation' }}</button></form>
+      @endif
+    </section>
+    @endacces
+
     {{-- Add dependent --}}
     @if (\App\Support\TenantAccess::can('members.update'))
     <form method="POST" action="{{ route('members.dependents.add', $member) }}" class="rounded-lg border border-ink/10 bg-white p-4 space-y-3 self-start">

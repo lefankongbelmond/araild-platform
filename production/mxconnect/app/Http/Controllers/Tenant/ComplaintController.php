@@ -74,7 +74,28 @@ class ComplaintController extends Controller
             'resolved_on' => in_array($data['status'], ['resolved', 'closed'], true) ? now()->toDateString() : null,
         ]);
 
+        if ($complaint->member_id && $complaint->wasChanged('status')) {
+            \App\Support\MemberNotifier::notify($complaint->member_id, "Votre demande {$complaint->ref} : " . mb_strtolower(\App\Models\Tenant\Complaint::STATUS_LABELS[$complaint->status] ?? $complaint->status),
+                null, 'reclamations/' . $complaint->id);
+        }
+
         return back()->with('success', __('mxconnect.complaint.updated'));
+    }
+
+    /** Réponse à l'adhérent (portail adhérent, 2026-11-20) : visible dans son espace, notifiée. */
+    public function reply(Request $request, Complaint $complaint)
+    {
+        $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:3000']]);
+        abort_if($complaint->status === 'closed', 422, 'Réclamation clôturée.');
+        \App\Models\Tenant\ComplaintMessage::create(['complaint_id' => $complaint->id, 'author' => 'staff', 'user_id' => $request->user()->id, 'body' => trim($data['body'])]);
+        if ($complaint->status === 'received') {
+            $complaint->update(['status' => 'in_progress']);
+        }
+        if ($complaint->member_id) {
+            \App\Support\MemberNotifier::notify($complaint->member_id, "Réponse de votre mutuelle à la demande {$complaint->ref}", null, 'reclamations/' . $complaint->id);
+        }
+
+        return back()->with('success', 'Réponse envoyée à l’adhérent.');
     }
 
     public function members()

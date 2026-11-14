@@ -56,6 +56,9 @@ class PrestationController extends Controller
 
         $prestation->update(['status' => 'validated'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
             + (Prestation::hasDecisionColumns() ? ['decided_at' => now()] : []));
+        // Adhérent relié à un compte MX-CONNECT (portail, 2026-11-20) : aucun détail médical dans la notification.
+        \App\Support\MemberNotifier::notify((int) $claim->member_id, 'Une prise en charge a été validée',
+            'Soins du ' . $prestation->care_date?->format('d/m/Y') . ' : détail dans votre espace.', 'prestations/' . $prestation->id);
         return back()->with('success', __('mxconnect.prestation.validated'));
     }
 
@@ -75,6 +78,8 @@ class PrestationController extends Controller
         $prestation->update(['status' => 'rejected'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
             + (Prestation::hasDecisionColumns() ? ['decision_note' => trim($data['note']), 'decided_at' => now()] : []));
         $this->capture->releaseException($prestation);
+        \App\Support\MemberNotifier::notify((int) $claim->member_id, 'Une prise en charge a été rejetée',
+            'Soins du ' . $prestation->care_date?->format('d/m/Y') . ' : motif dans votre espace.', 'prestations/' . $prestation->id);
         return back()->with('success', __('mxconnect.prestation.rejected'));
     }
 

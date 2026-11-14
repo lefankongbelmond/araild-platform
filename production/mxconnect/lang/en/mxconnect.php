@@ -627,6 +627,7 @@ return [
         'ch_in_person' => 'In person',
         'ch_written' => 'Written',
         'ch_other' => 'Other',
+        'ch_online' => 'Online (member portal)',
     ],
 
 

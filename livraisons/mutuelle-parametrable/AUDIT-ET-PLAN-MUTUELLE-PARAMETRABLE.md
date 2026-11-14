@@ -127,3 +127,12 @@ Chaque livraison suit le même circuit :
 - Pharmacie : ordonnances, délivrances, liste positive, double facturation.
 - Rôle de médecin-conseil.
 - Scénarios 5 et 11 couverts par des tests Pest.
+
+**L4 livrée le 20/11/2026 (VERSION 2026.11.20).**
+- Portail adhérent dans le compte MX-CONNECT (`/compte/mon-adhesion`, aussi dans l'application Android).
+- Activation par code au guichet.
+- Demandes de modification validées par la mutuelle.
+- Réclamations en ligne.
+- Notifications sans donnée médicale.
+- Scénarios 1 et 9 couverts par des tests Pest.
+- Guide de l'adhérent : `GUIDE-ADHERENT.md`.

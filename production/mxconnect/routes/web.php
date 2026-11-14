@@ -315,6 +315,30 @@ Route::middleware(['central.only', \App\Http\Middleware\SocialActiveMember::clas
         // Livraison 2 : adhésion en ligne, messagerie, notifications
         Route::get('mutuelles/{slug}/adhesion', [Social\AdhesionController::class, 'create'])->name('adhesion.create');
         Route::post('mutuelles/{slug}/adhesion', [Social\AdhesionController::class, 'store'])->name('adhesion.store')->middleware('throttle:social-publish');
+        // Portail adhérent (mission « Mutuelle paramétrable », L4, 2026-11-20) : mon adhésion dans chaque mutuelle reliée.
+        Route::prefix('compte/mon-adhesion')->name('member.')->controller(Social\MemberPortalController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('activer', 'activate')->name('activate')->middleware('throttle:member-activation');
+            Route::prefix('{mutual}')->where(['mutual' => '[a-z0-9-]+'])->group(function () {
+                Route::get('/', 'dashboard')->name('dashboard');
+                Route::get('profil', 'profile')->name('profile');
+                Route::post('coordonnees', 'contact')->name('contact')->middleware('throttle:social-publish');
+                Route::get('attestation', 'attestation')->name('attestation');
+                Route::get('carte', 'card')->name('card');
+                Route::get('beneficiaires', 'dependents')->name('dependents');
+                Route::post('beneficiaires', 'dependentRequest')->name('dependents.request')->middleware('throttle:social-publish');
+                Route::get('garanties', 'guarantees')->name('guarantees');
+                Route::get('prestataires', 'providers')->name('providers');
+                Route::get('prestations', 'prestations')->name('prestations');
+                Route::get('prestations/{prestation}', 'prestation')->name('prestation')->whereNumber('prestation');
+                Route::get('cotisations', 'contributions')->name('contributions');
+                Route::get('recus/{payment}', 'receipt')->name('receipt')->whereNumber('payment');
+                Route::get('reclamations', 'complaints')->name('complaints');
+                Route::post('reclamations', 'complaintStore')->name('complaints.store')->middleware('throttle:social-publish');
+                Route::get('reclamations/{complaint}', 'complaint')->name('complaint')->whereNumber('complaint');
+                Route::post('reclamations/{complaint}/message', 'complaintReply')->name('complaint.reply')->whereNumber('complaint')->middleware('throttle:social-comment');
+            });
+        });
         Route::get('compte/adhesions', [Social\AdhesionController::class, 'index'])->name('adhesions');
         Route::get('compte/adhesions/{adhesion}', [Social\AdhesionController::class, 'show'])->name('adhesion');
         Route::post('compte/adhesions/{adhesion}/retirer', [Social\AdhesionController::class, 'withdraw'])->name('adhesion.withdraw');

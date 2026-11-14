@@ -63,6 +63,7 @@ class TenantNav
                 'members.index'       => ['mxconnect.member.plural', 'users'],
                 'cards.index'         => ['Cartes de membre', 'card'],
                 'member-notifications.index' => ['Notifications aux membres', 'send'],
+                'member-requests.index' => ['Demandes des adhérents', 'inbox'],
                 'subscriptions.index' => ['mxconnect.subscription.plural', 'file'],
                 'claims.index'        => ['mxconnect.claim.plural', 'clipboard'],
                 'preauth.index'       => ['Accords préalables', 'shield'],

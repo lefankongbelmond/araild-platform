@@ -50,6 +50,8 @@ class TenantAccess
             'members.dependents.*'    => [$A, $E],
             'members.import*'         => [$A, $E],
             'members.card'            => [$A, $E, $C],
+            'members.portal.*'        => [$A, $E],   // portail adhérent : code d'activation, retrait (2026-11-20)
+            'member-requests.*'       => [$A, $E],   // demandes de modification faites depuis le portail
             'cards.index'             => [$A, $E, $C],
             'cards.batch'             => [$A, $E],
             'cards.printed'           => [$A, $E],
@@ -142,6 +144,7 @@ class TenantAccess
             'complaints.show'         => [$A, $E, $C, $B, $M],
             'complaints.store'        => [$A, $E, $C, $M],
             'complaints.status'       => [$A, $C],
+            'complaints.reply'        => [$A, $E, $C, $M],
 
             // --- Réseau social ---
             'social-presence.*'       => [$A, $M],
@@ -195,7 +198,7 @@ class TenantAccess
 
     /** Résumé lisible de la matrice (page « Rôles et droits ») : rubrique => [route => action]. */
     public const SUMMARY = [
-        'Adhérents' => ['members.index' => 'Consulter', 'members.store' => 'Inscrire, modifier, suspendre', 'cards.index' => 'Cartes de membre'],
+        'Adhérents' => ['member-requests.index' => 'Demandes des adhérents (portail)', 'members.portal.code' => 'Codes d’activation du portail adhérent', 'members.index' => 'Consulter', 'members.store' => 'Inscrire, modifier, suspendre', 'cards.index' => 'Cartes de membre'],
         'Souscriptions' => ['subscriptions.index' => 'Consulter', 'subscriptions.store' => 'Saisir', 'subscriptions.validate' => 'Valider'],
         'Recours et prestations (santé)' => ['claims.index' => 'Consulter', 'capacite.donnees-sante' => 'Voir le détail médical', 'claims.prestations.store' => 'Saisir', 'claims.prestations.validate' => 'Valider ou rejeter', 'alerts.index' => 'Alertes anti-fraude'],
         'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],

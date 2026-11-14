@@ -64,6 +64,8 @@ class AppServiceProvider extends ServiceProvider
         // Portail prestataire (2026-11-17) : compteurs PROPRES à la recherche de bénéficiaires (une limite
         // « throttle:n,1 » anonyme partage son compteur avec toutes les autres routes limitées).
         RateLimiter::for('portal-search', fn (Request $r) => Limit::perMinute(10)->by('ps|' . (function_exists('tenant') ? tenant('id') : '') . '|' . ($r->user()?->id ?? $r->ip())));
+        // Portail adhérent (2026-11-20) : activation par code + date de naissance, essais limités par compte.
+        RateLimiter::for('member-activation', fn (Request $r) => Limit::perMinutes(10, 5)->by('ma|' . ($r->user('member')?->id ?? $r->ip())));
         RateLimiter::for('provider-lookup', fn (Request $r) => Limit::perMinute(20)->by('pl|' . ($r->user('provider')?->id ?? $r->ip())));
         RateLimiter::for('social-report', fn (Request $r) => Limit::perHour(30)->by($who($r)));
         RateLimiter::for('social-contact', fn (Request $r) => Limit::perMinutes(10, 5)->by($who($r)));

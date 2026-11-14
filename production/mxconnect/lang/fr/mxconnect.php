@@ -627,6 +627,7 @@ return [
         'ch_in_person' => 'En personne',
         'ch_written' => 'Écrit',
         'ch_other' => 'Autre',
+        'ch_online' => 'En ligne (portail adhérent)',
     ],
 
 

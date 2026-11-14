@@ -264,6 +264,14 @@ Route::middleware([
         Route::post('formules/{guarantee}/carences', [$fc, 'storeWaiting'])->name('formulas.waiting.store')->whereNumber('guarantee');
         Route::post('formules/{guarantee}/carences/{waiting}/retirer', [$fc, 'destroyWaiting'])->name('formulas.waiting.destroy')->whereNumber(['guarantee', 'waiting']);
 
+        // Portail adhérent (2026-11-20) : code d'activation, retrait de l'accès, demandes des adhérents.
+        $mp = \App\Http\Controllers\Tenant\MemberPortalAdminController::class;
+        Route::post('adherents/{member}/portail/code', [$mp, 'code'])->name('members.portal.code')->whereNumber('member');
+        Route::post('adherents/{member}/portail/retirer', [$mp, 'revoke'])->name('members.portal.revoke')->whereNumber('member');
+        Route::get('demandes-adherents', [$mp, 'index'])->name('member-requests.index');
+        Route::post('demandes-adherents/{memberRequest}', [$mp, 'decide'])->name('member-requests.decide')->whereNumber('memberRequest');
+        Route::post('reclamations/{complaint}/message', [\App\Http\Controllers\Tenant\ComplaintController::class, 'reply'])->name('complaints.reply')->whereNumber('complaint');
+
         // Accords préalables (2026-11-19).
         $pa = \App\Http\Controllers\Tenant\PreauthorizationController::class;
         Route::get('accords-prealables', [$pa, 'index'])->name('preauth.index');

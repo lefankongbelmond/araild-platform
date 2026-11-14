@@ -312,3 +312,62 @@ Une prestation rejetée libère ses quantités.
 Migration TENANT `2026_11_19_000100_preauth_pharmacy` (additive).
 
 Tests : `tests/Feature/AccordsPrealablesPharmacieTest.php` (6 tests), dont les scénarios 5 et 11.
+
+
+---
+
+# Livraison L4 (VERSION 2026.11.20) : portail adhérent
+
+## 14. Architecture
+
+- **Où.** Le portail est dans le compte CENTRAL MX-CONNECT (garde `member`, `PublicAccount`), sous `/compte/mon-adhesion`, et donc aussi dans l'application Android (TWA). C'est la décision du fondateur.
+- **Lien compte ↔ adhérent.** Table centrale `member_links`, existante, unique par (compte, mutuelle). Un adhérent n'est relié qu'à UN compte : c'est contrôlé à l'activation.
+- **Accès** (`App\Services\Social\MemberPortalService::resolve`) : la mutuelle est désignée par son slug, et le lien doit exister pour ce compte. Sinon la réponse est **404**. C'est le scénario 9 : aucune lecture des données d'une autre mutuelle, ni d'un autre adhérent.
+- **Lecture** : `$mutual->run()` puis `App\Services\Tenant\MemberSelfService`. Toutes les requêtes sont filtrées sur `member_id`, ou sur les recours de l'adhérent. La page est rendue DANS la mutuelle.
+- **Activation** (table CENTRALE `member_activation_codes`, migration `2026_11_20_000100`) :
+  - le personnel (`members.portal.code`, A/E) génère un code de 12 caractères, sans caractères ambigus, valable 30 jours ;
+  - seule l'empreinte sha256 est stockée, et un seul code est actif par adhérent ;
+  - l'adhérent saisit le code et la date de naissance de l'adhérent principal (limiteur `member-activation` : 5 essais / 10 min) ;
+  - un refus donne un message unique, sans indice.
+
+  Le personnel peut aussi retirer l'accès (`members.portal.revoke`).
+- **Aucun paiement en ligne** : l'agrégateur n'est pas choisi. Les reçus sont ceux enregistrés par la mutuelle.
+
+## 15. Fonctions
+
+| Mission | Implémentation |
+|---|---|
+| 2.1 Tableau de bord | `dashboard()` : statut (moteur `membership`), formule, dates, cotisations (retard, prochaine échéance), bénéficiaires, plafonds annuels et mensuels (consommé, reste, barres), soins de l'année |
+| 2.2 Profil | Lecture ; coordonnées par demande (`member_change_requests`, kind `contact`) ; photo = avatar du compte ; attestation imprimable ; carte ; historique des demandes. La pièce d'identité, chiffrée, n'est jamais affichée |
+| 2.3 Bénéficiaires | Liste (couvert / retiré, intégration, sortie, consommation de l'année) ; ajout, modification, retrait par demande. Rien n'est appliqué avant validation (`member-requests.*`, A/E). L'ajout crée l'ayant droit avec `joined_on` = jour de la validation. « Enfant adopté » est enregistré « enfant » |
+| 2.4 Carte | Carte existante (`tenant.card.partials.card`) ; QR = jeton signé `DigitalCardService`, URL de vérification sur le SOUS-DOMAINE de la mutuelle (`$verifyUrl`). PDF = impression du navigateur |
+| 2.5 Garanties | `guarantees()` : formule paramétrée (taux, ticket modérateur, délai d'attente et sa fin, accord préalable, tarif, conditions, plafonds, exclusions, réseau) ou formule classique |
+| 2.6 Prestataires | Conventions actives de la mutuelle, limitées au réseau de la formule ; filtres type, ville, nom |
+| 2.7 Prestations | Liste et détail (montants, ticket modérateur, non couvert, accord, médicaments délivrés, motif de rejet) |
+| 2.8 Cotisations | Échéances, payé, impayés, paiements (annulés signalés), reçu par encaissement (`collection_ref`) |
+| 2.9 Réclamations | `complaints.channel = online`, `category`, `public_account_id` ; échanges `complaint_messages` ; réponse au back-office (`complaints.reply`) |
+| 2.10 Notifications | `App\Support\MemberNotifier` (dans la mutuelle → `NotificationService`, application + e-mail). Cas couverts : activation, paiement enregistré, prestation validée ou rejetée, demande décidée, réponse ou changement d'état d'une réclamation. JAMAIS de donnée médicale. Point d'entrée unique pour brancher plus tard SMS et WhatsApp |
+
+## 16. Routes
+
+**Compte central** (`social.member.*`) :
+
+| Méthode | URL |
+|---|---|
+| GET | `/compte/mon-adhesion` |
+| POST | `/compte/mon-adhesion/activer` |
+| GET | `/compte/mon-adhesion/{mutuelle}`, puis `/profil`, `/attestation`, `/carte`, `/beneficiaires`, `/garanties`, `/prestataires`, `/prestations`, `/prestations/{id}`, `/cotisations`, `/recus/{id}`, `/reclamations`, `/reclamations/{id}` |
+| POST | `/coordonnees`, `/beneficiaires`, `/reclamations`, `/reclamations/{id}/message` |
+
+**Mutuelle** :
+
+| Route | URL | Droit |
+|---|---|---|
+| `members.portal.code`, `members.portal.revoke` | — | A, E |
+| `member-requests.index` | `/demandes-adherents` | A, E |
+| `member-requests.decide` | — | A, E |
+| `complaints.reply` | — | A, E, C, M |
+
+Migration TENANT `2026_11_20_000100_member_portal` : `member_change_requests`, `complaint_messages`, et `complaints` (canal `online`, `category`, `public_account_id`).
+
+Tests : `tests/Feature/PortailAdherentTest.php` (4 tests, scénarios 1 et 9).

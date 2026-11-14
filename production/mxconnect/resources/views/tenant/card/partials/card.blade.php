@@ -18,7 +18,7 @@
         <div class="mt-[1.2mm] text-[2.1mm] leading-snug text-white/75">{{ $sub->guaranteeVersion?->guarantee?->name }}<br>Valable depuis le {{ $sub->effective_date?->format('d/m/Y') }}</div>
       </div>
       <div class="shrink-0 rounded-[1.6mm] bg-white p-[1mm]" style="width:19mm;height:19mm">
-        {!! \F9WebLtd\QrCode\Facades\QrCode::size(64)->margin(0)->generate(route('members.card.verify', ['t' => $token])) !!}
+        {!! \F9WebLtd\QrCode\Facades\QrCode::size(64)->margin(0)->generate($verifyUrl ?? route('members.card.verify', ['t' => $token])) !!}
       </div>
     </div>
   </div>

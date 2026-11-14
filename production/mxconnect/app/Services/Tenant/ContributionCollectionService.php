@@ -114,6 +114,9 @@ class ContributionCollectionService
             $receipt = $this->receipt($member, $ref, $payments, $amountMinor, $mode, $reference, $day);
             ContributionPayment::whereIn('id', $payments->pluck('id'))->update(['receipt_path' => $receipt]);
 
+            \App\Support\MemberNotifier::notify($member->id, 'Paiement de cotisation enregistré',
+                'Reçu ' . $ref . ' : ' . $this->currency()->format($amountMinor) . '.', 'cotisations');
+
             return ['ref' => $ref, 'receipt' => $receipt, 'payments' => $payments, 'amount' => $amountMinor];
         });
     }

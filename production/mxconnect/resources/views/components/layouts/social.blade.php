@@ -16,6 +16,7 @@
   $mine = [
     ['pages', 'social.pages.mine', 'flag-page', 'Mes pages'],
     ['demandes', 'social.requests', 'briefcase', 'Mes candidatures'],
+    ['mon-adhesion', 'social.member.index', 'heart', 'Mon adhésion'],
     ['adhesions', 'social.adhesions', 'file', 'Mes adhésions'],
     ['abonnements', 'social.following', 'star', 'Mes abonnements'],
     ['connexions', 'social.connections', 'users', 'Mes connexions'],
