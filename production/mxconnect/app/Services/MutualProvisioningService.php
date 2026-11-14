@@ -273,6 +273,17 @@ class MutualProvisioningService
         $this->log($mutual, 'reactivated', $networkUserId);
     }
 
+    /**
+     * Marquer (ou non) la mutuelle comme MUTUELLE TEST (2026-11-18) : environnement d'essai, formules
+     * d'exemple autorisées, données signalées « test ». Tracé dans l'historique avec son motif.
+     */
+    public function setTestFlag(Mutual $mutual, bool $on, int $networkUserId, string $note): void
+    {
+        $mutual->is_test = $on;
+        $mutual->save();
+        $this->log($mutual, $on ? 'test_on' : 'test_off', $networkUserId, $note);
+    }
+
     /** Historique des changements d'état (dans les données de la mutuelle, 30 derniers). */
     private function log(Mutual $mutual, string $action, int $by, ?string $note = null): void
     {

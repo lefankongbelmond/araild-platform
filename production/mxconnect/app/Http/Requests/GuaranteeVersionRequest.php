@@ -14,7 +14,8 @@ class GuaranteeVersionRequest extends FormRequest
     {
         return [
             'base_contribution' => ['required', 'numeric', 'min:0'],
-            'periodicity'       => ['required', Rule::in(['monthly', 'quarterly', 'annual'])],
+            'periodicity'       => ['required', Rule::in(['monthly', 'quarterly', 'semiannual', 'annual', 'custom'])],
+            'period_months'     => ['exclude_unless:periodicity,custom', 'required', 'integer', 'between:1,60'],
             'coverage_rate'     => ['required', 'numeric', 'between:0,100'],
             'copay_rate'        => ['required', 'numeric', 'between:0,100'],
             'membership_fee'    => ['nullable', 'numeric', 'min:0'],

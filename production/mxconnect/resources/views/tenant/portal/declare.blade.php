@@ -28,7 +28,11 @@
       <label class="block text-sm font-medium">Date des soins *<input type="date" name="care_date" required max="{{ now()->toDateString() }}" min="{{ now()->subDays(30)->toDateString() }}" value="{{ old('care_date', now()->toDateString()) }}" class="{{ $f }}"></label>
       <label class="block text-sm font-medium">Montant total des soins ({{ $currency->code }}) *<input name="total" required inputmode="decimal" maxlength="20" value="{{ old('total') }}" class="{{ $f }}" placeholder="Ex. 15 000"></label>
     </div>
-    <p class="rounded-md bg-mist px-3 py-2 text-xs text-ink/60">La part de la mutuelle et la part à régler par le patient sont calculées selon la garantie de l’adhérent et affichées après l’enregistrement. La mutuelle valide ensuite la prise en charge ; vous pourrez alors en demander le paiement dans « Mes factures ». N’indiquez aucun diagnostic.</p>
+    <div class="space-y-2.5">
+      <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="emergency" value="1" @checked(old('emergency')) class="mt-1"> Urgence : soins de stabilisation du patient</label>
+      <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="accident" value="1" @checked(old('accident')) class="mt-1"> Accident</label>
+    </div>
+    <p class="rounded-md bg-mist px-3 py-2 text-xs text-ink/60">Une urgence n’est jamais retardée faute de réponse de la mutuelle : soignez d’abord, déclarez ensuite. La part de la mutuelle et la part à régler par le patient sont calculées selon la garantie de l’adhérent et affichées après l’enregistrement. La mutuelle valide ensuite la prise en charge ; vous pourrez alors en demander le paiement dans « Mes factures ». N’indiquez aucun diagnostic.</p>
     @if (session('duplicate_of'))
       <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_distinct" value="1" required class="mt-1"> Je confirme qu’il s’agit d’un acte distinct, réellement réalisé, et non d’une seconde saisie de la prise en charge n° {{ session('duplicate_of') }}.</label>
     @endif

@@ -20,6 +20,7 @@ class DependentRequest extends FormRequest
             'birth_date'   => ['required', 'date', 'before_or_equal:today'],
             'sex'          => ['required', Rule::in(['M', 'F'])],
             'relationship' => ['required', Rule::in(['spouse', 'child', 'ascendant', 'other'])],
+            'is_student'   => ['nullable', 'boolean'],
         ];
     }
 }

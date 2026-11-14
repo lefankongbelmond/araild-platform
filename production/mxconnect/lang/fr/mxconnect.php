@@ -235,6 +235,13 @@ return [
         'provider_not_authorised' => 'Prestataire non conventionné',
         'unknown_member' => 'Aucun adhérent avec ce code ou cette carte',
         'dependent_removed' => 'Ayant droit retiré de l’adhésion',
+        'subscription_pending' => 'Adhésion saisie ou validée mais pas encore en vigueur (droits non activés)',
+        'dependent_not_active_yet' => 'Ayant droit pas encore intégré à cette date',
+        'no_rule' => 'Aucune garantie de la formule ne couvre cette catégorie de soins pour ce bénéficiaire',
+        'waiting_period' => 'Délai de carence en cours pour cette garantie',
+        'ceiling_reached' => 'Plafond épuisé pour cette garantie',
+        'count_reached' => 'Nombre maximal d’actes atteint pour cette garantie',
+        'authorization_required' => 'Autorisation administrative préalable requise',
     ],
 
     'contribution' => [

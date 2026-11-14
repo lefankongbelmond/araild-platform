@@ -25,6 +25,8 @@ class PrestationController extends Controller
             'provider_id' => (int) $data['provider_id'],
             'care_date'   => $data['care_date'],
             'total_minor' => $this->currency()->toMinor((float) $data['total']),
+            'emergency'   => $request->boolean('emergency'),
+            'accident'    => $request->boolean('accident'),
         ], $request->user());
         if (! $result['ok']) {
             return back()->withInput()->with('rights_block', $result['reasons']);
@@ -68,6 +70,7 @@ class PrestationController extends Controller
         ]);
         $prestation->update(['status' => 'rejected'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
             + (Prestation::hasDecisionColumns() ? ['decision_note' => trim($data['note']), 'decided_at' => now()] : []));
+        $this->capture->releaseException($prestation);
         return back()->with('success', __('mxconnect.prestation.rejected'));
     }
 

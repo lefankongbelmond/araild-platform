@@ -51,6 +51,11 @@ class GuaranteeVersioningService
             // Ce qui n'est pas modifié est repris de la version précédente (2026-11-01) :
             // réseau de soins, exclusions et plafonds ne se perdent plus à chaque nouvelle version.
             $params += ['provider_network' => $current?->provider_network, 'exclusions' => $current?->exclusions];
+            // Catalogue (2026-11-18) : paramètres de version repris, auteur de la nouvelle version.
+            if ($current && \Illuminate\Support\Facades\Schema::hasColumn('guarantee_versions', 'period_months')) {
+                $params += collect($current->only(['period_months', 'senior_age', 'renewal_waiver']))->all();
+                $params += ['created_by' => auth('web')->id()];
+            }
 
             $version = $guarantee->versions()->create($params + [
                 'version_no' => ($current->version_no ?? 0) + 1,
@@ -61,6 +66,7 @@ class GuaranteeVersioningService
                 foreach (\App\Models\Tenant\Ceiling::where('guarantee_version_id', $current->id)->get() as $ceiling) {
                     $ceiling->replicate()->fill(['guarantee_version_id' => $version->id])->save();
                 }
+                $this->copyCatalog($current, $version);
             }
 
             return $version;
@@ -120,6 +126,42 @@ class GuaranteeVersioningService
 
             return $version;
         });
+    }
+
+    /**
+     * Garanties, plafonds et carences recopiés dans la nouvelle version (2026-11-18). Les garanties
+     * gardent leur rule_key : les consommations de l'année restent comptées d'une version à l'autre.
+     */
+    public function copyCatalog(GuaranteeVersion $from, GuaranteeVersion $to): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('coverage_rules')) {
+            return;
+        }
+        foreach (\App\Models\Tenant\CoverageRule::where('guarantee_version_id', $from->id)->get() as $r) {
+            $r->replicate()->fill(['guarantee_version_id' => $to->id])->save();
+        }
+        foreach (\App\Models\Tenant\CoverageLimit::where('guarantee_version_id', $from->id)->get() as $l) {
+            $l->replicate()->fill(['guarantee_version_id' => $to->id])->save();
+        }
+        foreach (\App\Models\Tenant\WaitingPeriod::where('guarantee_version_id', $from->id)->get() as $w) {
+            $w->replicate()->fill(['guarantee_version_id' => $to->id])->save();
+        }
+    }
+
+    /**
+     * Version à modifier pour le catalogue : la version en cours si elle n'a encore servi à aucune
+     * prestation ; sinon une NOUVELLE version datée (passé intact, aucune rétroactivité). Une version
+     * future déjà ouverte (pas encore utilisée) est modifiée directement.
+     */
+    public function editableForCatalog(Guarantee $guarantee, ?string $effectiveFrom, ?string $note = null): GuaranteeVersion
+    {
+        $current = $guarantee->versions()->whereNull('valid_to')->latest('version_no')->firstOrFail();
+        if (! $current->locked) {
+            return $current;
+        }
+        $base = collect($current->only(['base_contribution_minor', 'periodicity', 'coverage_rate', 'copay_rate', 'membership_fee_minor', 'observation_days']))->all();
+
+        return $this->newVersion($guarantee, $base + ['change_note' => $note], $effectiveFrom);
     }
 
     /** Guard: a locked version (already used by a claim) is immutable. */

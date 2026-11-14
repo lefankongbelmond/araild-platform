@@ -12,4 +12,6 @@ class ActType extends Model implements Auditable
     use SoftDeletes, AuditableTrait;
 
     protected $guarded = [];
+
+    public function serviceCategory() { return $this->belongsTo(ServiceCategory::class); }
 }

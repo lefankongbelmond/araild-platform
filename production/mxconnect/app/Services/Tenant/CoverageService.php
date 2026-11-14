@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CoverageService
 {
-    public function __construct(private ClaimAssessmentService $assessment, private ClaimCaptureService $capture) {}
+    public function __construct(private ClaimAssessmentService $assessment, private ClaimCaptureService $capture, private CoverageEngine $engine) {}
 
     public function situation(Member $member, ?Dependent $dependent, int $providerId): array
     {
@@ -55,14 +55,21 @@ class CoverageService
             }
         }
 
+        // Formule paramétrée (2026-11-18) : garanties détaillées, carences et plafonds du moteur.
+        $catalog = $version && $version->hasCatalog() ? $this->catalogSituation($version, $member, $dependent, $subscription, $today) : null;
+        if ($catalog) {
+            $ceilings = $catalog['limits'];
+        }
+
         return [
             'version' => $version,
+            'catalog' => $catalog,
             'guarantee' => $version?->guarantee?->name,
             'coverage_rate' => $version?->coverage_rate,
             'copay_rate' => $version?->copay_rate,
             'subscription' => $subscription,
             'pending_subscription' => $pending,
-            'observation_ends_on' => $subscription?->observation_ends_on,
+            'observation_ends_on' => $catalog ? null : $subscription?->observation_ends_on,
             'version_valid_to' => $version?->valid_to,
             'overdue_count' => (clone $overdue)->count(),
             'overdue_since' => (clone $overdue)->min('due_date'),
@@ -98,8 +105,11 @@ class CoverageService
      * Estimation AVANT soins (rien n'est enregistré) : part mutuelle, part patient, part non couverte
      * (acte exclu ou au-delà du plafond), plafond restant, comparaison au tarif conventionnel.
      */
-    public function estimate(GuaranteeVersion $version, Member $member, int $actTypeId, int $totalMinor, string $date): array
+    public function estimate(GuaranteeVersion $version, Member $member, int $actTypeId, int $totalMinor, string $date, ?Dependent $dependent = null, ?int $providerId = null, array $opt = []): array
     {
+        if ($version->hasCatalog()) {
+            return $this->engineEstimate($member, $dependent, $actTypeId, $totalMinor, $date, $providerId, $opt);
+        }
         $act = ActType::find($actTypeId);
         $tariff = Schema::hasColumn('act_types', 'tariff_minor') ? $act?->tariff_minor : null;
         $excluded = is_array($version->exclusions) && in_array($actTypeId, $version->exclusions, true);
@@ -125,5 +135,66 @@ class CoverageService
             'tariff' => $tariff, 'above_tariff' => $tariff !== null && $tariff > 0 && $totalMinor > $tariff,
             'rate' => $version->coverage_rate, 'copay_rate' => $version->copay_rate,
         ];
+    }
+
+    /** Estimation par le moteur (formule paramétrée) : mêmes clés que l'estimation classique, plus le statut et les plafonds. */
+    private function engineEstimate(Member $member, ?Dependent $dependent, int $actTypeId, int $totalMinor, string $date, ?int $providerId, array $opt): array
+    {
+        $act = ActType::find($actTypeId);
+        $e = $this->engine->evaluate($member, $dependent, $actTypeId, $totalMinor, $date, $providerId, $opt);
+        $tariff = $act?->tariff_minor;
+        $amountLimit = collect($e['limits'])->first(fn ($l) => $l['remaining_before'] !== null);
+
+        return [
+            'engine' => true, 'status' => $e['status'], 'label' => $e['label'], 'reasons' => $e['reasons'], 'ok' => $e['ok'],
+            'act' => $act, 'total' => $totalMinor, 'excluded' => $e['status'] === 'not_covered',
+            'base' => $e['mutual'] + $e['over_limit'], 'mutual' => $e['mutual'], 'patient' => $e['patient'],
+            'copay' => $e['copay'], 'over_ceiling' => $e['over_limit'], 'non_covered' => $e['non_covered'],
+            'eligible' => $e['eligible'], 'ceiling' => null,
+            'remaining_before' => $amountLimit['remaining_before'] ?? null, 'remaining_after' => $amountLimit['remaining_after'] ?? null,
+            'limits' => $e['limits'], 'waiting_until' => $e['waiting_until'] ?? null,
+            'guarantee_label' => $e['rule']?->label,
+            'tariff' => $tariff, 'above_tariff' => $tariff !== null && $tariff > 0 && $totalMinor > $tariff,
+            'rate' => $e['rate'], 'copay_rate' => $e['copay_rate'], 'exception' => (bool) $e['exception'],
+        ];
+    }
+
+    /** Garanties, carences en cours et plafonds (avec le reste) d'une formule paramétrée, pour CE bénéficiaire. */
+    public function catalogSituation(GuaranteeVersion $version, Member $member, ?Dependent $dependent, $subscription, string $today): array
+    {
+        $cats = $this->engine->beneficiaryCategories($member, $dependent, $subscription, $version, $today);
+        $start = $subscription ? $this->engine->coverageStart($member, $dependent, $subscription, $version) : null;
+        $rules = [];
+        $seen = [];
+        $active = $version->rules()->with('category')->where('active', true)->get();
+        foreach ($active->pluck('service_category_id')->unique() as $catId) {
+            // La garantie qui s'appliquerait vraiment à CE bénéficiaire pour cette catégorie de soins.
+            $r = $this->engine->ruleFor($version, $catId ? (new ActType)->forceFill(['service_category_id' => $catId]) : null, $cats);
+            if (! $r || isset($seen[$r->id])) {
+                continue;
+            }
+            $seen[$r->id] = true;
+            $days = $this->engine->waitingDays($version, $r, $cats);
+            $until = $start && $days > 0 ? $start->copy()->addDays($days) : null;
+            $rules[] = [
+                'label' => $r->label, 'category' => $r->category?->label ?? 'Toutes prestations',
+                'rate' => (float) $r->coverage_rate, 'copay_rate' => $r->copay_rate,
+                'waiting_until' => $until && $until->toDateString() > $today ? $until->toDateString() : null,
+                'emergency_exempt' => $r->emergency_exempt, 'tariff_cap' => $r->tariff_cap,
+            ];
+        }
+        $limits = [];
+        foreach ($version->limits()->where('active', true)->orderBy('id')->get() as $l) {
+            $used = $l->scope === 'act' ? [0, 0] : $this->engine->consumed($l, $member, $dependent, $today, $version);
+            $limits[] = [
+                'label' => $l->label ?: 'Plafond',
+                'period' => (\App\Models\Tenant\CoverageLimit::SCOPES[$l->scope] ?? $l->scope) . ' · ' . (\App\Models\Tenant\CoverageLimit::HOLDERS[$l->holder] ?? $l->holder),
+                'amount' => $l->amount_minor, 'max_count' => $l->max_count,
+                'remaining' => $l->scope === 'act' || $l->amount_minor === null ? null : max(0, $l->amount_minor - $used[0]),
+                'remaining_count' => $l->scope === 'act' || $l->max_count === null ? null : max(0, $l->max_count - $used[1]),
+            ];
+        }
+
+        return ['rules' => $rules, 'limits' => $limits, 'categories' => $cats];
     }
 }

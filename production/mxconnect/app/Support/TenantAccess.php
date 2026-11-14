@@ -161,6 +161,20 @@ class TenantAccess
             'providers.*'             => [$A],
             'guarantees.network'      => [$A],            // réseau de soins d'une garantie (2026-11-01)
             'guarantees.terms'        => [$A],            // plafonds et exclusions (2026-11-03)
+            // Catalogue des formules (2026-11-18) : lecture et simulation pour le personnel qui en a
+            // besoin ; toute modification = administrateur (règle « formulas.* »).
+            'formulas.index'          => [$A, $E, $C, $B, $T],
+            'formulas.show'           => [$A, $E, $C, $B, $T],
+            'formulas.categories'     => [$A, $E, $C, $B, $T],
+            'formulas.simulate'       => [$A, $E, $C, $B, $T],
+            'formulas.*'              => [$A],
+            // Dérogations : demande par le gestionnaire des prestations, décision par le contrôleur
+            // (jamais par la personne qui a demandé : contrôlé dans le contrôleur).
+            'derogations.index'       => [$A, $C, $B],
+            'derogations.store'       => [$A, $B],
+            'derogations.approve'     => [$A, $C],
+            'derogations.reject'      => [$A, $C],
+            'derogations.revoke'      => [$A, $C],
             'team.*'                  => [$A],
             // (garanties, antennes, actes, médicaments, référentiels : écriture = administrateur, règle par défaut)
 
@@ -182,6 +196,7 @@ class TenantAccess
         'Rapports' => ['reports.index' => 'Rapports d’activité (imprimer, CSV)', 'accounting.balance' => 'États comptables : balance, grand livre, compte de résultat, bilan'],
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
+        'Formules et garanties' => ['formulas.index' => 'Catalogue des formules : consulter, simuler', 'formulas.rules.store' => 'Catalogue des formules : modifier (garanties, plafonds, carences)', 'derogations.index' => 'Dérogations : consulter', 'derogations.store' => 'Dérogations : demander', 'derogations.approve' => 'Dérogations : accorder ou refuser'],
         'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles'],
         'Portail prestataire' => ['portal.index' => 'Vérifier les droits, déclarer, suivre ses factures'],
     ];

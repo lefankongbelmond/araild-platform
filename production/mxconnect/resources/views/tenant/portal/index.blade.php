@@ -127,17 +127,29 @@
                 @if ($sit['paid_through'])<span class="block text-xs text-ink/50">Réglées jusqu’à l’échéance {{ $sit['paid_through']['label'] }} (due le {{ \Illuminate\Support\Carbon::parse($sit['paid_through']['due_date'])->format('d/m/Y') }})</span>@endif</dd></div>
               @if ($sit['observation_ends_on'])<div><dt class="text-ink/50">Fin de la période d’observation</dt><dd>{{ \Illuminate\Support\Carbon::parse($sit['observation_ends_on'])->format('d/m/Y') }}</dd></div>@endif
               @if ($sit['version'])
+                @unless ($sit['catalog'] ?? null)
                 <div><dt class="text-ink/50">Taux de couverture (part mutuelle)</dt><dd class="font-semibold">{{ $rate($sit['coverage_rate']) }}</dd></div>
                 <div><dt class="text-ink/50">Ticket modérateur (part patient)</dt><dd>{{ $rate($sit['copay_rate']) }}</dd></div>
+                @endunless
                 <div><dt class="text-ink/50">Votre établissement</dt><dd>{{ $sit['in_network'] ? ($sit['network_open'] ? 'Accepté (réseau ouvert)' : 'Dans le réseau de la garantie') : 'Hors réseau de la garantie' }}</dd></div>
               @endif
             </dl>
+            @if ($sit['catalog'] ?? null)
+              <h3 class="mt-4 text-xs font-semibold uppercase tracking-wide text-ink/50">Garanties pour ce bénéficiaire</h3>
+              @if ($sit['catalog']['rules'])
+                <ul class="mt-2 space-y-1">
+                  @foreach ($sit['catalog']['rules'] as $g)
+                    <li class="flex flex-wrap justify-between gap-2"><span>{{ $g['label'] }} <span class="text-xs text-ink/50">· {{ $g['category'] }}</span></span><span class="tabular-nums"><b>{{ $rate($g['rate']) }}</b>@if ($g['waiting_until']) · <span class="text-amber-700">carence jusqu’au {{ \Illuminate\Support\Carbon::parse($g['waiting_until'])->format('d/m/Y') }}</span>@endif</span></li>
+                  @endforeach
+                </ul>
+              @else<p class="mt-1 text-ink/60">Aucune garantie ne s’applique à ce bénéficiaire.</p>@endif
+            @endif
             @if ($sit['version'])
               <h3 class="mt-4 text-xs font-semibold uppercase tracking-wide text-ink/50">Plafonds</h3>
               @if ($sit['ceilings'])
                 <ul class="mt-2 space-y-1">
                   @foreach ($sit['ceilings'] as $c)
-                    <li class="flex flex-wrap justify-between gap-2"><span>{{ $c['label'] }} — {{ $c['period'] }}</span><span class="tabular-nums">{{ $fmt($c['amount']) }}@if($c['remaining'] !== null) · <b class="{{ $c['remaining'] <= 0 ? 'text-clay' : 'text-pine' }}">reste {{ $fmt($c['remaining']) }}</b>@endif</span></li>
+                    <li class="flex flex-wrap justify-between gap-2"><span>{{ $c['label'] }} — {{ $c['period'] }}</span><span class="tabular-nums">@if ($c['amount'] !== null){{ $fmt($c['amount']) }}@endif @if (($c['max_count'] ?? null) !== null) {{ $c['max_count'] }} acte(s)@endif @if($c['remaining'] !== null) · <b class="{{ $c['remaining'] <= 0 ? 'text-clay' : 'text-pine' }}">reste {{ $fmt($c['remaining']) }}</b>@endif @if (($c['remaining_count'] ?? null) !== null) · <b class="{{ $c['remaining_count'] <= 0 ? 'text-clay' : 'text-pine' }}">{{ $c['remaining_count'] }} restant(s)</b>@endif</span></li>
                   @endforeach
                 </ul>
               @else<p class="mt-1 text-ink/60">Aucun plafond fixé par la garantie.</p>@endif
@@ -154,12 +166,26 @@
             <form method="POST" action="{{ route('portal.estimate', $result['check']->id) }}" class="mt-3 grid gap-3 sm:grid-cols-2 print:hidden">@csrf
               <label class="block text-sm font-medium">Acte prévu<select name="act_type_id" required class="mt-1 {{ $f }}"><option value="">—</option>@foreach ($acts as $a)<option value="{{ $a->id }}" @selected((int) old('act_type_id', $estimate['act']->id ?? 0) === $a->id)>{{ $a->label }}</option>@endforeach</select></label>
               <label class="block text-sm font-medium">Montant prévu ({{ $currency->code }})<input name="total" required inputmode="decimal" maxlength="20" value="{{ old('total') }}" class="mt-1 {{ $f }}" placeholder="Ex. 15 000"></label>
+              @if ($sit['catalog'] ?? null)
+                <div class="flex flex-wrap gap-x-4 gap-y-2 sm:col-span-2">
+                  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="emergency" value="1" @checked(old('emergency', request('emergency')))> Urgence</label>
+                  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accident" value="1" @checked(old('accident', request('accident')))> Accident</label>
+                </div>
+              @endif
               <div class="sm:col-span-2"><button class="rounded-md border border-pine px-4 py-2 text-sm font-semibold text-pine hover:bg-mist">Calculer</button></div>
             </form>
             @if ($estimate)
               <div class="mt-4 rounded-md bg-mist p-4" id="estimation">
                 <p class="text-xs font-semibold uppercase tracking-wide text-ink/55">Estimation — {{ $estimate['act']?->label }}</p>
-                @if ($estimate['excluded'])
+                @if (! empty($estimate['engine']))
+                  <p class="mt-2 font-bold {{ $estimate['ok'] ? 'text-pine' : 'text-clay' }}">{{ $estimate['label'] }}</p>
+                  @if ($estimate['guarantee_label'])<p class="text-xs text-ink/60">Garantie appliquée : {{ $estimate['guarantee_label'] }}</p>@endif
+                  @if (! $estimate['ok'])
+                    <ul class="mt-1 list-disc pl-5 text-xs text-ink/70">@foreach ($estimate['reasons'] as $r)<li>{{ __('mxconnect.rights.'.$r) }}</li>@endforeach</ul>
+                    @if ($estimate['waiting_until'])<p class="mt-1 text-xs text-ink/70">Fin du délai de carence : {{ \Illuminate\Support\Carbon::parse($estimate['waiting_until'])->format('d/m/Y') }}.</p>@endif
+                  @endif
+                  @if ($estimate['exception'])<p class="mt-1 text-xs text-ink/60">Une dérogation accordée par la mutuelle est appliquée.</p>@endif
+                @elseif ($estimate['excluded'])
                   <p class="mt-2 font-semibold text-clay">Acte non couvert par la garantie : la totalité est à la charge du patient.</p>
                 @endif
                 <dl class="mt-2 space-y-1">
@@ -170,7 +196,11 @@
                     <div class="flex justify-between gap-2 text-xs text-ink/60"><dt>dont part hors taux de couverture</dt><dd class="tabular-nums">{{ $fmt($estimate['copay']) }}</dd></div>
                   @endunless
                   <div class="flex justify-between gap-2 text-xs {{ $estimate['non_covered'] > 0 ? 'text-clay' : 'text-ink/60' }}"><dt>dont non couvert ({{ $estimate['excluded'] ? 'acte exclu' : 'au-delà du plafond' }})</dt><dd class="tabular-nums">{{ $fmt($estimate['non_covered']) }}</dd></div>
-                  @if ($estimate['remaining_before'] !== null)
+                  @if (! empty($estimate['engine']) && $estimate['limits'])
+                    @foreach ($estimate['limits'] as $l)
+                      <div class="flex justify-between gap-2 text-xs text-ink/60"><dt>{{ $l['label'] }} ({{ $l['scope'] }}, {{ $l['holder'] }})</dt><dd class="tabular-nums">@if ($l['remaining_before'] !== null){{ $fmt($l['remaining_before']) }} → {{ $fmt($l['remaining_after']) }}@endif @if ($l['remaining_count'] !== null) · {{ $l['remaining_count'] }} acte(s) restant(s)@endif</dd></div>
+                    @endforeach
+                  @elseif ($estimate['remaining_before'] !== null)
                     <div class="flex justify-between gap-2 text-xs text-ink/60"><dt>Plafond restant avant ces soins @if($estimate['remaining_after'] !== null) → après @endif</dt><dd class="tabular-nums">{{ $fmt($estimate['remaining_before']) }}@if($estimate['remaining_after'] !== null) → {{ $fmt($estimate['remaining_after']) }}@endif</dd></div>
                   @endif
                   <div class="flex justify-between gap-2 text-xs text-ink/60"><dt>Tarif conventionnel de l’acte</dt><dd class="tabular-nums">{{ $estimate['tariff'] ? $fmt($estimate['tariff']) : 'non défini par la mutuelle' }}</dd></div>

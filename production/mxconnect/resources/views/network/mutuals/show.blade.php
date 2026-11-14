@@ -1,7 +1,7 @@
 @php
   $tones = ['pending' => 'bg-amber-50 text-amber-800 ring-amber-200', 'approved' => 'bg-leaf-50 text-leaf-700 ring-leaf-100', 'suspended' => 'bg-clay/10 text-clay ring-clay/20'];
   $labels = ['pending' => 'En attente d’agrément', 'approved' => 'Agréée', 'suspended' => 'Suspendue'];
-  $actions = ['approved' => 'Agréée', 'suspended' => 'Suspendue', 'reactivated' => 'Réactivée'];
+  $actions = ['approved' => 'Agréée', 'suspended' => 'Suspendue', 'reactivated' => 'Réactivée', 'test_on' => 'Marquée MUTUELLE TEST', 'test_off' => 'Marquage « test » retiré'];
   $domain = $mutual->domains->first()?->domain;
   $f = 'mt-1 w-full rounded-xl border border-ink/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-pine focus:ring-4 focus:ring-pine/10';
 @endphp
@@ -95,6 +95,17 @@
           <p class="mt-1 text-sm text-ink/60">Ferme immédiatement son back-office, le portail de ses prestataires et l’espace de ses membres. Les données sont conservées ; la réactivation rouvre tout.</p>
           <label class="mt-3 block text-sm font-medium">Motif *<textarea name="reason" required minlength="5" maxlength="500" rows="3" class="{{ $f }}" placeholder="Ex. cotisation SaaS impayée depuis 3 mois">{{ old('reason') }}</textarea></label>
           <button class="mt-3 h-11 w-full rounded-xl bg-clay px-4 text-sm font-bold text-white">Suspendre</button>
+        </form>
+      @endcan
+
+      @can('manageAccess', $mutual)
+        @php $isTest = (bool) ($mutual->is_test ?? false); @endphp
+        <form method="POST" action="{{ route('network.mutuals.test', $mutual) }}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink/[.06] sm:p-6">@csrf
+          <h2 class="text-lg font-bold text-navy">Mutuelle de test</h2>
+          <p class="mt-1 text-sm text-ink/60">@if ($isTest)<b>Cette mutuelle est la MUTUELLE TEST.</b> Ses données servent aux essais (formules d’exemple autorisées).@else Une mutuelle de test sert aux essais : formules d’exemple autorisées, données signalées « test ». Ne marquez jamais une mutuelle qui a de vrais adhérents.@endif</p>
+          <input type="hidden" name="is_test" value="{{ $isTest ? 0 : 1 }}">
+          <label class="mt-3 block text-sm font-medium">Motif *<input name="note" required minlength="5" maxlength="300" class="{{ $f }}" placeholder="{{ $isTest ? 'Ex. fin des essais' : 'Ex. mutuelle d’essai de la plateforme' }}"></label>
+          <button class="mt-3 h-11 w-full rounded-xl {{ $isTest ? 'bg-clay' : 'bg-navy' }} px-4 text-sm font-bold text-white" onclick="return confirm('{{ $isTest ? 'Retirer le marquage « test » ?' : 'Marquer cette mutuelle comme MUTUELLE TEST ?' }}')">{{ $isTest ? 'Retirer le marquage « test »' : 'Marquer comme mutuelle de test' }}</button>
         </form>
       @endcan
 

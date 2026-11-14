@@ -98,6 +98,8 @@
             <option value="reimbursement">{{ __('mxconnect.prestation.reimbursement') }}</option>
             <option value="tiers_payant">{{ __('mxconnect.prestation.tiers_payant') }}</option>
           </select>
+          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="emergency" value="1" class="mt-1"> Urgence (stabilisation du patient) : la carence ne s’applique pas aux garanties qui l’exemptent</label>
+          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="accident" value="1" class="mt-1"> Accident : délai de carence « accident » de la garantie, s’il est défini</label>
         </div>
         <button class="mt-3 rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.prestation.add') }}</button>
       </form>

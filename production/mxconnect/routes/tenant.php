@@ -237,6 +237,33 @@ Route::middleware([
         Route::post('garanties/{guarantee}/reseau', [GuaranteeController::class, 'network'])->name('guarantees.network');
         Route::post('garanties/{guarantee}/conditions', [GuaranteeController::class, 'terms'])->name('guarantees.terms');
 
+        // Catalogue des formules et garanties détaillées + dérogations (2026-11-18).
+        $fc = \App\Http\Controllers\Tenant\FormulaCatalogController::class;
+        Route::get('formules', [$fc, 'index'])->name('formulas.index');
+        Route::get('formules/categories', [$fc, 'categories'])->name('formulas.categories');
+        Route::post('formules/categories', [$fc, 'storeCategory'])->name('formulas.categories.store');
+        Route::post('formules/categories/actes', [$fc, 'mapActs'])->name('formulas.categories.map');
+        Route::post('formules/exemples', [$fc, 'examples'])->name('formulas.examples');
+        Route::get('formules/{guarantee}', [$fc, 'show'])->name('formulas.show')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/fiche', [$fc, 'update'])->name('formulas.update')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/parametres', [$fc, 'params'])->name('formulas.params')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/simuler', [$fc, 'simulate'])->name('formulas.simulate')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/garanties', [$fc, 'storeRule'])->name('formulas.rules.store')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/garanties/{rule}', [$fc, 'updateRule'])->name('formulas.rules.update')->whereNumber(['guarantee', 'rule']);
+        Route::post('formules/{guarantee}/garanties/{rule}/retirer', [$fc, 'destroyRule'])->name('formulas.rules.destroy')->whereNumber(['guarantee', 'rule']);
+        Route::post('formules/{guarantee}/plafonds', [$fc, 'storeLimit'])->name('formulas.limits.store')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/plafonds/{limit}', [$fc, 'updateLimit'])->name('formulas.limits.update')->whereNumber(['guarantee', 'limit']);
+        Route::post('formules/{guarantee}/plafonds/{limit}/retirer', [$fc, 'destroyLimit'])->name('formulas.limits.destroy')->whereNumber(['guarantee', 'limit']);
+        Route::post('formules/{guarantee}/carences', [$fc, 'storeWaiting'])->name('formulas.waiting.store')->whereNumber('guarantee');
+        Route::post('formules/{guarantee}/carences/{waiting}/retirer', [$fc, 'destroyWaiting'])->name('formulas.waiting.destroy')->whereNumber(['guarantee', 'waiting']);
+
+        $ce = \App\Http\Controllers\Tenant\CoverageExceptionController::class;
+        Route::get('derogations', [$ce, 'index'])->name('derogations.index');
+        Route::post('derogations', [$ce, 'store'])->name('derogations.store');
+        Route::post('derogations/{exception}/accorder', [$ce, 'approve'])->name('derogations.approve')->whereNumber('exception');
+        Route::post('derogations/{exception}/refuser', [$ce, 'reject'])->name('derogations.reject')->whereNumber('exception');
+        Route::post('derogations/{exception}/retirer', [$ce, 'revoke'])->name('derogations.revoke')->whereNumber('exception');
+
         // --- Module 5: members + dependents ---
         Route::get('adherents', [MemberController::class, 'index'])->name('members.index');
 

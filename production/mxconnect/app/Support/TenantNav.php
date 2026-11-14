@@ -39,6 +39,8 @@ class TenantNav
         'accounting.closing.index' => 'accounting.balance',
         'contributions.member'     => 'contributions.index',
         'accounting.chart'  => 'accounting.journal',
+        'formulas.show'       => 'formulas.index',
+        'formulas.categories' => 'formulas.index',
     ];
 
     /** Menu regroupé par domaine : route => [libellé ou clé de traduction, icône]. */
@@ -88,6 +90,8 @@ class TenantNav
             'Paramètres' => [
                 'team.index'       => ['Équipe et rôles', 'lock'],
                 'providers.index'  => ['Prestataires conventionnés', 'stethoscope'],
+                'formulas.index'   => ['Catalogue des formules', 'library'],
+                'derogations.index' => ['Dérogations', 'shield'],
                 'guarantees.index' => ['mxconnect.guarantee.plural', 'heart'],
                 'antennas.index'   => ['mxconnect.param.antennas', 'pin'],
                 'act-types.index'  => ['mxconnect.param.act_types', 'stethoscope'],

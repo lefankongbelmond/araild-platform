@@ -42,17 +42,22 @@ class RightsVerificationService
             $reasons[] = 'no_active_guarantee';
         }
 
+        // Formule paramétrée (2026-11-18) : la carence et les exclusions dépendent de la garantie,
+        // de la catégorie du bénéficiaire, de l'urgence et des dérogations ; elles sont contrôlées
+        // par le moteur de prise en charge (CoverageEngine) à la saisie et à l'estimation.
+        $catalog = $version && $version->hasCatalog();
+
         // 4. observation period elapsed
         $subscription = $member->subscriptions()
             ->where('status', 'validated')
             ->latest('effective_date')->first();
-        if ($subscription && $subscription->observation_ends_on
+        if (! $catalog && $subscription && $subscription->observation_ends_on
             && $careDate < $subscription->observation_ends_on->toDateString()) {
             $reasons[] = 'observation_period';
         }
 
         // 5. act covered (if the version lists exclusions / covered acts)
-        if ($version && $actTypeId && is_array($version->exclusions)
+        if (! $catalog && $version && $actTypeId && is_array($version->exclusions)
             && in_array($actTypeId, $version->exclusions, true)) {
             $reasons[] = 'act_excluded';
         }

@@ -178,6 +178,9 @@
       </header>
 
       <div class="px-4 sm:px-6">
+        @if (\App\Support\TestEnvironment::active())
+          <div role="note" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"><b>Environnement de test</b> — MUTUELLE TEST : données d’essai, sans valeur réelle.</div>
+        @endif
         @foreach (['success' => 'leaf', 'error' => 'clay'] as $key => $c)
           @if (session($key))
             <div role="status" class="mt-4 rounded-xl border px-4 py-3 text-sm {{ $c === 'leaf' ? 'border-leaf-100 bg-leaf-50 text-leaf-700' : 'border-clay/30 bg-clay/5 text-clay' }}">{{ session($key) }}</div>

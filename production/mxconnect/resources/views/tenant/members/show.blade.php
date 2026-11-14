@@ -6,6 +6,7 @@
       <h1 class="text-2xl font-semibold tracking-tight">{{ $member->last_name }} {{ $member->first_name }}</h1>
       <p class="mt-1 text-sm text-ink/50 font-mono">{{ $member->member_code }}</p>
       @acces('contributions.member')<a href="{{ route('contributions.member', $member) }}" class="mt-2 inline-block text-sm text-pine hover:underline">Cotisations : relevé et encaissement</a>@endacces
+      @acces('derogations.index')<a href="{{ route('derogations.index', ['adherent' => $member->member_code]) }}" class="mt-2 block text-sm text-pine hover:underline">Dérogations</a>@endacces
     </div>
     @php $badge = ['active'=>'pine','suspended'=>'clay','left'=>'ink/40','revoked'=>'ink/40'][$member->status->value] ?? 'ink/40'; @endphp
     <span class="rounded-full border border-{{ $badge }}/30 px-3 py-1 text-sm text-{{ $badge }}">{{ __('mxconnect.member.status_'.$member->status->value) }}</span>
@@ -76,6 +77,7 @@
         <option value="ascendant">{{ __('mxconnect.relationship.ascendant') }}</option>
         <option value="other">{{ __('mxconnect.relationship.other') }}</option>
       </select>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_student" value="1"> Élève ou étudiant(e)</label>
       <button class="w-full rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.member.add_dependent') }}</button>
     </form>
     @endif

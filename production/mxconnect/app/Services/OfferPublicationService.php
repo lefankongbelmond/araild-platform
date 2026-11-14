@@ -19,9 +19,10 @@ class OfferPublicationService
     public function monthlyEquivalent(int $baseMinor, string $periodicity): int
     {
         return match ($periodicity) {
-            'annual'    => intdiv($baseMinor, 12),
-            'quarterly' => intdiv($baseMinor, 3),
-            default     => $baseMinor, // monthly
+            'annual'     => intdiv($baseMinor, 12),
+            'semiannual' => intdiv($baseMinor, 6),
+            'quarterly'  => intdiv($baseMinor, 3),
+            default      => $baseMinor, // monthly (et personnalisée : montant par échéance)
         };
     }
 

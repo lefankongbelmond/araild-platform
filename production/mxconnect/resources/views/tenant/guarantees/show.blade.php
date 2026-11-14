@@ -1,7 +1,7 @@
 <x-layouts.tenant :title="$guarantee->name">
   <a href="{{ route('guarantees.index') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.back') }}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ $guarantee->name }} <span class="text-sm text-ink/40">{{ $guarantee->code }}</span></h1>
-  <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.guarantee.history_sub') }}</p>
+  <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.guarantee.history_sub') }} <a href="{{ route('formulas.show', $guarantee) }}" class="font-semibold text-pine underline">Garanties détaillées, plafonds et carences (catalogue)</a></p>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
     {{-- Version history: past versions stay valid for claims dated within their window --}}
@@ -16,7 +16,7 @@
             <div class="text-xs text-ink/50">{{ $v->valid_from?->format('d/m/Y') }} → {{ $v->valid_to?->format('d/m/Y') ?? '…' }}</div>
           </div>
           <div class="mt-2 grid gap-2 text-sm text-ink/70 sm:grid-cols-3">
-            <div>{{ __('mxconnect.guarantee.contribution') }}: <b>{{ $currency->format($v->base_contribution_minor) }}</b> / {{ $v->periodicity }}</div>
+            <div>{{ __('mxconnect.guarantee.contribution') }}: <b>{{ $currency->format($v->base_contribution_minor) }}</b> / {{ \App\Support\CatalogLabels::periodicity($v) }}</div>
             <div>{{ __('mxconnect.guarantee.coverage') }}: <b>{{ $v->coverage_rate }}%</b></div>
             <div>{{ __('mxconnect.guarantee.copay') }}: <b>{{ $v->copay_rate }}%</b></div>
             <div>{{ __('mxconnect.guarantee.observation') }}: <b>{{ $v->observation_days }} {{ __('mxconnect.guarantee.days') }}</b></div>
@@ -73,8 +73,11 @@
       <select name="periodicity" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
         <option value="monthly">{{ __('mxconnect.periodicity.monthly') }}</option>
         <option value="quarterly">{{ __('mxconnect.periodicity.quarterly') }}</option>
+            <option value="semiannual">Semestrielle</option>
         <option value="annual">{{ __('mxconnect.periodicity.annual') }}</option>
+            <option value="custom">Personnalisée (nombre de mois)</option>
       </select>
+          <input name="period_months" type="number" min="1" max="60" placeholder="Mois entre deux échéances (si personnalisée)" class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm" aria-label="Mois entre deux échéances">
       <div class="flex gap-2">
         <input name="coverage_rate" type="number" step="any" min="0" max="100" placeholder="{{ __('mxconnect.guarantee.coverage') }} %" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">
         <input name="copay_rate" type="number" step="any" min="0" max="100" placeholder="{{ __('mxconnect.guarantee.copay') }} %" required class="w-full rounded-md border-ink/20 px-3 py-2 text-sm">

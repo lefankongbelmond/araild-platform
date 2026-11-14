@@ -130,7 +130,13 @@ class MemberController extends Controller
 
     public function addDependent(DependentRequest $request, Member $member)
     {
-        $member->dependents()->create($request->validated() + ['status' => 'active']);
+        $data = $request->validated();
+        unset($data['is_student']);
+        // Date d'arrivée (point de départ de la carence de l'ayant droit) et « élève » (2026-11-18).
+        if (\Illuminate\Support\Facades\Schema::hasColumn('dependents', 'joined_on')) {
+            $data += ['joined_on' => now()->toDateString(), 'is_student' => $request->boolean('is_student')];
+        }
+        $member->dependents()->create($data + ['status' => 'active']);
         return back()->with('success', __('mxconnect.member.dependent_added'));
     }
 
@@ -138,7 +144,7 @@ class MemberController extends Controller
     {
         $this->authorizeChange();
         abort_unless($dependent->member_id === $member->id, 404);
-        $dependent->update(['status' => 'removed']);
+        $dependent->update(['status' => 'removed'] + (\Illuminate\Support\Facades\Schema::hasColumn('dependents', 'left_on') ? ['left_on' => now()->toDateString()] : []));
         return back()->with('success', __('mxconnect.member.dependent_removed'));
     }
 

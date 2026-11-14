@@ -43,6 +43,7 @@ class GuaranteeController extends Controller
             version: [
                 'base_contribution_minor' => $cur->toMinor((float) $d['base_contribution']),
                 'periodicity'             => $d['periodicity'],
+                'period_months'           => $d['period_months'] ?? null,
                 'coverage_rate'           => $d['coverage_rate'],
                 'copay_rate'              => $d['copay_rate'],
                 'membership_fee_minor'    => $cur->toMinor((float) ($d['membership_fee'] ?? 0)),
@@ -107,6 +108,7 @@ class GuaranteeController extends Controller
         $this->versioning->newVersion($guarantee, [
             'base_contribution_minor' => $cur->toMinor((float) $d['base_contribution']),
             'periodicity'             => $d['periodicity'],
+            'period_months'           => $d['period_months'] ?? null,
             'coverage_rate'           => $d['coverage_rate'],
             'copay_rate'              => $d['copay_rate'],
             'membership_fee_minor'    => $cur->toMinor((float) ($d['membership_fee'] ?? 0)),

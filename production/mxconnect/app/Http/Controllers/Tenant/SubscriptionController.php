@@ -31,7 +31,9 @@ class SubscriptionController extends Controller
 
         return view('tenant.subscriptions.create', [
             'members'  => Member::where('status', 'active')->orderBy('last_name')->get(),
-            'versions' => GuaranteeVersion::with('guarantee')->whereNull('valid_to')->get(),
+            // Formules proposées à la souscription seulement (fiche du catalogue, 2026-11-18).
+            'versions' => GuaranteeVersion::with('guarantee')->whereNull('valid_to')->get()
+                ->filter(fn ($v) => $v->guarantee && $v->guarantee->subscriptionRefusal(null, now()->toDateString()) === null)->values(),
             'selectedMember' => $member,
             'currency' => $this->currency(),
         ]);
@@ -43,6 +45,9 @@ class SubscriptionController extends Controller
         $data = $request->validated();
         $member = Member::findOrFail($data['member_id']);
         $version = GuaranteeVersion::findOrFail($data['guarantee_version_id']);
+        if ($refusal = $version->guarantee?->subscriptionRefusal($member, $data['effective_date'])) {
+            return back()->withInput()->withErrors(['guarantee_version_id' => $refusal]);
+        }
 
         $contribution = $version->base_contribution_minor * $member->beneficiaryCount();
         $observationEnds = Carbon::parse($data['effective_date'])

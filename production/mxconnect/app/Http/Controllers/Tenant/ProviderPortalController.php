@@ -113,7 +113,9 @@ class ProviderPortalController extends Controller
         }
         $version = $this->capture->versionFor($c->member, now()->toDateString());
         abort_unless($version, 422, 'Aucune garantie en cours pour cet adhérent.');
-        $estimate = $coverage->estimate($version, $c->member, (int) $data['act_type_id'], $total, now()->toDateString());
+        $dependent = RightsCheck::hasIdentificationColumns() && $c->dependent_id ? Dependent::find($c->dependent_id) : null;
+        $estimate = $coverage->estimate($version, $c->member, (int) $data['act_type_id'], $total, now()->toDateString(), $dependent, $provider->id,
+            ['emergency' => $request->boolean('emergency'), 'accident' => $request->boolean('accident')]);
 
         return $this->resultView($request, $provider, $convention, $this->verdictFor($c), $estimate);
     }
@@ -179,6 +181,7 @@ class ProviderPortalController extends Controller
                 $result = $this->capture->capture($claim, [
                     'act_type_id' => (int) $data['act_type_id'], 'provider_id' => $provider->id,
                     'care_date'   => $data['care_date'], 'total_minor' => $this->currency()->toMinor($total),
+                    'emergency'   => $request->boolean('emergency'), 'accident' => $request->boolean('accident'),
                 ], $request->user(), 'provider');
                 if (! $result['ok']) {
                     $reasons = $result['reasons'];

@@ -41,11 +41,11 @@ class ScheduleGenerationService
         // Idempotent: never duplicate a schedule for a period already present.
         $existing = $subscription->schedules()->pluck('period')->all();
 
-        [$count, $stepMonths] = match ($subscription->guaranteeVersion->periodicity) {
-            'monthly'   => [12, 1],
-            'quarterly' => [4, 3],
-            'annual'    => [1, 12],
-        };
+        $stepMonths = self::stepMonths($subscription->guaranteeVersion);
+        if (! $stepMonths) {
+            return 0;   // périodicité personnalisée sans nombre de mois : rien n'est inventé
+        }
+        $count = max(1, intdiv(12, $stepMonths));
 
         $start = Carbon::parse($subscription->effective_date);
         $created = 0;
@@ -88,7 +88,7 @@ class ScheduleGenerationService
             return 0;
         }
         $periodicity = $subscription->guaranteeVersion->periodicity;
-        $step = ['monthly' => 1, 'quarterly' => 3, 'annual' => 12][$periodicity] ?? null;
+        $step = self::stepMonths($subscription->guaranteeVersion);
         if (! $step) {
             return 0;
         }
@@ -142,12 +142,30 @@ class ScheduleGenerationService
         return ['created' => $created, 'overdue' => max(0, $overdue)];
     }
 
+    /**
+     * Nombre de mois entre deux échéances (2026-11-18 : semestrielle et périodicité personnalisée
+     * en mois). Null si la périodicité personnalisée n'a pas de nombre de mois.
+     */
+    public static function stepMonths(\App\Models\Tenant\GuaranteeVersion $version): ?int
+    {
+        return match ($version->periodicity) {
+            'monthly'    => 1,
+            'quarterly'  => 3,
+            'semiannual' => 6,
+            'annual'     => 12,
+            'custom'     => ($version->period_months ?? 0) > 0 ? (int) $version->period_months : null,
+            default      => null,
+        };
+    }
+
     private function periodLabel(Carbon $date, string $periodicity): string
     {
         return match ($periodicity) {
-            'monthly'   => $date->format('Y-m'),
-            'quarterly' => $date->format('Y') . '-T' . (int) ceil($date->month / 3),
-            'annual'    => $date->format('Y'),
+            'monthly'    => $date->format('Y-m'),
+            'quarterly'  => $date->format('Y') . '-T' . (int) ceil($date->month / 3),
+            'semiannual' => $date->format('Y') . '-S' . ($date->month <= 6 ? 1 : 2),
+            'annual'     => $date->format('Y'),
+            default      => $date->format('Y-m-d'),   // personnalisée : une échéance par date
         };
     }
 }

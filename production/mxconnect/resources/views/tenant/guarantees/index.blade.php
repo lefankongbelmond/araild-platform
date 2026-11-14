@@ -27,7 +27,7 @@
           @php $v = $g->currentVersion; @endphp
           <tr>
             <td class="px-4 py-3 font-medium">{{ $g->name }}<div class="text-xs text-ink/40">{{ $g->code }}</div></td>
-            <td class="px-4 py-3">{{ $v ? $currency->format($v->base_contribution_minor) : '—' }} <span class="text-xs text-ink/40">/ {{ $v ? mb_strtolower(__('mxconnect.periodicity.' . $v->periodicity)) : '' }}</span></td>
+            <td class="px-4 py-3">{{ $v ? $currency->format($v->base_contribution_minor) : '—' }} <span class="text-xs text-ink/40">/ {{ $v ? \App\Support\CatalogLabels::periodicity($v) : '' }}</span></td>
             <td class="px-4 py-3"><b class="text-leaf-700">{{ $v ? rtrim(rtrim(number_format((float) $v->coverage_rate, 2, ',', ''), '0'), ',') : '—' }} %</b> <span class="text-xs text-ink/40">({{ __('mxconnect.guarantee.copay') }} {{ $v ? rtrim(rtrim(number_format((float) $v->copay_rate, 2, ',', ''), '0'), ',') : '' }} %)</span></td>
             <td class="px-4 py-3">{{ $v?->observation_days }} {{ __('mxconnect.guarantee.days') }}</td>
             <td class="px-4 py-3"><span class="rounded-full bg-mist px-2 py-0.5 text-xs">V{{ $v?->version_no }}</span></td>

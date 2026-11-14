@@ -235,6 +235,13 @@ return [
         'provider_not_authorised' => 'Provider not in network',
         'unknown_member' => 'No member with this code or card',
         'dependent_removed' => 'Dependant removed from the membership',
+        'subscription_pending' => 'Membership captured or not yet in force (rights not activated)',
+        'dependent_not_active_yet' => 'Dependant not yet added on this date',
+        'no_rule' => 'No guarantee of the plan covers this care category for this beneficiary',
+        'waiting_period' => 'Waiting period running for this guarantee',
+        'ceiling_reached' => 'Ceiling exhausted for this guarantee',
+        'count_reached' => 'Maximum number of acts reached for this guarantee',
+        'authorization_required' => 'Prior administrative authorisation required',
     ],
 
     'contribution' => [

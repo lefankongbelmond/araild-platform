@@ -140,6 +140,21 @@ class MutualController extends Controller
         return back()->with('success', "{$mutual->name} est réactivée : son espace est de nouveau ouvert.");
     }
 
+    /** Marquer la mutuelle comme MUTUELLE TEST, ou retirer ce marquage (motif obligatoire). */
+    public function testFlag(Request $request, Mutual $mutual, MutualProvisioningService $provisioner)
+    {
+        $this->authorize('manageAccess', $mutual);
+        $data = $request->validate([
+            'is_test' => ['required', 'boolean'],
+            'note'    => ['required', 'string', 'min:5', 'max:300'],
+        ], ['note.required' => 'Indiquez le motif.']);
+        $provisioner->setTestFlag($mutual, (bool) $data['is_test'], $request->user('network')->id, trim($data['note']));
+
+        return back()->with('success', $data['is_test']
+            ? "{$mutual->name} est désormais la MUTUELLE TEST : environnement d’essai, formules d’exemple autorisées."
+            : "{$mutual->name} n’est plus marquée comme mutuelle de test.");
+    }
+
     /**
      * Créer un administrateur de la mutuelle, ou rétablir l'accès d'un administrateur existant
      * (nouveau mot de passe provisoire affiché une fois, double authentification à reconfigurer).
