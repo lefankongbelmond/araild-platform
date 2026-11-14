@@ -163,3 +163,100 @@ Une mutuelle injoignable est signalée sans bloquer les autres.
 - Les inscriptions en ligne ne sont pas encore modérées par le super-admin. Seule l'acceptation par une mutuelle reconnaît un établissement.
 - Pas de géolocalisation automatique : la politique de sécurité bloque `geolocation`, les coordonnées GPS se saisissent à la main.
 - Les anciens comptes « Prestataire de soins » par mutuelle restent en place. Aucune fusion automatique avec l'espace central.
+
+---
+
+# Phase 3 — Identification et vérification des droits (version 2026.11.17)
+
+## 10. Côté mutuelle (portail `/prestataire`)
+
+### 10.1 Identification
+`App\Services\Tenant\BeneficiaryLookupService` :
+- **`identify()`** : code adhérent, ou QR signé (`DigitalCardService::verifyToken`, qui exige la bonne mutuelle et une signature valide).
+- **`search()`** : recherche encadrée.
+  - Mode **nom** : nom + date de naissance **complète**, prénom en début de mot facultatif. Couvre `members` et `dependents`.
+  - Mode **téléphone** : 8 derniers chiffres + année de naissance. Couvre `members` uniquement.
+  - Au plus **5 résultats** ; au-delà, rien n'est affiché et la personne doit préciser.
+  - Code de carte masqué (`•••••777`).
+  - Journal `beneficiary_searches` : utilisateur, établissement, critères, nombre de résultats.
+  - Limiteur nommé `portal-search` : 10 par minute, compteur propre.
+- **`pick()`** : choix d'un résultat par jeton chiffré (`Crypt`), lié à l'utilisateur, à l'établissement et à 15 minutes. Impossible de vérifier un adhérent en devinant son identifiant.
+
+### 10.2 Statut des droits — `App\Support\RightsStatus`
+Le statut est dérivé des motifs de `RightsVerificationService`, qui reste la source unique des contrôles :
+
+| Statut | Conditions |
+|---|---|
+| `unknown` | code ou carte inconnus, ou carte falsifiée |
+| `expired` | adhérent sorti ou radié, ayant droit retiré, aucune garantie en cours |
+| `suspended` | adhérent suspendu, cotisations en retard |
+| `pending` | adhésion saisie non validée, période d'observation |
+| `network` | établissement hors réseau de la garantie |
+| `active` | aucun motif bloquant |
+
+Un ayant droit retiré ajoute le motif `dependent_removed`.
+
+### 10.3 Situation et estimation — `App\Services\Tenant\CoverageService`
+- **`situation()`** :
+  - garantie et fin de validité de la version, taux de couverture, ticket modérateur ;
+  - cotisations : retard (échéances `overdue`, ou `to_pay` échues) et dernière échéance réglée (hors droit d'adhésion) ;
+  - plafonds avec reste annuel (même calcul que la déclaration : parts validées et en attente réservées) ;
+  - exclusions, réseau.
+- **`lastCheck()`** : vérification précédente du même bénéficiaire par le même établissement.
+- **`history()`** : prises en charge de **cet établissement uniquement** sur 12 mois (10 au plus). Affiché seulement si la route `portal.claims` est autorisée.
+- **`estimate()`** : rien n'est enregistré.
+  - S'appuie sur `ClaimAssessmentService::detail()`, ajouté : même calcul que `assess()`, avec la part théorique et le reste du plafond avant les soins. `assess()` est inchangé.
+  - Acte exclu : tout le montant est non couvert.
+  - Comparaison au tarif conventionnel (`act_types.tariff_minor`), affichée seulement si la mutuelle l'a fixé.
+
+### 10.4 Signal anti-fraude
+`FraudDetectionService`, règle 5 : montant déclaré supérieur au tarif conventionnel → alerte `financial / watch / above_tariff`. C'est un **signal à examiner**, jamais une correction ni un refus.
+
+### 10.5 Routes
+| Route | Méthode et chemin | Limite | Droit d'établissement |
+|---|---|---|---|
+| `portal.search` | `POST prestataire/rechercher` | `portal-search` | rights.verify |
+| `portal.pick` | `POST prestataire/rechercher/choix` | 30 par minute | rights.verify |
+| `portal.estimate` | `POST prestataire/estimer/{check}` | 30 par minute | rights.verify |
+
+Toutes sont couvertes par la règle `portal.*` de `TenantAccess`. La caméra est autorisée sur ces pages pour la lecture du QR.
+
+### 10.6 Migration TENANT `2026_11_17_000100_portal_identification`
+- `rights_checks.dependent_id` et `rights_checks.method` (code, qr, search) ;
+- table `beneficiary_searches` ;
+- **resynchronisation** de l'index central `provider_affiliations` depuis `provider_conventions`. Elle corrige un défaut de la 2026.11.16 : une convention créée par la mutuelle était indexée « suspendue », car la valeur par défaut `active` n'était pas relue. `syncFromConvention` relit désormais la valeur en base, et `ProviderController::store` passe `active => true`.
+
+## 11. Côté espace central
+- `POST espace-prestataire/rechercher` (`pro.lookup`, droit `rights.verify`, limiteur `provider-lookup` à 20 par minute) → `ProviderSpaceService::lookup()` :
+  - un **QR** désigne sa mutuelle (jeton `mutuelle.adhérent.signature`) ;
+  - un **code** est cherché dans chaque mutuelle **conventionnée en place**, une à la fois avec `run()`, en testant seulement son existence.
+- **Résultat** :
+  - une seule mutuelle → jeton d'entrée avec `payload` (le code), puis le portail s'ouvre avec le code pré-rempli (session `portal_prefill`). La vérification est faite et journalisée **dans la mutuelle** ;
+  - plusieurs mutuelles → l'utilisateur choisit ;
+  - aucune → « Bénéficiaire non identifié ».
+- **Journal central** `provider_lookups` : empreinte sha256 du code (jamais le code en clair), nombre et liste des mutuelles trouvées, IP.
+- **Migration centrale** `2026_11_17_000100_add_provider_lookups` : `provider_handoffs.payload`, table `provider_lookups`.
+- La recherche par nom ou téléphone reste **dans chaque mutuelle**. Elle n'est jamais faite à travers toutes les mutuelles.
+
+## 12. Tests de la phase 3
+`tests/Feature/PortailV2Phase3Test.php` contient 5 tests. Les aides de l'espace prestataire ont été déplacées dans `tests/Pest.php`.
+1. Les 6 statuts, l'identité, la situation et la vérification précédente.
+2. Recherche :
+   - deux critères exigés ;
+   - ayant droit trouvé, code masqué ;
+   - choix protégé (autre utilisateur ou jeton falsifié : 410) ;
+   - téléphone + année, ayant droit retiré, aucun résultat ;
+   - journal.
+3. Estimation : taux, plafond restant, part non couverte, acte exclu, tarif dépassé, rien d'enregistré, historique limité à l'établissement.
+4. Signal « montant supérieur au tarif ».
+5. Recherche centrale :
+   - code → portail pré-rempli ;
+   - QR → mutuelle lue dans le jeton ;
+   - carte inconnue → non identifié, journal par empreinte ;
+   - agent de facturation refusé.
+
+## 13. Limites de la phase 3
+- Aucune photo d'adhérent n'est enregistrée dans MX-CONNECT : rien ne s'affiche (pas de photo fictive).
+- Pas de recherche par pièce d'identité : `members.id_document` est chiffré, pour la détection des doublons seulement.
+- Les ayants droit n'ont pas de numéro propre : on les trouve par la carte de l'adhérent ou par nom + date de naissance.
+- La part patient reste « total − part mutuelle ». Le ticket modérateur est affiché, mais n'est pas appliqué séparément, comme dans le calcul des déclarations.

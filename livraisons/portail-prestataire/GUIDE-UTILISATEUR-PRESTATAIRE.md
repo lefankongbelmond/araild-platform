@@ -1,4 +1,4 @@
-# Guide du portail prestataire (version 2026.11.16)
+# Guide du portail prestataire (version 2026.11.17)
 
 Pour l'accueil, le personnel soignant, la facturation et la direction des établissements de soins (hôpitaux, centres de santé, cliniques, pharmacies, laboratoires) conventionnés avec des mutuelles MX-CONNECT.
 
@@ -51,11 +51,15 @@ Une facture acceptée n'est pas une facture payée : « Payé » ne compte que l
 - nouvelle convention, ou demande d'affiliation refusée.
 
 ## 3. Ouvrir le portail d'une mutuelle
-Menus **Vérifier les droits**, **Prises en charge** et **Mes factures** : choisissez la mutuelle de l'adhérent, puis **Ouvrir**.
+Menus **Vérifier les droits**, **Prises en charge** et **Mes factures** : choisissez la mutuelle, puis **Ouvrir**.
 
-Le portail de la mutuelle s'ouvre directement à votre nom, sans nouveau mot de passe ni nouveau code. Le lien d'entrée ne sert qu'une fois et expire au bout de 60 secondes. Les données des adhérents restent chez la mutuelle.
+**Vérifier les droits depuis l'espace prestataire** : saisissez le code de la carte, ou lisez son QR code (caméra ou photo), puis **Rechercher dans mes mutuelles**.
+- La carte est recherchée dans toutes vos mutuelles conventionnées.
+- Le portail de la bonne mutuelle s'ouvre avec le code déjà saisi : cliquez sur **Vérifier les droits**.
+- Si la carte existe dans plusieurs mutuelles, choisissez celle de la personne.
+- Si aucune ne la connaît : **BÉNÉFICIAIRE NON IDENTIFIÉ**.
 
-Pour revenir, utilisez **← Retour à l'espace prestataire**.
+Le portail de la mutuelle s'ouvre directement à votre nom, sans nouveau mot de passe ni nouveau code. Le lien d'entrée ne sert qu'une fois et expire au bout de 60 secondes. Les données des adhérents restent chez la mutuelle. Pour revenir, utilisez **← Retour à l'espace prestataire**.
 
 Ce que vous pouvez faire dans le portail dépend de votre rôle. Par exemple :
 - le caissier vérifie les droits mais ne déclare pas de soins ;
@@ -65,16 +69,55 @@ Ce que vous pouvez faire dans le portail dépend de votre rôle. Par exemple :
 La mutuelle peut aussi couper l'accès d'une personne à son portail. Dans ce cas, un message vous l'indique à l'ouverture.
 
 ## 4. Vérifier les droits d'un patient
-Menu **Vérifier les droits**. Trois façons d'identifier l'adhérent :
+Menu **Vérifier les droits** du portail de la mutuelle.
+
+### 4.1 Avec la carte
 - saisir le **code adhérent** imprimé sur la carte (ex. `MUT-000123`) ;
 - **Scanner avec la caméra** le QR code de la carte (téléphone ou tablette) ;
 - **Photo de la carte** : prenez le QR en photo, la lecture se fait dans le navigateur.
 
-Résultat :
-- **Droits ouverts** : vous pouvez déclarer une prise en charge pendant **12 heures**.
-- **Droits non ouverts**, avec le motif : adhérent non actif, cotisation en retard, période d'observation, aucune garantie active, acte non couvert ou établissement hors réseau. Orientez alors le patient vers la mutuelle.
+### 4.2 Sans la carte
+Section **Sans la carte : rechercher le bénéficiaire**. Deux critères sont toujours exigés :
+- **nom + date de naissance complète** (prénom facultatif) : trouve les adhérents **et leurs ayants droit** ;
+- **téléphone + année de naissance** : trouve les adhérents.
 
-Seul le verdict s'affiche : aucune donnée médicale. Chaque vérification est enregistrée à votre nom.
+Au plus 5 résultats s'affichent, avec le code de carte masqué. Cliquez sur **Vérifier ses droits** : le choix reste valable 15 minutes, et seulement pour vous. Chaque recherche est enregistrée à votre nom et peut être contrôlée par la mutuelle. Si trop de personnes correspondent, précisez la recherche.
+
+### 4.3 Résultat
+Le statut s'affiche en clair, avec la date et l'heure de la vérification, et celles de la vérification précédente faite par votre établissement :
+
+| Statut | Signification |
+|---|---|
+| **DROITS ACTIFS** | Les soins peuvent être pris en charge. |
+| **DROITS ACTIFS — ÉTABLISSEMENT HORS RÉSEAU** | La garantie de l'adhérent ne couvre pas votre établissement. |
+| **DROITS EN ATTENTE DE CONFIRMATION** | Adhésion pas encore validée par la mutuelle, ou période d'observation en cours. |
+| **DROITS SUSPENDUS** | Adhérent suspendu ou cotisations en retard. |
+| **DROITS EXPIRÉS** | Adhésion terminée, ayant droit retiré ou aucune garantie en cours. |
+| **BÉNÉFICIAIRE NON IDENTIFIÉ** | Code, carte ou recherche sans correspondance. |
+
+Sous le statut, on trouve :
+- **Identité** : nom, qualité (adhérent principal ou ayant droit), n° d'adhérent, date de naissance, sexe, statut, mutuelle.
+- **Situation mutualiste** :
+  - garantie, cotisations (à jour, ou en retard depuis le…), dernière échéance réglée ;
+  - taux de couverture, ticket modérateur ;
+  - plafonds, avec le **reste** de l'année pour l'adhérent ;
+  - actes non couverts ;
+  - présence de votre établissement dans le réseau de la garantie.
+- **Prises en charge de votre établissement** pour ce bénéficiaire sur 12 mois, si votre rôle le permet. Les soins faits ailleurs ne sont **jamais** affichés.
+
+Aucune donnée médicale ne s'affiche.
+
+### 4.4 Estimer la prise en charge avant les soins
+Après une vérification positive, choisissez l'acte et le montant prévu, puis cliquez sur **Calculer**. L'estimation affiche :
+- la part de la mutuelle et ce que le patient paiera ;
+- la part hors taux de couverture ;
+- la part **non couverte** (acte exclu, ou montant au-delà du plafond) ;
+- le plafond restant avant et après les soins ;
+- le tarif conventionnel de l'acte, s'il a été fixé.
+
+Une alerte s'affiche si le montant dépasse le tarif conventionnel. Vous pouvez **imprimer** l'estimation pour le patient.
+
+L'estimation **n'est ni un accord de prise en charge ni une facture**, et rien n'est enregistré. Aucun taux n'est inventé : tout vient de la garantie de l'adhérent.
 
 ## 5. Déclarer une prise en charge
 Après une vérification positive, cliquez sur **Déclarer une prise en charge**, puis renseignez :
@@ -130,4 +173,5 @@ La mutuelle paie **hors de la plateforme** : MX-CONNECT ne détient aucun fonds.
 ## 11. Bonnes pratiques
 - Ne partagez jamais votre compte : chaque action est enregistrée à votre nom, dans l'espace prestataire comme dans chaque mutuelle.
 - Déconnectez-vous sur un poste partagé.
+- Un montant déclaré au-dessus du tarif conventionnel est signalé à la mutuelle pour examen. Ce n'est ni un refus ni une accusation.
 - Sans connexion Internet, la page « Pas de connexion » s'affiche. Aucune vérification de droits n'est possible hors ligne. Un acte urgent ne doit jamais être retardé pour cette raison : soignez d'abord, puis déclarez dès le retour de la connexion ou contactez la mutuelle.

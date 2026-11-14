@@ -62,6 +62,16 @@ class FraudDetectionService
             $fired[] = $this->raise($prestation, 'overconsumption', 'watch', 'frequent_same_act');
         }
 
+        // 5) Montant déclaré supérieur au tarif conventionnel de l'acte (2026-11-17, audit A10) :
+        //    signal à examiner, jamais une correction automatique ni un refus. Seulement si la
+        //    mutuelle a fixé un tarif pour cet acte.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('act_types', 'tariff_minor')) {
+            $tariff = (int) \App\Models\Tenant\ActType::whereKey($prestation->act_type_id)->value('tariff_minor');
+            if ($tariff > 0 && (int) $prestation->total_minor > $tariff) {
+                $fired[] = $this->raise($prestation, 'financial', 'watch', 'above_tariff');
+            }
+        }
+
         return $fired;
     }
 

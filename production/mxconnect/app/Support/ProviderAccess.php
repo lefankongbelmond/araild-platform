@@ -68,6 +68,7 @@ final class ProviderAccess
         'pro.switch'               => null,
         'pro.go'                   => null,              // le droit dépend de la destination (service)
         'pro.open'                 => null,
+        'pro.lookup'               => 'rights.verify',
         'pro.mutuals'              => 'conventions.view',
         'pro.mutuals.show'         => 'conventions.view',
         'pro.affiliations.store'   => 'affiliation.request',

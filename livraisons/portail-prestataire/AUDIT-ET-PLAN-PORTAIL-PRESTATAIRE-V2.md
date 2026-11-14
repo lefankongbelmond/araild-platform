@@ -1,6 +1,6 @@
 # MX-CONNECT — Portail prestataire V2 : audit technique, diagnostic et plan de développement
 
-Version de référence auditée : **2026.11.14**. Phase 1 livrée en **2026.11.15**, phase 2 en **2026.11.16**.
+Version de référence auditée : **2026.11.14**. Phase 1 livrée en **2026.11.15**, phase 2 en **2026.11.16**, phase 3 en **2026.11.17**.
 Ce document répond à l'étape « audit d'abord » du cahier des charges « Portail prestataire V2 ».
 
 ---
@@ -35,15 +35,16 @@ Le portail n'est pas une application séparée. C'est un espace du back-office d
 | A5 | Plafond annuel calculé sur les seules prestations validées : deux déclarations proches pouvaient consommer deux fois le même reste. | Moyenne | **Corrigé** : les parts en attente de validation sont réservées |
 | A6 | Convention arrivée à échéance : le prestataire ne pouvait plus facturer des soins faits et validés pendant la convention. | Moyenne | **Corrigé** : facturation des soins déjà validés possible tant que la mutuelle n'a pas suspendu la convention |
 | A7 | Un établissement désactivé dans le registre central gardait l'usage du portail. | Moyenne | **Corrigé** |
-| A8 | `copay_rate` (ticket modérateur) est enregistré mais jamais utilisé : la part patient = total − part mutuelle. | Info | Conservé tel quel (aucun taux inventé). À afficher dans le moteur de couverture (phase 3) |
+| A8 | `copay_rate` (ticket modérateur) est enregistré mais jamais utilisé : la part patient = total − part mutuelle. | Info | **Affiché (phase 3)** à la vérification et dans l'estimation ; le calcul reste fondé sur le taux de couverture (aucun taux inventé) |
 | A9 | Plafond « par séjour » traité comme « par acte ». | Info | Phase 4 (hospitalisation) |
-| A10 | Le montant déclaré n'est pas comparé au tarif conventionnel de l'acte (`act_types.tariff_minor`). | Moyenne | Phase 3/5 : signal « montant supérieur au tarif », jamais de correction automatique |
+| A10 | Le montant déclaré n'est pas comparé au tarif conventionnel de l'acte (`act_types.tariff_minor`). | Moyenne | **Corrigé (phase 3)** : signal « montant supérieur au tarif » (à examiner), avertissement dans l'estimation, jamais de correction automatique |
 | A11 | Une déclaration du portail = une prise en charge = une facture : pas de regroupement par bordereau. | Info | Phase 5 |
 | A12 | Le statut `controlled` des prestations existe mais n'est jamais posé. | Info | Phase 4 (circuit d'accord préalable) |
-| A13 | Recherche seulement par code ou QR ; aucune recherche par nom, téléphone ou pièce. | Info | Phase 3 (recherche encadrée, voir § 4) |
+| A13 | Recherche seulement par code ou QR ; aucune recherche par nom, téléphone ou pièce. | Info | **Corrigé (phase 3)** : nom + date de naissance, téléphone + année, journalisées ; carte recherchée dans toutes les mutuelles depuis l'espace central |
 | A14 | Aucune notification au prestataire quand la mutuelle valide, rejette ou paie. | Info | Phase 6 |
 | A15 | Les comptes du prestataire sont créés par la mutuelle ; l'établissement ne gère pas ses utilisateurs. | Info | **Corrigé (phase 2)** : personnel et droits gérés par l'établissement |
 | A16 | Un établissement conventionné avec plusieurs mutuelles a un compte par mutuelle, sans vue d'ensemble. | Structurant | **Corrigé (phase 2)** : espace prestataire central |
+| A18 | Phase 2 : une convention créée par la mutuelle était indexée « suspendue » dans l'espace central (valeur par défaut non relue). | Moyenne | **Corrigé (phase 3)** + resynchronisation à la mise à jour |
 | A17 | En-tête du site (page d'accueil, « Se connecter »…) : entre 1021 et 1600 px, « Demander une démo » sortait de l'écran depuis l'ajout du lien « Applications » (13/11). | Moyenne | **Corrigé (phase 2)** : en-tête resserré, menu ☰ jusqu'à 1280 px |
 
 ## 3. Décision d'architecture — **prise : option B, espace central** (fondateur, 15/11/2026)
@@ -83,7 +84,7 @@ Autres points à confirmer :
 |---|---|---|---|
 | **1. Audit et corrections** | Anomalies A1–A7 | `prestations.decision_note`, `decided_at` | **2026.11.15 — faite** |
 | **2. Profil et tableau de bord** — **2026.11.16, faite** (voir `DOCUMENTATION-TECHNIQUE-ESPACE-PRESTATAIRE.md`) | Fiche établissement (coordonnées, horaires, spécialités, documents de convention), utilisateurs de l'établissement et rôles, tableau de bord avec indicateurs réels (vérifications, prises en charge par statut, montants à facturer, factures en attente ou payées, délais moyens), graphiques et alertes. | Selon la décision du § 3 : `provider_accounts` + `provider_account_roles` (central) ou `provider_staff_roles` (tenant) ; `care_providers` complété | 1 livraison |
-| **3. Identification et droits** | Recherche encadrée (carte, n°, QR, nom + date de naissance, téléphone, pièce), statuts détaillés (actif, suspendu, en observation, cotisations en retard, plafond atteint, hors réseau), simulation de couverture avant soins (« estimation »), bon de prise en charge imprimable | `coverage_estimates` (ou calcul à la volée journalisé) | 1 livraison |
+| **3. Identification et droits** — **2026.11.17, faite** | Recherche encadrée (carte, n°, QR, nom + date de naissance, téléphone, pièce), statuts détaillés (actif, suspendu, en observation, cotisations en retard, plafond atteint, hors réseau), simulation de couverture avant soins (« estimation »), bon de prise en charge imprimable | `coverage_estimates` (ou calcul à la volée journalisé) | 1 livraison |
 | **4. Soins et accords préalables** | Demandes d'accord (types, 9 statuts, circuit, urgence), feuille de soins électronique + PDF, catalogue d'actes et tarifs par convention, CIM-10 protégée, hospitalisation (séjour, plafond par séjour), orientation, pharmacie (ordonnance, délivrance), laboratoire | `care_authorizations`, `authorization_events`, `care_sheets`, `care_sheet_lines`, `diagnoses` (chiffré), `hospital_stays`, `referrals`, `prescriptions`, `dispensations`, `lab_orders`, `convention_tariffs` (avec dates) | 2 livraisons |
 | **5. Facturation et paiements** | Factures à lignes, bordereaux d'envoi groupés (lot + PDF), rejets partiels et renvoi, statuts distincts validée/payée, paiements confirmés seulement, exports CSV | `invoice_batches`, `provider_invoice_lines`, `invoice_events` | 1 livraison |
 | **6. Contrôle et communication** | Tableau des signaux (montant > tarif, doublons, fréquence), journal d'audit consultable, messagerie prestataire ↔ mutuelle par dossier, notifications (validation, rejet, paiement) | `provider_threads`, `provider_messages`, `provider_notifications` | 1 livraison |

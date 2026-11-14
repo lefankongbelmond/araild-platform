@@ -131,7 +131,7 @@ class ProviderController extends Controller
                 ]);
             }
 
-            return ProviderConvention::create($this->conventionData($data) + ['care_provider_id' => $provider->id, 'created_by' => $request->user()->id]);
+            return ProviderConvention::create($this->conventionData($data) + ['care_provider_id' => $provider->id, 'active' => true, 'created_by' => $request->user()->id]);
         });
         ProviderSpaceService::syncFromConvention($convention, 'Convention créée par la mutuelle', $request->user()->name);
 

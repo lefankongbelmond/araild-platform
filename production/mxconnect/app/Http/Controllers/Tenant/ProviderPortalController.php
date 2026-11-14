@@ -7,15 +7,18 @@ use App\Http\Controllers\Tenant\Concerns\MutualContext;
 use App\Models\Central\CareProvider;
 use App\Models\Tenant\ActType;
 use App\Models\Tenant\CareClaim;
+use App\Models\Tenant\Dependent;
 use App\Models\Tenant\Member;
 use App\Models\Tenant\Prestation;
 use App\Models\Tenant\ProviderConvention;
 use App\Models\Tenant\ProviderInvoice;
 use App\Models\Tenant\RightsCheck;
 use App\Services\ClaimCaptureService;
-use App\Services\DigitalCardService;
 use App\Services\RightsVerificationService;
+use App\Services\Tenant\BeneficiaryLookupService;
+use App\Services\Tenant\CoverageService;
 use App\Services\Tenant\InvoiceDocumentService;
+use App\Support\RightsStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -43,45 +46,76 @@ class ProviderPortalController extends Controller
     {
         [$provider, $convention] = $this->context($request);
 
-        return view('tenant.portal.index', [
-            'provider' => $provider, 'convention' => $convention, 'result' => null,
-            'recent'   => RightsCheck::with('member')->where('care_provider_id', $provider->id)->where('user_id', $request->user()->id)
-                ->latest('id')->limit(8)->get(),
-        ]);
+        return view('tenant.portal.index', $this->baseData($request, $provider, $convention) + ['result' => null, 'search' => null]);
     }
 
-    public function verify(Request $request, DigitalCardService $cards)
+    public function verify(Request $request, BeneficiaryLookupService $lookup)
     {
         [$provider, $convention] = $this->context($request, 'act');
         $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => 'Saisissez le code adhérent ou collez le lien de la carte.']);
-        $input = trim($data['code']);
 
         // Lien ou jeton de la carte (QR) : signature vérifiée ; sinon code adhérent imprimé sur la carte.
-        $member = null;
-        if (preg_match('~[?&]t=([^&\s]+)~', $input, $m) || substr_count($input, '.') === 2) {
-            $token = isset($m[1]) ? urldecode($m[1]) : $input;
-            $res = $cards->verifyToken($token);
-            $member = $res['valid'] ? Member::find($res['member_id']) : null;
-        } else {
-            $member = Member::where('member_code', $input)->first();
+        $id = $lookup->identify($data['code']);
+
+        return $this->runCheck($request, $provider, $convention, $id['member'], null, $id['method'], $id['invalid_card']);
+    }
+
+    /**
+     * Recherche encadrée d'un bénéficiaire sans sa carte (2026-11-17) : nom + date de naissance,
+     * ou téléphone + année de naissance. Journalisée, 5 résultats au plus, code masqué.
+     */
+    public function search(Request $request, BeneficiaryLookupService $lookup)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $mode = $request->input('mode') === 'phone' ? 'phone' : 'name';
+        $data = $mode === 'name'
+            ? $request->validate([
+                'last_name' => ['required', 'string', 'min:2', 'max:120'], 'first_name' => ['nullable', 'string', 'max:120'],
+                'birth_date' => ['required', 'date', 'before_or_equal:today'],
+            ], ['last_name.required' => 'Indiquez le nom de famille.', 'birth_date.required' => 'La date de naissance complète est obligatoire pour une recherche par nom.'])
+            : $request->validate([
+                'phone' => ['required', 'string', 'max:30', 'regex:/(\D*\d){8,}/'], 'birth_year' => ['required', 'integer', 'min:1900', 'max:' . now()->year],
+            ], ['phone.regex' => 'Saisissez le numéro complet (8 chiffres au moins).', 'birth_year.required' => 'L’année de naissance est obligatoire pour une recherche par téléphone.']);
+        abort_unless(BeneficiaryLookupService::hasSearchTable(), 503, 'Mise à jour de la mutuelle en cours : réessayez dans un instant.');
+
+        $results = $lookup->search($mode, $data, $request->user(), $provider->id);
+
+        return view('tenant.portal.index', $this->baseData($request, $provider, $convention) + [
+            'result' => null, 'search' => ['mode' => $mode, 'results' => isset($results['too_many']) ? [] : $results, 'too_many' => isset($results['too_many'])],
+        ]);
+    }
+
+    /** Vérifier les droits d'un résultat de recherche (jeton chiffré, propre à la personne connectée). */
+    public function pick(Request $request, BeneficiaryLookupService $lookup)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $request->validate(['pick' => ['required', 'string', 'max:2000']]);
+        $found = $lookup->pick((string) $request->input('pick'), $request->user(), $provider->id);
+        abort_unless($found, 410, 'Ce résultat de recherche a expiré : relancez la recherche.');
+
+        return $this->runCheck($request, $provider, $convention, $found['member'], $found['dependent'], 'search');
+    }
+
+    /**
+     * Estimation de la prise en charge AVANT les soins (rien n'est enregistré), à partir d'une
+     * vérification positive récente : part mutuelle, part patient, part non couverte, plafond.
+     */
+    public function estimate(Request $request, int $check, CoverageService $coverage)
+    {
+        [$provider, $convention] = $this->context($request, 'act');
+        $c = $this->usableCheck($request, $provider, $check);
+        $data = $request->validate(['act_type_id' => ['required', 'integer'], 'total' => ['required', 'string', 'max:20']],
+            ['act_type_id.required' => 'Choisissez l’acte.', 'total.required' => 'Indiquez le montant prévu.']);
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        $total = $this->currency()->toMinor($this->amount($data['total']));
+        if ($total <= 0) {
+            return back()->withErrors(['total' => 'Indiquez le montant prévu des soins.']);
         }
+        $version = $this->capture->versionFor($c->member, now()->toDateString());
+        abort_unless($version, 422, 'Aucune garantie en cours pour cet adhérent.');
+        $estimate = $coverage->estimate($version, $c->member, (int) $data['act_type_id'], $total, now()->toDateString());
 
-        if (! $member) {
-            $check = RightsCheck::create(['user_id' => $request->user()->id, 'care_provider_id' => $provider->id, 'member_id' => null,
-                'ok' => false, 'reasons' => ['unknown_member'], 'created_at' => now()]);
-
-            return $this->resultView($request, $provider, $convention, ['ok' => false, 'reasons' => ['unknown_member'], 'member' => null, 'check' => $check]);
-        }
-
-        $version = $this->capture->versionFor($member, now()->toDateString());
-        $verdict = $version
-            ? $this->rights->verify($member, $version->guarantee_id, now()->toDateString(), null, $provider->id)
-            : ['ok' => false, 'reasons' => ['no_active_guarantee']];
-
-        $check = RightsCheck::create(['user_id' => $request->user()->id, 'care_provider_id' => $provider->id, 'member_id' => $member->id,
-            'ok' => $verdict['ok'], 'reasons' => $verdict['reasons'], 'created_at' => now()]);
-
-        return $this->resultView($request, $provider, $convention, $verdict + ['member' => $member, 'check' => $check]);
+        return $this->resultView($request, $provider, $convention, $this->verdictFor($c), $estimate);
     }
 
     public function declare(Request $request, int $check)
@@ -94,6 +128,7 @@ class ProviderPortalController extends Controller
             'dependents' => $c->member->dependents()->where('status', 'active')->orderBy('first_name')->get(),
             'acts' => ActType::orderBy('label')->get(),
             'currency' => $this->currency(),
+            'checkedDependent' => RightsCheck::hasIdentificationColumns() ? $c->dependent_id : null,
         ]);
     }
 
@@ -290,12 +325,68 @@ class ProviderPortalController extends Controller
         return $c;
     }
 
-    private function resultView(Request $request, CareProvider $provider, ProviderConvention $convention, array $result)
+    /** Données communes de la page « Vérifier les droits ». */
+    private function baseData(Request $request, CareProvider $provider, ProviderConvention $convention): array
     {
-        return view('tenant.portal.index', [
-            'provider' => $provider, 'convention' => $convention, 'result' => $result,
-            'recent'   => RightsCheck::with('member')->where('care_provider_id', $provider->id)->where('user_id', $request->user()->id)
-                ->latest('id')->limit(8)->get(),
+        return [
+            'provider' => $provider, 'convention' => $convention, 'currency' => $this->currency(),
+            'recent'   => RightsCheck::with(RightsCheck::hasIdentificationColumns() ? ['member', 'dependent'] : ['member'])
+                ->where('care_provider_id', $provider->id)->where('user_id', $request->user()->id)->latest('id')->limit(8)->get(),
+            // Code transmis depuis l'espace prestataire central (recherche par code ou QR), à confirmer d'un clic.
+            'prefill'  => $request->session()->get('portal_prefill'),
+        ];
+    }
+
+    /** Vérifie les droits d'un bénéficiaire identifié (ou non) et journalise la vérification. */
+    private function runCheck(Request $request, CareProvider $provider, ProviderConvention $convention, ?Member $member, ?Dependent $dependent, string $method, bool $invalidCard = false)
+    {
+        $extra = RightsCheck::hasIdentificationColumns() ? ['dependent_id' => $dependent?->id, 'method' => $method] : [];
+        if (! $member) {
+            $reasons = [$invalidCard ? 'invalid_card' : 'unknown_member'];
+            $check = RightsCheck::create(['user_id' => $request->user()->id, 'care_provider_id' => $provider->id, 'member_id' => null,
+                'ok' => false, 'reasons' => $reasons, 'created_at' => now()] + $extra);
+
+            return $this->resultView($request, $provider, $convention, ['ok' => false, 'reasons' => $reasons, 'member' => null, 'dependent' => null, 'check' => $check]);
+        }
+
+        $version = $this->capture->versionFor($member, now()->toDateString());
+        $verdict = $version
+            ? $this->rights->verify($member, $version->guarantee_id, now()->toDateString(), null, $provider->id)
+            : ['ok' => false, 'reasons' => ['no_active_guarantee']];
+        // Un ayant droit retiré de l'adhésion n'a plus de droits, même si l'adhérent en a.
+        if ($dependent && $dependent->status !== 'active') {
+            $verdict = ['ok' => false, 'reasons' => array_values(array_unique([...$verdict['reasons'], 'dependent_removed']))];
+        }
+
+        $check = RightsCheck::create(['user_id' => $request->user()->id, 'care_provider_id' => $provider->id, 'member_id' => $member->id,
+            'ok' => $verdict['ok'], 'reasons' => $verdict['reasons'], 'created_at' => now()] + $extra);
+        $request->session()->forget('portal_prefill');
+
+        return $this->resultView($request, $provider, $convention, $verdict + ['member' => $member, 'dependent' => $dependent, 'check' => $check]);
+    }
+
+    /** Verdict d'une vérification déjà journalisée (pour réafficher la fiche avec une estimation). */
+    private function verdictFor(RightsCheck $c): array
+    {
+        return ['ok' => (bool) $c->ok, 'reasons' => (array) $c->reasons, 'member' => $c->member,
+            'dependent' => RightsCheck::hasIdentificationColumns() && $c->dependent_id ? Dependent::find($c->dependent_id) : null, 'check' => $c];
+    }
+
+    private function resultView(Request $request, CareProvider $provider, ProviderConvention $convention, array $result, ?array $estimate = null)
+    {
+        $coverage = app(CoverageService::class);
+        $member = $result['member'] ?? null;
+        $dependent = $result['dependent'] ?? null;
+        $situation = $member ? $coverage->situation($member, $dependent, $provider->id) : null;
+        $result['status'] = RightsStatus::of($result['reasons'], $member, $dependent, (bool) ($situation['pending_subscription'] ?? false));
+        $result['situation'] = $situation;
+        $result['last'] = $member ? $coverage->lastCheck($result['check']) : null;
+        // Historique : seulement les prises en charge de CET établissement, et seulement si le rôle le permet.
+        $result['history'] = $member && \App\Support\TenantAccess::can('portal.claims', $request->user()) ? $coverage->history($member, $dependent, $provider->id) : null;
+
+        return view('tenant.portal.index', $this->baseData($request, $provider, $convention) + [
+            'result' => $result, 'search' => null, 'estimate' => $estimate,
+            'acts' => $result['ok'] ? ActType::orderBy('label')->get(['id', 'label']) : collect(),
         ]);
     }
 }

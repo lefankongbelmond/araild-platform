@@ -53,7 +53,7 @@ class SpaceController extends Controller
         abort_unless(ProviderAccess::allowed($perm), 403, 'Votre rôle dans l’établissement ne permet pas cette action.');
         $mutuals = $this->space->conventionedMutuals(ProviderAccess::current()->provider);
 
-        return view('provider.go', ['target' => $target, 'mutuals' => $mutuals]);
+        return view('provider.go', ['target' => $target, 'mutuals' => $mutuals, 'lookup' => null]);
     }
 
     public function open(Request $request, string $target, string $mutual)
@@ -61,12 +61,40 @@ class SpaceController extends Controller
         $m = ProviderAccess::current();
         $mut = $this->space->conventionedMutuals($m->provider)->firstWhere('id', $mutual);
         abort_unless($mut, 404);
-        $url = $this->space->handoffUrl($request->user('provider'), $m, $mut, $target, $request, $why);
+        $code = $request->validate(['code' => ['nullable', 'string', 'max:500']])['code'] ?? null;
+        $url = $this->space->handoffUrl($request->user('provider'), $m, $mut, $target, $request, $why, $code);
         if (! $url) {
             return back()->with('error', $why);
         }
 
         return redirect()->away($url);
+    }
+
+    /**
+     * Rechercher un bénéficiaire par code de carte ou QR dans toutes les mutuelles conventionnées
+     * (phase 3, 2026-11-17). Une seule mutuelle trouvée : son portail s'ouvre avec le code
+     * pré-rempli ; plusieurs : choix ; aucune : « bénéficiaire non identifié ».
+     */
+    public function lookup(Request $request)
+    {
+        abort_unless(ProviderAccess::allowed('rights.verify'), 403, 'Votre rôle dans l’établissement ne permet pas cette action.');
+        $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => 'Saisissez le code de la carte ou lisez son QR code.']);
+        $m = ProviderAccess::current();
+        $res = $this->space->lookup($m->provider, $request->user('provider'), $data['code'], $request);
+
+        if ($res['mutuals']->count() === 1) {
+            $url = $this->space->handoffUrl($request->user('provider'), $m, $res['mutuals']->first(), 'verify', $request, $why, trim($data['code']));
+            if ($url) {
+                return redirect()->away($url);
+            }
+
+            return back()->withInput()->with('error', $why);
+        }
+
+        return view('provider.go', [
+            'target' => 'verify', 'mutuals' => $this->space->conventionedMutuals($m->provider),
+            'lookup' => ['code' => trim($data['code']), 'mutuals' => $res['mutuals'], 'at' => now()],
+        ]);
     }
 
     /** Mes mutuelles : conventions en place, demandes, mutuelles disponibles. */

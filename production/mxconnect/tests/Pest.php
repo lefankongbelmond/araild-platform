@@ -143,3 +143,58 @@ function asAdmin(): \Illuminate\Foundation\Testing\TestCase
 {
     return as_('admin@equipe.test');
 }
+
+
+// --- Aides de l'espace prestataire central (Portail V2, phases 2 et 3) ---
+
+/** Personne de l'espace prestataire, prête (mot de passe choisi, double authentification active). */
+function proAccount(string $email, int $providerId, string $role = 'admin', ?array $perms = null): \App\Models\Provider\ProviderAccount
+{
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+    $a = \App\Models\Provider\ProviderAccount::firstOrCreate(['email' => $email], ['first_name' => ucfirst(strtok($email, '@')), 'last_name' => 'Soignant',
+        'password' => 'MotDePasse-Pro-2026', 'active' => true, 'mfa_enabled' => true, 'mfa_secret' => 'JBSWY3DPEHPK3PXP']);
+    \App\Models\Provider\ProviderMembership::create(['provider_account_id' => $a->id, 'care_provider_id' => $providerId, 'role' => $role, 'active' => true, 'permissions' => $perms]);
+
+    return $a;
+}
+
+/** Requêtes dans l'espace central au nom d'une personne (double authentification passée). */
+function asPro(\App\Models\Provider\ProviderAccount $a): \Illuminate\Foundation\Testing\TestCase
+{
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+
+    return test()->actingAs($a->fresh(), 'provider')->withSession(['provider_mfa_passed' => true]);
+}
+
+/** Établissement conventionné par la mutuelle de test (via le registre de la mutuelle). */
+function conventioned(string $name = 'CSI Akono'): \App\Models\Tenant\ProviderConvention
+{
+    asAdmin()->post(test()->host . '/parametres/prestataires', ['mode' => 'new', 'name' => $name, 'type' => 'health_center', 'locality' => 'Yaoundé'])->assertRedirect();
+
+    return test()->mutual->run(fn () => \App\Models\Tenant\ProviderConvention::latest('id')->firstOrFail());
+}
+
+/** Adresse d'entrée (sur le sous-domaine de la mutuelle) renvoyée par l'espace central, sans le port local. */
+function entryUrl($res): string
+{
+    $loc = (string) $res->headers->get('Location');
+    expect(parse_url($loc, PHP_URL_HOST))->toBe(parse_url(test()->host, PHP_URL_HOST))
+        ->and(parse_url($loc, PHP_URL_PATH))->toMatch('~^/prestataire/entree/[A-Za-z0-9]{64}$~');
+
+    return test()->host . parse_url($loc, PHP_URL_PATH);
+}
+
+/** Entrée dans le portail de la mutuelle depuis l'espace central ; renvoie le compte de la mutuelle ouvert. */
+function enterPortal(\App\Models\Provider\ProviderAccount $a, string $target = 'verify'): \App\Models\Tenant\User
+{
+    $res = asPro($a)->post(test()->c . "/espace-prestataire/ouvrir/{$target}/" . test()->mutual->id);
+    $url = entryUrl($res);
+    test()->get($url)->assertRedirect();
+
+    return test()->mutual->run(fn () => \App\Models\Tenant\User::where('provider_account_id', $a->id)->firstOrFail());
+}
+

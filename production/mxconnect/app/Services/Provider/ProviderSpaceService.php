@@ -46,6 +46,9 @@ class ProviderSpaceService
     public const PORTAL_ROUTE_PERMS = [
         'portal.index'                  => 'rights.verify',
         'portal.verify'                 => 'rights.verify',
+        'portal.search'                 => 'rights.verify',
+        'portal.pick'                   => 'rights.verify',
+        'portal.estimate'               => 'rights.verify',
         'portal.declare'                => 'care.declare',
         'portal.declare.store'          => 'care.declare',
         'portal.claims'                 => 'claims.view',
@@ -98,7 +101,7 @@ class ProviderSpaceService
     // --- Entrée dans le portail d'une mutuelle ---
 
     /** Crée un jeton d'entrée et renvoie l'adresse à ouvrir ; null si impossible (message dans $why). */
-    public function handoffUrl(ProviderAccount $account, ProviderMembership $membership, Mutual $mutual, string $target, Request $request, ?string &$why = null): ?string
+    public function handoffUrl(ProviderAccount $account, ProviderMembership $membership, Mutual $mutual, string $target, Request $request, ?string &$why = null, ?string $payload = null): ?string
     {
         [, $perm] = self::TARGETS[$target] ?? self::TARGETS['verify'];
         if (! $membership->can($perm)) {
@@ -121,9 +124,58 @@ class ProviderSpaceService
             'provider_account_id' => $account->id, 'care_provider_id' => $membership->care_provider_id, 'mutual_id' => $mutual->id,
             'token_hash' => hash('sha256', $token), 'target' => $target, 'expires_at' => now()->addSeconds(self::HANDOFF_SECONDS),
             'ip' => $request->ip(), 'created_at' => now(),
-        ]);
+        ] + ($payload !== null && $target === 'verify' && self::hasPayloadColumn() ? ['payload' => mb_substr($payload, 0, 500)] : []));
 
         return $base . '/prestataire/entree/' . $token;
+    }
+
+    public static function hasPayloadColumn(): bool
+    {
+        static $has = null;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::connection('central')->hasColumn('provider_handoffs', 'payload');
+    }
+
+    /**
+     * Recherche d'un bénéficiaire par code de carte ou QR dans les mutuelles conventionnées
+     * (2026-11-17). Ne renvoie QUE les mutuelles où le code existe (aucune donnée de l'adhérent) ;
+     * la vérification des droits se fait ensuite dans la mutuelle et y est journalisée.
+     * Un QR désigne lui-même sa mutuelle (jeton « mutuelle.adhérent.signature »).
+     *
+     * @return array{mode:string, mutuals:Collection}
+     */
+    public function lookup(CareProvider $provider, ProviderAccount $by, string $input, Request $request): array
+    {
+        $input = trim($input);
+        $token = preg_match('~[?&]t=([^&\s]+)~', $input, $m) ? urldecode($m[1]) : (substr_count($input, '.') === 2 ? $input : null);
+        $candidates = $this->conventionedMutuals($provider)
+            ->filter(fn ($mu) => ProviderAffiliation::where('care_provider_id', $provider->id)->where('mutual_id', $mu->id)->value('status') === 'approved');
+        $mode = $token ? 'qr' : 'code';
+
+        if ($token) {
+            $mutualId = explode('.', $token)[0];
+            $found = $candidates->filter(fn ($mu) => (string) $mu->id === $mutualId)->values();
+        } else {
+            $found = $candidates->filter(function ($mu) use ($input) {
+                try {
+                    return $mu->run(fn () => \App\Models\Tenant\Member::where('member_code', $input)->exists());
+                } catch (\Throwable $e) {
+                    report($e);
+
+                    return false;
+                }
+            })->values();
+        }
+
+        if (\Illuminate\Support\Facades\Schema::connection('central')->hasTable('provider_lookups')) {
+            \Illuminate\Support\Facades\DB::connection('central')->table('provider_lookups')->insert([
+                'provider_account_id' => $by->id, 'care_provider_id' => $provider->id, 'mode' => $mode,
+                'code_hash' => hash('sha256', mb_strtolower($token ?? $input)), 'matches' => $found->count(),
+                'mutual_ids' => json_encode($found->pluck('id')->all()), 'ip' => $request->ip(), 'created_at' => now(),
+            ]);
+        }
+
+        return ['mode' => $mode, 'mutuals' => $found];
     }
 
     /**
@@ -163,6 +215,10 @@ class ProviderSpaceService
         // Double authentification déjà passée dans l'espace prestataire (obligatoire là-bas).
         $request->session()->put('mfa_passed', true);
         $request->session()->put('provider_space', ['account' => $account->id, 'membership' => $membership->id]);
+        // Code de carte saisi dans l'espace central : pré-rempli, la vérification se fait ici, d'un clic.
+        if (! empty($h->payload)) {
+            $request->session()->put('portal_prefill', $h->payload);
+        }
         if (\App\Services\Tenant\TeamService::hasTeamColumns()) {
             $user->forceFill(['last_login_at' => now()])->saveQuietly();
         }
@@ -225,10 +281,13 @@ class ProviderSpaceService
         if (! $mutualId || ! \Illuminate\Support\Facades\Schema::connection('central')->hasTable('provider_affiliations')) {
             return;
         }
+        // Valeur relue en base : une convention tout juste créée sans « active » explicite prend la
+        // valeur par défaut de la colonne (vraie), absente du modèle en mémoire.
+        $active = (bool) ($c->exists ? ProviderConvention::whereKey($c->id)->value('active') : $c->active);
         $aff = ProviderAffiliation::firstOrNew(['care_provider_id' => $c->care_provider_id, 'mutual_id' => $mutualId]);
         $wasApproved = $aff->exists && $aff->status === 'approved';
-        $aff->status = $c->active ? 'approved' : 'suspended';
-        $aff->decided_at = $wasApproved && $c->active ? $aff->decided_at : now();
+        $aff->status = $active ? 'approved' : 'suspended';
+        $aff->decided_at = $wasApproved && $active ? $aff->decided_at : now();
         $aff->log($event, $who);
         $aff->save();
 

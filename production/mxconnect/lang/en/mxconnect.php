@@ -234,6 +234,7 @@ return [
         'act_excluded' => 'Act not covered',
         'provider_not_authorised' => 'Provider not in network',
         'unknown_member' => 'No member with this code or card',
+        'dependent_removed' => 'Dependant removed from the membership',
     ],
 
     'contribution' => [
@@ -348,6 +349,7 @@ return [
         'code_future_care_date' => 'Care date in the future',
         'code_late_submission' => 'Late submission (> 90 days)',
         'code_ceiling_reached' => 'Ceiling reached',
+        'code_above_tariff' => 'Amount above the agreed tariff for this act (to review)',
         'code_frequent_same_act' => 'Frequently repeated act',
         'code_unknown' => 'Unknown',
     ],

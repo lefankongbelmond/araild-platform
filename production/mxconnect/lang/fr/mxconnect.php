@@ -234,6 +234,7 @@ return [
         'act_excluded' => 'Acte non couvert',
         'provider_not_authorised' => 'Prestataire non conventionné',
         'unknown_member' => 'Aucun adhérent avec ce code ou cette carte',
+        'dependent_removed' => 'Ayant droit retiré de l’adhésion',
     ],
 
     'contribution' => [
@@ -348,6 +349,7 @@ return [
         'code_future_care_date' => 'Date de soin dans le futur',
         'code_late_submission' => 'Soumission tardive (> 90 jours)',
         'code_ceiling_reached' => 'Plafond atteint',
+        'code_above_tariff' => 'Montant supérieur au tarif conventionnel de l’acte (à examiner)',
         'code_frequent_same_act' => 'Acte répété fréquemment',
         'code_unknown' => 'Indéterminé',
     ],

@@ -20,7 +20,7 @@
     <label class="block text-sm font-medium">Personne soignée *
       <select name="beneficiary" required class="{{ $f }}">
         <option value="member">{{ $member->last_name }} {{ $member->first_name }} (adhérent)</option>
-        @foreach ($dependents as $d)<option value="{{ $d->id }}" @selected(old('beneficiary') == $d->id)>{{ $d->last_name }} {{ $d->first_name }} (personne à charge)</option>@endforeach
+        @foreach ($dependents as $d)<option value="{{ $d->id }}" @selected(old('beneficiary', $checkedDependent ?? null) == $d->id)>{{ $d->last_name }} {{ $d->first_name }} (personne à charge)</option>@endforeach
       </select></label>
     <label class="block text-sm font-medium">Acte *
       <select name="act_type_id" required class="{{ $f }}"><option value="">—</option>@foreach ($acts as $a)<option value="{{ $a->id }}" @selected((int) old('act_type_id') === $a->id)>{{ $a->label }}</option>@endforeach</select></label>

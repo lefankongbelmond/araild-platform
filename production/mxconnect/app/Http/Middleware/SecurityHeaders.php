@@ -23,7 +23,7 @@ class SecurityHeaders
             'X-Frame-Options'         => 'DENY',
             'Referrer-Policy'         => 'strict-origin-when-cross-origin',
             // Caméra autorisée uniquement sur le portail prestataire (lecture du QR de la carte).
-            'Permissions-Policy'      => ($request->route() && $request->routeIs('portal.index', 'portal.verify') ? 'camera=(self)' : 'camera=()') . ', microphone=(), geolocation=()',
+            'Permissions-Policy'      => ($request->route() && $request->routeIs('portal.index', 'portal.verify', 'portal.search', 'portal.pick', 'portal.estimate', 'pro.go', 'pro.lookup') ? 'camera=(self)' : 'camera=()') . ', microphone=(), geolocation=()',
             'Content-Security-Policy' => $this->csp(),
         ];
 

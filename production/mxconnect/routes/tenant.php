@@ -88,6 +88,10 @@ Route::middleware([
             ->whereNumber(['check', 'claim'])->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('verifier', 'verify')->name('verify')->middleware('throttle:30,1');
+                // Phase 3 (2026-11-17) : recherche encadrée sans carte, choix d'un résultat, estimation avant soins.
+                Route::post('rechercher', 'search')->name('search')->middleware('throttle:portal-search');
+                Route::post('rechercher/choix', 'pick')->name('pick')->middleware('throttle:30,1');
+                Route::post('estimer/{check}', 'estimate')->name('estimate')->middleware('throttle:30,1');
                 Route::get('declarer/{check}', 'declare')->name('declare');
                 Route::post('declarer/{check}', 'storeDeclaration')->name('declare.store');
                 Route::get('prises-en-charge', 'claims')->name('claims');

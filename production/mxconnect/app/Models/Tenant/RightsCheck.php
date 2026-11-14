@@ -13,4 +13,14 @@ class RightsCheck extends Model
     protected $casts = ['ok' => 'boolean', 'reasons' => 'array'];
 
     public function member() { return $this->belongsTo(Member::class); }
+    public function dependent() { return $this->belongsTo(Dependent::class); }
+
+    /** Colonnes de la phase 3 présentes (mutuelle migrée) ? */
+    public static function hasIdentificationColumns(): bool
+    {
+        static $cache = [];
+        $key = (string) (function_exists('tenant') ? tenant('id') : '');
+
+        return $cache[$key] ??= \Illuminate\Support\Facades\Schema::hasColumn('rights_checks', 'dependent_id');
+    }
 }
