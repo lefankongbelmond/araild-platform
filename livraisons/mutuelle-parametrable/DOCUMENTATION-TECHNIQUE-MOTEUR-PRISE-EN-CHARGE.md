@@ -613,3 +613,34 @@ L'entrée de menu est **Paramètres → Changements de formule**. La table est c
 **Limites** :
 - **pas de prorata** : les échéances de l'ancienne formule dues avant la date d'effet restent dues entières. Choisissez de préférence une date d'effet qui coïncide avec une échéance ;
 - **pas de retour arrière automatique** : il faut un nouveau changement, vers l'ancienne formule.
+
+---
+
+# Livraison du 24/11/2026 (VERSION 2026.11.24) : délai de grâce avant suspension
+
+## 25. Règle de suspension pour cotisations impayées
+
+Source unique : `App\Support\ArrearsPolicy`. Le réglage est `mutual_settings.arrears_grace_days`, de 0 à 180 jours. **S'il est absent ou à 0, le comportement d'origine s'applique.** Aucune valeur par défaut n'est inventée.
+
+| Notion | Règle | Où |
+|---|---|---|
+| **Retard financier** (arriérés, relances, rapports, onglet « En retard », « cotisations en retard » affiché) | Toute échéance non réglée dont la date est passée. **Inchangé** | Cotisations, rapports, pilotage (montant des arriérés), notifications de relance |
+| **Suspension des droits** | Une échéance non réglée dont la date est **antérieure à aujourd'hui moins N jours** (`ArrearsPolicy::suspending()`) | `CoverageEngine::membership` (statut `suspended`), `RightsVerificationService` (motif `contribution_arrears`), pilotage (adhésions suspendues) |
+| **Affichage** | `ArrearsPolicy::graceEnd()` = date de l'échéance impayée la plus ancienne + N, tant qu'elle n'est pas dépassée | Portail prestataire (« droits maintenus jusqu'au … »), portail adhérent (« vos droits restent ouverts jusqu'au … ») |
+
+Exemple, avec N = 15 : une échéance du 01/11 impayée laisse les droits ouverts jusqu'au 16/11 inclus. Les droits sont suspendus à partir du 17/11. Ils rouvrent dès le règlement.
+
+**Routes** :
+
+| Route | URL | Droit |
+|---|---|---|
+| `contributions.policy` | `/cotisations/regle-de-suspension` (bouton « Règle de suspension » sur la page Cotisations) | A, C, T, U, K |
+| `contributions.policy.update` | idem | A |
+
+**Pas de migration** : la table `mutual_settings` existe depuis le 19/11.
+
+**Tests** : `tests/Feature/DelaiDeGraceTest.php` (3). Ils couvrent :
+- le comportement sans délai ;
+- le délai de 15 jours : droits maintenus, dernier jour, lendemain suspendu, réouverture après paiement ;
+- le retard financier toujours visible ;
+- les droits de l'écran de réglage.

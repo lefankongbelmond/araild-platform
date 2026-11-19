@@ -336,6 +336,8 @@ Route::middleware([
         // Relevé par adhérent, encaissement au guichet, export, échéanciers glissants (2026-11-06)
         Route::get('cotisations/export.csv', [ContributionController::class, 'export'])->name('contributions.export');
         Route::post('cotisations/actualiser', [ContributionController::class, 'refresh'])->name('contributions.refresh');
+        Route::get('cotisations/regle-de-suspension', [ContributionController::class, 'policy'])->name('contributions.policy');
+        Route::post('cotisations/regle-de-suspension', [ContributionController::class, 'updatePolicy'])->name('contributions.policy.update');
         Route::get('cotisations/adherent/{member}', [ContributionController::class, 'member'])->name('contributions.member');
         Route::post('cotisations/adherent/{member}/encaissement', [ContributionController::class, 'collect'])->name('contributions.collect');
         Route::get('recus/{payment}', [ContributionController::class, 'receipt'])->withTrashed()->name('contributions.receipt');

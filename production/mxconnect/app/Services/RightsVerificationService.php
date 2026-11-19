@@ -29,8 +29,7 @@ class RightsVerificationService
         // retard même si la tâche de nuit ne l'a pas encore marquée « en retard » (cron absent).
         $hasArrears = $member->subscriptions()
             ->where('status', 'validated')
-            ->whereHas('schedules', fn ($q) => $q->where(fn ($w) => $w->where('status', 'overdue')
-                ->orWhere(fn ($x) => $x->where('status', 'to_pay')->whereDate('due_date', '<', now()->toDateString()))))
+            ->whereHas('schedules', fn ($q) => \App\Support\ArrearsPolicy::suspending($q))   // délai de grâce (2026-11-24)
             ->exists();
         if ($hasArrears) {
             $reasons[] = 'contribution_arrears';

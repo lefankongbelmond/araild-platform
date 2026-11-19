@@ -73,6 +73,7 @@ class CoverageService
             'version_valid_to' => $version?->valid_to,
             'overdue_count' => (clone $overdue)->count(),
             'overdue_since' => (clone $overdue)->min('due_date'),
+            'grace_until' => \App\Support\ArrearsPolicy::graceEnd((clone $overdue)->min('due_date')),
             'paid_through' => $paidThrough ? ['label' => $paidThrough->label(), 'due_date' => $paidThrough->due_date] : null,
             'ceilings' => $ceilings,
             'exclusions' => $version && is_array($version->exclusions) && $version->exclusions

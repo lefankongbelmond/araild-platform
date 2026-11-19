@@ -8,6 +8,7 @@
     <x-slot:title>{{ __('mxconnect.contribution.plural') }}</x-slot:title>
     <x-slot:subtitle>Échéances des adhérents, retards et encaissements. Pour encaisser un montant partiel ou plusieurs échéances, ouvrez le relevé de l’adhérent. Chaque encaissement produit un reçu et un mouvement de trésorerie.</x-slot:subtitle>
     <x-slot:actions>
+      @acces('contributions.policy')<a href="{{ route('contributions.policy') }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Règle de suspension</a>@endacces
       @acces('contributions.export')<a href="{{ route('contributions.export', request()->only('status', 'q')) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Exporter (CSV)</a>@endacces
       @if ($canRefresh)
         <form method="POST" action="{{ route('contributions.refresh') }}">@csrf<button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">Actualiser les échéanciers</button></form>

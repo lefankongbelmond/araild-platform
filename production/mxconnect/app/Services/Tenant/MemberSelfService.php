@@ -55,6 +55,7 @@ class MemberSelfService
             'coverage_start' => $sub?->effective_date, 'coverage_end' => $version?->valid_to,
             'beneficiaries' => 1 + $m->dependents()->where('status', 'active')->count(),
             'overdue_count' => (clone $overdue)->count(), 'overdue_minor' => (int) (clone $overdue)->sum('due_minor'),
+            'grace_until' => \App\Support\ArrearsPolicy::graceEnd((clone $overdue)->min('due_date')),
             'next_due' => $next ? ['date' => $next->due_date, 'amount' => (int) $next->due_minor, 'label' => $next->label()] : null,
             'prestations_count' => (clone $prest)->count(), 'mutual_year_minor' => (int) (clone $prest)->sum('mutual_part_minor'),
             'limits' => $version ? $this->limits($m, null, $version, $sub) : [],

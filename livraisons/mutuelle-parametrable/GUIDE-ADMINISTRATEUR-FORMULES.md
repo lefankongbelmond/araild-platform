@@ -1,6 +1,6 @@
 # Guide de l'administrateur : formules, garanties, plafonds, carences, dérogations
 
-MX-CONNECT, version 2026.11.23. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
+MX-CONNECT, version 2026.11.24. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
 
 ## 1. Où trouver le catalogue
 
@@ -226,3 +226,18 @@ Bon à savoir :
 - **Formule cible sans cotisation fixée** (0, comme les formules d'exemple) : le changement est refusé. Fixez d'abord la cotisation dans le catalogue.
 - **Pas de prorata** : choisissez de préférence une date d'effet qui tombe le jour d'une échéance.
 - **Les adhérents concernés** sont prévenus par une notification.
+
+## 17. Délai de grâce avant suspension (depuis le 24/11/2026)
+
+Par défaut, une échéance impayée suspend les droits aux soins **dès le lendemain** de sa date. Votre règlement intérieur peut laisser quelques jours à l'adhérent.
+
+1. **Cotisations → Règle de suspension** (administrateur).
+2. Saisissez le **délai de grâce** en jours (0 à 180), puis **Enregistrer**. Laissez vide ou mettez 0 pour revenir à la règle d'origine.
+
+Pendant le délai :
+
+- l'échéance reste **en retard** : elle figure dans les arriérés, les exports de relance et les rapports ;
+- seuls les droits aux soins restent ouverts ;
+- le prestataire voit « droits maintenus jusqu'au … » et l'adhérent « vos droits restent ouverts jusqu'au … ».
+
+À la fin du délai, les droits sont suspendus jusqu'au règlement.

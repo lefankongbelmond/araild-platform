@@ -55,7 +55,7 @@ class PilotageService
         $validatedNow = Subscription::where('status', 'validated')->whereDate('effective_date', '<=', $today)->whereIn('member_id', $memberIds)->pluck('member_id')->unique();
         $pending = Subscription::where('status', 'captured')->whereIn('member_id', $memberIds)->pluck('member_id')->unique();
         $arrears = Subscription::where('status', 'validated')->whereIn('member_id', $memberIds)
-            ->whereHas('schedules', fn ($q) => $q->where(fn ($w) => $w->where('status', 'overdue')->orWhere(fn ($x) => $x->where('status', 'to_pay')->whereDate('due_date', '<', $today))))
+            ->whereHas('schedules', fn ($q) => \App\Support\ArrearsPolicy::suspending($q))   // suspendus = au-delà du délai de grâce
             ->pluck('member_id')->unique();
         $statusOf = (clone $members)->pluck('status', 'id');
         $count = ['active' => 0, 'suspended' => 0, 'expired' => 0, 'pending' => 0];

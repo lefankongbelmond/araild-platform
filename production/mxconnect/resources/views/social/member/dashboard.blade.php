@@ -28,6 +28,7 @@
       <span class="mx-xs mx-muted">Mes cotisations</span>
       @if ($d['overdue_count'] > 0)
         <p style="margin:6px 0 0"><b style="color:var(--mx-danger)">En retard : {{ $d['overdue_count'] }} échéance(s), {{ $fmt($d['overdue_minor']) }}</b></p>
+        @if (! empty($d['grace_until']))<p style="margin:4px 0 0">Vos droits restent ouverts jusqu’au <b>{{ \Illuminate\Support\Carbon::parse($d['grace_until'])->format('d/m/Y') }}</b>. Réglez votre cotisation avant cette date pour éviter la suspension.</p>@endif
         <p class="mx-xs mx-muted">Vos droits sont suspendus tant que le retard n’est pas réglé auprès de votre mutuelle.</p>
       @else
         <p style="margin:6px 0 0"><b style="color:#0E7A47">À jour</b></p>

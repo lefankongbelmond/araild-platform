@@ -1,6 +1,6 @@
 # Bilan de la mission « Mutuelle paramétrable + portail adhérent »
 
-MX-CONNECT, 22/11/2026, VERSION 2026.11.22 ; mis à jour le 23/11/2026 (VERSION 2026.11.23). La mission a été livrée en six fois, de L1 à L6, du 18 au 22/11/2026. Chaque livraison comprend un ZIP cumulatif, un LISEZMOI, des tests Pest rejoués en base dédiée et en tables préfixées, et un contrôle dans un navigateur réel à 4 largeurs.
+MX-CONNECT, 22/11/2026, VERSION 2026.11.22 ; mis à jour le 24/11/2026 (VERSION 2026.11.24). La mission a été livrée en six fois, de L1 à L6, du 18 au 22/11/2026. Chaque livraison comprend un ZIP cumulatif, un LISEZMOI, des tests Pest rejoués en base dédiée et en tables préfixées, et un contrôle dans un navigateur réel à 4 largeurs.
 
 ## 1. Les 17 livrables de la Partie 12
 
@@ -31,7 +31,7 @@ MX-CONNECT, 22/11/2026, VERSION 2026.11.22 ; mis à jour le 23/11/2026 (VERSION 
   - `MoteurPriseEnChargeTest`, `CatalogueFormulesTest` ;
   - `AccordsPrealablesPharmacieTest`, `PortailAdherentTest` ;
   - `TableauDeBordPilotageTest`, `MutuelleTestReinitialisationTest` ;
-  - `GestionnaireCotisationsTest`, `TraceAccesSanteTest`, `ChangementFormuleTest`.
+  - `GestionnaireCotisationsTest`, `TraceAccesSanteTest`, `ChangementFormuleTest`, `DelaiDeGraceTest`.
 
   Tous passent en base dédiée et en tables préfixées (`MX_TEST_STORAGE=prefix`).
 - **Suite complète** : tous les tests Pest de MX-CONNECT passent (nombre exact dans le LISEZMOI de chaque livraison).
@@ -56,7 +56,7 @@ Ces écarts ont été dits à chaque livraison ; ils sont réunis ici.
 1. **Procédure de migration des adhérents vers une nouvelle formule** (Partie 5.2) : **faite le 23/11/2026** (VERSION 2026.11.23).
    - Fonctionnement : changement de formule demandé, validé « 4 yeux », appliqué à la date d'effet ; ancienneté conservée ; échéanciers recalculés ; aucune rétroactivité. Détail au § 24 de la documentation technique.
    - Reste : pas de prorata des échéances, pas de retour arrière automatique.
-2. **Règles de suspension paramétrables** : la règle est fixe (échéance échue impayée = droits suspendus). Il n'existe pas encore de délai de grâce réglable par mutuelle.
+2. **Règles de suspension paramétrables** : **faites le 24/11/2026** (VERSION 2026.11.24). Délai de grâce réglable par mutuelle (0 à 180 jours), appliqué aux droits ; le retard financier reste visible. Voir le § 25 de la documentation technique.
 3. **Région** : non enregistrée sur les fiches ; l'antenne sert de zone dans le tableau de bord.
 4. **Anglais** : l'application a des fichiers de langue (`lang/fr`, `lang/en`), mais les écrans de la mission sont rédigés directement en français. Les traduire demandera de passer leurs textes dans ces fichiers.
 5. **PDF côté serveur** : attestation, carte, reçus et tableau de bord passent par l'impression du navigateur.

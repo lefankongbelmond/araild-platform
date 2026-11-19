@@ -85,9 +85,8 @@ class CoverageEngine
         if (! $version) {
             return $this->m('expired', ['no_active_guarantee'], $subscription);
         }
-        $arrears = ContributionSchedule::where('subscription_id', $subscription->id)
-            ->where(fn ($w) => $w->where('status', 'overdue')->orWhere(fn ($x) => $x->where('status', 'to_pay')->whereDate('due_date', '<', now()->toDateString())))
-            ->exists();
+        // Délai de grâce réglable par la mutuelle (2026-11-24) : voir App\Support\ArrearsPolicy.
+        $arrears = \App\Support\ArrearsPolicy::suspending(ContributionSchedule::where('subscription_id', $subscription->id))->exists();
         if ($arrears) {
             return $this->m('suspended', ['contribution_arrears'], $subscription, $version);
         }

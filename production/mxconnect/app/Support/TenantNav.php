@@ -42,6 +42,7 @@ class TenantNav
         'accounting.sheet'  => 'accounting.balance',
         'accounting.closing.index' => 'accounting.balance',
         'contributions.member'     => 'contributions.index',
+        'contributions.policy'     => 'contributions.index',
         'accounting.chart'  => 'accounting.journal',
         'formulas.show'       => 'formulas.index',
         'formula-migrations.create' => 'formula-migrations.index',

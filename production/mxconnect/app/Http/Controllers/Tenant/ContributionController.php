@@ -176,6 +176,27 @@ class ContributionController extends Controller
         return back()->with($n ? 'success' : 'error', $n ? 'Droit d’adhésion appelé : il figure dans l’échéancier et peut être encaissé.' : 'Aucun droit d’adhésion à appeler pour cet adhérent.');
     }
 
+    /** Règle de suspension : délai de grâce réglable par la mutuelle (2026-11-24). */
+    public function policy()
+    {
+        return view('tenant.contributions.policy', [
+            'grace' => \App\Models\Tenant\MutualSetting::int(\App\Support\ArrearsPolicy::KEY),
+            'max' => \App\Support\ArrearsPolicy::MAX_DAYS,
+        ]);
+    }
+
+    public function updatePolicy(Request $request)
+    {
+        $d = $request->validate(['grace_days' => ['nullable', 'integer', 'between:0,' . \App\Support\ArrearsPolicy::MAX_DAYS]],
+            ['grace_days.between' => 'Le délai de grâce doit être compris entre 0 et ' . \App\Support\ArrearsPolicy::MAX_DAYS . ' jours.']);
+        $days = (int) ($d['grace_days'] ?? 0);
+        \App\Models\Tenant\MutualSetting::put(\App\Support\ArrearsPolicy::KEY, $days > 0 ? (string) $days : null, $request->user()->id);
+
+        return back()->with('success', $days > 0
+            ? "Délai de grâce enregistré : les droits sont suspendus {$days} jour(s) après une échéance impayée."
+            : 'Délai de grâce retiré : les droits sont suspendus dès le lendemain d’une échéance impayée.');
+    }
+
     /** Prolonge les échéanciers (horizon glissant) et marque les retards. */
     public function refresh(ScheduleGenerationService $schedules)
     {

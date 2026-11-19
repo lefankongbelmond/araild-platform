@@ -74,6 +74,7 @@ Les notifications ne contiennent jamais de détail médical.
 
 ## 9. Bon à savoir
 
+- **Cotisation en retard** : si votre mutuelle accorde un délai de grâce, l'accueil indique jusqu'à quelle date vos droits restent ouverts. Réglez avant cette date pour éviter la suspension.
 - **Le paiement en ligne n'est pas encore disponible.** Réglez vos cotisations auprès de votre mutuelle. Un paiement apparaît dans votre espace dès qu'elle l'a enregistré.
 - **Vous voyez seulement vos propres données**, et celles de vos bénéficiaires, dans les mutuelles où votre compte est relié.
 - **Une urgence n'est jamais bloquée** par une démarche administrative : l'établissement soigne d'abord, la mutuelle régularise ensuite.
