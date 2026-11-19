@@ -85,6 +85,9 @@ class FormulaMigrationService
         if (! $c['version']) {
             throw new AccountingRefusal('La formule cible n’a pas de version en vigueur à la date d’effet.');
         }
+        if ($why = self::targetProblem($c['version'])) {
+            throw new AccountingRefusal($why);
+        }
         if (! $c['eligible']) {
             throw new AccountingRefusal('Aucun adhérent ne peut changer de formule à cette date (voir les motifs dans l’aperçu).');
         }
@@ -130,6 +133,25 @@ class FormulaMigrationService
         $mig->update(['status' => 'cancelled', 'decision_note' => trim(($mig->decision_note ? $mig->decision_note . ' — ' : '') . 'Retirée par ' . $by->first_name . ' ' . $by->last_name)]);
     }
 
+    /**
+     * La formule cible doit avoir une cotisation fixée et une périodicité utilisable : rien n'est
+     * inventé (une formule d'exemple a une cotisation à 0, à fixer par une nouvelle version).
+     */
+    public static function targetProblem(?GuaranteeVersion $version): ?string
+    {
+        if (! $version) {
+            return 'La formule cible n’a pas de version en vigueur à la date d’effet.';
+        }
+        if ((int) $version->base_contribution_minor <= 0) {
+            return 'La cotisation de la formule cible n’est pas fixée (0) : fixez-la d’abord dans le catalogue (nouvelle version datée).';
+        }
+        if (! ScheduleGenerationService::stepMonths($version)) {
+            return 'La périodicité de la formule cible n’a pas de nombre de mois : complétez-la d’abord dans le catalogue.';
+        }
+
+        return null;
+    }
+
     /** Applique une demande validée dont la date d'effet est atteinte. */
     public function apply(FormulaMigration $mig): FormulaMigration
     {
@@ -147,6 +169,10 @@ class FormulaMigrationService
         }
 
         $c = $this->candidates($mig->source_guarantee_id, $mig->target_guarantee_id, $date, $mig->member_ids);
+        if ($why = self::targetProblem($c['version'])) {
+            FormulaMigration::whereKey($mig->id)->update(['status' => 'approved', 'applied_at' => null]);   // rien n'est fait : reste à appliquer
+            throw new AccountingRefusal($why);
+        }
         $migrated = [];
         $skipped = $c['skipped'];
         foreach ($c['eligible'] as $row) {

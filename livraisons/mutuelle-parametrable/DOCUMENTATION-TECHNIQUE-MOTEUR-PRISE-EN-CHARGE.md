@@ -536,3 +536,80 @@ Tests ajoutés en L6 :
 - `GestionnaireCotisationsTest` (2) ;
 - `TraceAccesSanteTest` (1) ;
 - 1 cas dans `MoteurPriseEnChargeTest`.
+
+---
+
+# Livraison du 23/11/2026 (VERSION 2026.11.23) : changement de formule contrôlé (Partie 5.2)
+
+## 24. Changement de formule d'un groupe d'adhérents
+
+**Rappel du modèle.**
+- Une formule (`guarantees`) a une suite de versions datées (`guarantee_versions.valid_from/valid_to`).
+- À une date de soins, la version appliquée est celle **en vigueur à cette date** (`GuaranteeVersion::applicableOn`).
+- Modifier une formule crée une nouvelle version datée : tous les adhérents de la formule y passent à cette date, sans effet sur les soins antérieurs (scénario 7).
+- Ce qui manquait : faire passer des adhérents **d'une formule à une autre**.
+
+**Service** `App\Services\Tenant\FormulaMigrationService`, table tenant `formula_migrations` :
+
+| Étape | Règle |
+|---|---|
+| Aperçu (`candidates`) | Adhérents dont la souscription validée en vigueur relève de la formule source. Pour chacun : ancienne et nouvelle cotisation, échéances retirées, ou motif d'exclusion |
+| Demande (`request`, A) | Formule cible différente ; date d'effet aujourd'hui ou plus tard (**jamais rétroactive**) ; motif obligatoire ; adhérents cochés un par un ; numéro `MIG-AAAA-NNN` |
+| Décision (`decide`, A ou C) | **Jamais par le demandeur** ; refus motivé. Validée et date atteinte → appliquée tout de suite ; sinon appliquée par la tâche de nuit (`contributions:sweep-overdue` → `applyDue()`), ou par le bouton « Appliquer maintenant » une fois la date atteinte |
+| Application (`apply`) | Une seule fois (statut pris atomiquement). Contrôles refaits sous verrou, adhérent par adhérent, chacun dans sa transaction. Le résultat (changés, écartés avec motif) est enregistré dans `result` |
+
+**Pour chaque adhérent changé :**
+- **Ancienne souscription** : elle **reste « validée »**, avec `ends_on` = veille de la date d'effet. Les soins antérieurs restent pris en charge selon l'ancienne formule, et les prestations déjà enregistrées ne changent pas.
+- **Nouvelle souscription** : validée, `effective_date` = date d'effet, `migrated_from_id` = l'ancienne. Saisie = demandeur, validation = décideur.
+- **Cotisation** : cotisation de base de la formule cible × nombre de bénéficiaires, la même règle qu'à la souscription.
+- **Ancienneté conservée** (option, cochée par défaut) : `waiting_from` = début de l'ancienne souscription. Le moteur fait partir les **délais de carence** de cette date (`CoverageEngine::coverageStart`), et la période d'observation des formules classiques est levée.
+- **Échéances** :
+  - celles de l'ancienne formule dues à partir de la date d'effet et sans aucun encaissement sont retirées (elles n'étaient qu'appelées) ;
+  - la nouvelle souscription reçoit son échéancier (`ScheduleGenerationService::extend`, sans droit d'adhésion) ;
+  - `extend()` ne crée plus jamais d'échéance après `ends_on`.
+
+**Adhérent écarté (motif affiché), dans ces cas :**
+- non actif ;
+- souscription saisie en attente ;
+- souscription plus récente déjà présente ;
+- refus de la fiche de la formule cible (statut, commercialisation, âge, nombre de bénéficiaires) ;
+- **échéance de l'ancienne formule due après la date d'effet déjà réglée, ou portant un encaissement même annulé**. Aucun paiement n'est déplacé : il faut régulariser au guichet (annulation 4 yeux).
+
+**Formule cible refusée** si elle n'a pas de version en vigueur à la date d'effet, si sa **cotisation n'est pas fixée** (0, cas des formules d'exemple : rien n'est inventé) ou si sa périodicité n'a pas de nombre de mois.
+
+**Choix de la souscription « en vigueur »**, rendu cohérent avec les dates :
+- le moteur prenait déjà la souscription validée la plus récente dont la date d'effet est au plus tard la date des soins ;
+- `ClaimCaptureService::versionFor` et `RightsVerificationService` (observation) font de même désormais, avec repli sur la plus récente ;
+- le tableau de bord ne compte plus dans l'ancienne formule un adhérent qui l'a quittée.
+
+**Routes** (`formula-migrations.*`, URL `/formules/changements`) :
+
+| Action | Droit |
+|---|---|
+| Consulter | A, E, C, U |
+| Demander, retirer | A |
+| Valider, refuser, appliquer | A, C |
+
+L'entrée de menu est **Paramètres → Changements de formule**. La table est classée `RESET` pour la réinitialisation de la MUTUELLE TEST.
+
+**Notification à l'adhérent**, sans donnée médicale : « Votre mutuelle vous fait passer à la formule … à partir du … ».
+
+**Migration TENANT** `2026_11_23_000100_formula_migrations` :
+- `subscriptions.ends_on`, `migrated_from_id`, `waiting_from` ;
+- table `formula_migrations`.
+
+**Tests** : `tests/Feature/ChangementFormuleTest.php` (3). Ils couvrent :
+- l'aperçu et les exclusions ;
+- la date passée refusée ;
+- la règle « 4 yeux » ;
+- l'application à la date seulement, une seule fois ;
+- la fin de l'ancienne souscription et la nouvelle cotisation ;
+- les échéances retirées et le nouvel échéancier ;
+- les soins avant la date (ancienne formule, 80 %) et après (nouvelle, 60 %) ;
+- l'ancienneté conservée ou non ;
+- le parcours complet par les écrans avec les droits ;
+- la cotisation non fixée refusée.
+
+**Limites** :
+- **pas de prorata** : les échéances de l'ancienne formule dues avant la date d'effet restent dues entières. Choisissez de préférence une date d'effet qui coïncide avec une échéance ;
+- **pas de retour arrière automatique** : il faut un nouveau changement, vers l'ancienne formule.

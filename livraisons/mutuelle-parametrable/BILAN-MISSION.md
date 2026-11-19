@@ -1,13 +1,13 @@
 # Bilan de la mission « Mutuelle paramétrable + portail adhérent »
 
-MX-CONNECT, 22/11/2026, VERSION 2026.11.22. La mission a été livrée en six fois, de L1 à L6, du 18 au 22/11/2026. Chaque livraison comprend un ZIP cumulatif, un LISEZMOI, des tests Pest rejoués en base dédiée et en tables préfixées, et un contrôle dans un navigateur réel à 4 largeurs.
+MX-CONNECT, 22/11/2026, VERSION 2026.11.22 ; mis à jour le 23/11/2026 (VERSION 2026.11.23). La mission a été livrée en six fois, de L1 à L6, du 18 au 22/11/2026. Chaque livraison comprend un ZIP cumulatif, un LISEZMOI, des tests Pest rejoués en base dédiée et en tables préfixées, et un contrôle dans un navigateur réel à 4 largeurs.
 
 ## 1. Les 17 livrables de la Partie 12
 
 | # | Livrable | État | Où |
 |---|---|---|---|
 | 1 | Portail adhérent | Fait (L4) | Compte MX-CONNECT → « Mon adhésion » (site et application Android) |
-| 2 | Création et gestion des formules | Fait (L1) | Paramètres → Catalogue des formules |
+| 2 | Création et gestion des formules | Fait (L1 ; changement de formule des adhérents le 23/11) | Paramètres → Catalogue des formules ; Changements de formule |
 | 3 | Gestion des garanties | Fait (L1) | Fiche d'une formule → Garanties |
 | 4 | Moteur des plafonds | Fait (L2) | `CoverageEngine` : montant et/ou nombre, acte/jour/mois/an, bénéficiaire/famille, partagés |
 | 5 | Moteur des délais de carence | Fait (L2) | Par garantie et catégorie de bénéficiaire ; urgence, accident, renouvellement continu |
@@ -31,7 +31,7 @@ MX-CONNECT, 22/11/2026, VERSION 2026.11.22. La mission a été livrée en six fo
   - `MoteurPriseEnChargeTest`, `CatalogueFormulesTest` ;
   - `AccordsPrealablesPharmacieTest`, `PortailAdherentTest` ;
   - `TableauDeBordPilotageTest`, `MutuelleTestReinitialisationTest` ;
-  - `GestionnaireCotisationsTest`, `TraceAccesSanteTest`.
+  - `GestionnaireCotisationsTest`, `TraceAccesSanteTest`, `ChangementFormuleTest`.
 
   Tous passent en base dédiée et en tables préfixées (`MX_TEST_STORAGE=prefix`).
 - **Suite complète** : tous les tests Pest de MX-CONNECT passent (nombre exact dans le LISEZMOI de chaque livraison).
@@ -46,15 +46,16 @@ Toutes sont additives : aucune donnée existante supprimée.
 | Chaque mutuelle | `2026_11_19_000100_preauth_pharmacy` | Accords préalables, ordonnances, délivrances, politique pharmaceutique, rôle médecin-conseil |
 | Chaque mutuelle | `2026_11_20_000100_member_portal` | Demandes des adhérents, échanges sur les réclamations |
 | Chaque mutuelle | `2026_11_22_000100_contribution_manager_role` | Rôle gestionnaire des cotisations |
+| Chaque mutuelle | `2026_11_23_000100_formula_migrations` | Changements de formule : fin et origine des souscriptions, ancienneté, demandes « 4 yeux » |
 | Centrale | `2026_11_20_000100_create_member_activation_codes` | Codes d'activation du portail adhérent |
 
 ## 4. Ce qui n'est PAS fait, ou fait autrement
 
 Ces écarts ont été dits à chaque livraison ; ils sont réunis ici.
 
-1. **Procédure de migration des adhérents vers une nouvelle formule** (Partie 5.2) : **non faite**.
-   - Ce qui marche aujourd'hui : une modification crée une nouvelle version datée, et les adhérents restent sur leur version, sans effet rétroactif.
-   - Ce qui manque : faire passer un groupe d'adhérents sur une nouvelle version ou une autre formule, avec date d'effet, validation « 4 yeux » et échéanciers recalculés. **Proposé comme prochaine étape.**
+1. **Procédure de migration des adhérents vers une nouvelle formule** (Partie 5.2) : **faite le 23/11/2026** (VERSION 2026.11.23).
+   - Fonctionnement : changement de formule demandé, validé « 4 yeux », appliqué à la date d'effet ; ancienneté conservée ; échéanciers recalculés ; aucune rétroactivité. Détail au § 24 de la documentation technique.
+   - Reste : pas de prorata des échéances, pas de retour arrière automatique.
 2. **Règles de suspension paramétrables** : la règle est fixe (échéance échue impayée = droits suspendus). Il n'existe pas encore de délai de grâce réglable par mutuelle.
 3. **Région** : non enregistrée sur les fiches ; l'antenne sert de zone dans le tableau de bord.
 4. **Anglais** : l'application a des fichiers de langue (`lang/fr`, `lang/en`), mais les écrans de la mission sont rédigés directement en français. Les traduire demandera de passer leurs textes dans ces fichiers.

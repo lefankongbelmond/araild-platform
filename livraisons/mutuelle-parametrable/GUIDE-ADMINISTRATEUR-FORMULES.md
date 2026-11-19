@@ -1,6 +1,6 @@
 # Guide de l'administrateur : formules, garanties, plafonds, carences, dérogations
 
-MX-CONNECT, version 2026.11.22. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
+MX-CONNECT, version 2026.11.23. Ce guide s'adresse à l'administrateur de la mutuelle, et au contrôleur pour les dérogations.
 
 ## 1. Où trouver le catalogue
 
@@ -205,3 +205,24 @@ L'administration du réseau peut faire la même opération depuis la fiche de la
 
   Elle ne voit **ni la trésorerie, ni la comptabilité, ni les données de santé**. Ce rôle ne se cumule pas avec celui de contrôleur-validateur.
 - **Journal d'audit → Accès aux données de santé** : chaque ouverture d'un recours, d'un accord préalable, d'une pièce de prestataire ou du registre de la pharmacie, par une personne habilitée, est inscrite (qui, quoi, quand, adresse IP). Le contenu médical n'y est jamais recopié.
+
+## 16. Faire changer de formule un groupe d'adhérents (depuis le 23/11/2026)
+
+Exemple : la mutuelle ferme la formule ESSENTIEL et fait passer ses adhérents à FAMILLE au 1er janvier.
+
+1. **Paramètres → Changements de formule → Nouveau changement** (administrateur).
+2. Choisissez la **formule actuelle**, la **formule cible** et la **date d'effet** (aujourd'hui ou plus tard), puis **Voir les adhérents**.
+3. Vérifiez la liste :
+   - pour chaque adhérent : sa cotisation actuelle, sa nouvelle cotisation et le nombre d'échéances de l'ancienne formule qui seront retirées ;
+   - les adhérents **écartés** apparaissent en jaune avec le motif. Exemple : une échéance future déjà payée ; annulez d'abord cet encaissement au guichet.
+4. Décochez au besoin, laissez **Conserver l'ancienneté** coché (pas de nouvelle carence), indiquez le **motif**, puis **Envoyez la demande**.
+5. **Une autre personne valide**, l'administrateur ou le contrôleur, jamais vous-même. Une fois validé, le changement s'applique **à la date d'effet**, la nuit. Si la date est atteinte, il s'applique tout de suite, ou par **Appliquer maintenant**.
+
+Bon à savoir :
+
+- **Rien ne change dans le passé** : les soins faits avant la date d'effet restent pris en charge selon l'ancienne formule.
+- **L'ancienne souscription n'est pas effacée** : elle porte une date de fin.
+- **La nouvelle cotisation** est la cotisation de base de la formule cible multipliée par le nombre de bénéficiaires.
+- **Formule cible sans cotisation fixée** (0, comme les formules d'exemple) : le changement est refusé. Fixez d'abord la cotisation dans le catalogue.
+- **Pas de prorata** : choisissez de préférence une date d'effet qui tombe le jour d'une échéance.
+- **Les adhérents concernés** sont prévenus par une notification.

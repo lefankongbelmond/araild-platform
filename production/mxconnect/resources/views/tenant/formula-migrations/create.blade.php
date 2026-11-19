@@ -17,8 +17,9 @@
   </form>
 
   @if ($preview)
-    @if (! $preview['version'])
-      <p class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">La formule cible n’a pas de version en vigueur au {{ \Illuminate\Support\Carbon::parse($data['date'])->format('d/m/Y') }}.</p>
+    @php $problem = \App\Services\Tenant\FormulaMigrationService::targetProblem($preview['version']); @endphp
+    @if ($problem)
+      <p class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $problem }}</p>
     @endif
     <form method="POST" action="{{ route('formula-migrations.store') }}" class="mt-6 space-y-4">@csrf
       <input type="hidden" name="source_guarantee_id" value="{{ $data['source'] }}"><input type="hidden" name="target_guarantee_id" value="{{ $data['target'] }}"><input type="hidden" name="effective_date" value="{{ $data['date'] }}">
@@ -49,7 +50,7 @@
           <ul class="mt-2 space-y-1">@foreach ($preview['skipped'] as $r)<li><b>{{ $r['name'] }}</b> ({{ $r['code'] }}) : {{ $r['reason'] }}</li>@endforeach</ul>
         </section>
       @endif
-      @if ($preview['eligible'] && $preview['version'])
+      @if ($preview['eligible'] && ! $problem)
         <section class="space-y-3 rounded-lg border border-ink/10 bg-white p-5">
           <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="keep_seniority" value="1" class="mt-1" @checked(old('keep_seniority', true))> <span><b>Conserver l’ancienneté</b> : les délais de carence de la nouvelle formule partent de la date d’adhésion d’origine (pas de nouvelle carence).</span></label>
           <label class="block text-sm font-medium">Motif *<textarea name="note" required minlength="5" maxlength="1000" rows="3" class="{{ $f }}" placeholder="Ex. fermeture de la formule ESSENTIEL décidée par l’assemblée générale du …">{{ old('note') }}</textarea></label>

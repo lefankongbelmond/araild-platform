@@ -171,3 +171,15 @@ it('se fait par les écrans : aperçu, demande, validation par le contrôleur, a
     });
     asAdmin()->get($h . "/formules/changements/{$mig->id}")->assertSee('Adhérents passés à la nouvelle formule (1)');
 });
+
+it('refuse une formule cible dont la cotisation n’est pas fixée (rien n’est inventé)', function () {
+    $ids = $this->ids;
+    $this->mutual->run(function () use ($ids) {
+        GuaranteeVersion::where('guarantee_id', $ids['b'])->update(['base_contribution_minor' => 0]);
+        expect(fn () => app(FormulaMigrationService::class)->request(['source_guarantee_id' => $ids['a'], 'target_guarantee_id' => $ids['b'], 'effective_date' => '2026-11-01',
+            'member_ids' => array_values($ids['m']), 'note' => 'Vers une formule sans cotisation'], cfUser('admin@equipe.test')))
+            ->toThrow(AccountingRefusal::class, 'pas fixée');
+    });
+    asAdmin()->get($this->host . "/formules/changements/nouveau?source={$ids['a']}&target={$ids['b']}&date=2026-11-01")->assertOk()
+        ->assertSee('n’est pas fixée', false)->assertDontSee('Envoyer la demande');
+});
