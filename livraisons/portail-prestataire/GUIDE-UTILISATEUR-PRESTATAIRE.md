@@ -1,4 +1,4 @@
-# Guide du portail prestataire (version 2026.11.17)
+# Guide du portail prestataire (version 2026.11.25)
 
 Pour l'accueil, le personnel soignant, la facturation et la direction des établissements de soins (hôpitaux, centres de santé, cliniques, pharmacies, laboratoires) conventionnés avec des mutuelles MX-CONNECT.
 
@@ -170,7 +170,20 @@ La mutuelle paie **hors de la plateforme** : MX-CONNECT ne détient aucun fonds.
 
 **Réinitialiser** remet un mot de passe provisoire et oblige à refaire la double authentification (téléphone perdu, par exemple). Ce n'est pas possible pour un compte aussi utilisé dans un autre établissement : la personne utilise alors « Mot de passe oublié ».
 
-## 11. Bonnes pratiques
+## 11. Avis des mutuelles (depuis le 25/11/2026)
+
+La **cloche** en haut de l'écran indique le nombre d'avis non lus. Elle mène à **Avis des mutuelles**. Vous y êtes prévenu quand une mutuelle :
+
+- valide ou rejette une prise en charge, avec le motif ;
+- paie ou rejette une facture, avec le motif ;
+- accorde ou refuse un accord préalable, avec son numéro et le montant accordé ;
+- accepte ou refuse votre demande d'affiliation.
+
+Chaque avis a un bouton qui ouvre directement l'écran concerné chez la mutuelle.
+
+Vous ne voyez que les avis utiles à votre rôle : par exemple, un médecin ne voit pas les paiements. Les avis ne contiennent jamais de détail médical.
+
+## 12. Bonnes pratiques
 - Ne partagez jamais votre compte : chaque action est enregistrée à votre nom, dans l'espace prestataire comme dans chaque mutuelle.
 - Déconnectez-vous sur un poste partagé.
 - Un montant déclaré au-dessus du tarif conventionnel est signalé à la mutuelle pour examen. Ce n'est ni un refus ni une accusation.

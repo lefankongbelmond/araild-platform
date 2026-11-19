@@ -99,6 +99,13 @@ class PreauthorizationService
             if ($p->emergency && $p->prestation_id && $to === 'approved') {
                 Prestation::whereKey($p->prestation_id)->update(['authorization_missing' => false, 'preauthorization_id' => $p->id]);
             }
+            // Établissement prévenu (phase 6, 2026-11-25) : numéro, montant accordé ou motif ; jamais l'information clinique.
+            $code = Member::whereKey($p->member_id)->value('member_code');
+            \App\Support\ProviderNotifier::notify((int) $p->provider_id, $to === 'approved' ? 'preauth_approved' : 'preauth_rejected',
+                $to === 'approved' ? 'Accord préalable accordé' . ($p->number ? ' (' . $p->number . ')' : '') : 'Accord préalable refusé (demande n° ' . $p->id . ')',
+                'Adhérent ' . $code . ($to === 'approved'
+                    ? ($p->approved_minor !== null ? ' · montant accordé : ' . \App\Support\ProviderNotifier::money((int) $p->approved_minor) : '') . ($p->valid_until ? ' · valable jusqu’au ' . $p->valid_until->format('d/m/Y') : '')
+                    : ' · motif : ' . $p->decision_note), 'preauth', 'claims.view');
 
             return $p;
         });

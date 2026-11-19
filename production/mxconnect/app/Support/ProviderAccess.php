@@ -69,6 +69,7 @@ final class ProviderAccess
         'pro.go'                   => null,              // le droit dépend de la destination (service)
         'pro.open'                 => null,
         'pro.lookup'               => 'rights.verify',
+        'pro.notifications'        => null,              // avis des mutuelles : chaque avis porte son propre droit
         'pro.mutuals'              => 'conventions.view',
         'pro.mutuals.show'         => 'conventions.view',
         'pro.affiliations.store'   => 'affiliation.request',

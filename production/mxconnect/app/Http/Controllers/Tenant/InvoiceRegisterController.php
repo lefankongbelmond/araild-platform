@@ -58,6 +58,9 @@ class InvoiceRegisterController extends Controller
         $invoice->update(['status' => 'rejected', 'validated_by' => $request->user()->id]
             + (Schema::hasColumn('provider_invoices', 'decision_note') ? ['decision_note' => trim($data['note']), 'decided_at' => now()] : []));
 
+        \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected', 'Facture n° ' . $invoice->id . ' rejetée',
+            'Montant : ' . \App\Support\ProviderNotifier::money((int) $invoice->amount_minor) . ' · motif : ' . trim($data['note']), 'invoices', 'invoices.view');
+
         return back()->with('success', "Facture n° {$invoice->id} rejetée. Le prestataire voit le motif dans son portail.");
     }
 

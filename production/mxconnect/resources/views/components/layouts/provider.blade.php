@@ -12,6 +12,7 @@
   $nav = [
     'Portail prestataire' => [
       ['pro.dashboard', [], 'Tableau de bord', 'chart', null],
+      ['pro.notifications', [], 'Avis des mutuelles', 'bell', null],
       ['pro.go', ['verify'], 'Vérifier les droits', 'shield', 'rights.verify'],
       ['pro.go', ['claims'], 'Prises en charge', 'clipboard', 'claims.view'],
       ['pro.go', ['invoices'], 'Mes factures', 'receipt', 'invoices.view'],
@@ -122,6 +123,12 @@
                 <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-navy text-sm font-bold text-white">{{ mb_strtoupper(mb_substr($account->first_name, 0, 1)) }}</span>
                 <span class="hidden leading-tight sm:block"><span class="block text-sm font-semibold">{{ $account->name }}</span>@if($m)<span class="block text-[11.5px] text-ink/50">{{ $m->roleLabel() }}</span>@endif</span>
               </div>
+              @if ($m)
+                @php $unread = \App\Support\ProviderNotifier::unread($m); @endphp
+                <a href="{{ route('pro.notifications') }}" class="relative grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Avis des mutuelles" aria-label="Avis des mutuelles{{ $unread ? ' : ' . $unread . ' non lu(s)' : '' }}">
+                  <x-tenant.icon name="bell" :size="19"/>@if ($unread)<span class="absolute grid h-5 place-items-center rounded-full bg-clay px-1 text-[11px] font-bold text-white" style="top:-2px;right:-2px;min-width:20px">{{ $unread > 99 ? '99+' : $unread }}</span>@endif
+                </a>
+              @endif
               <a href="{{ route('pro.settings') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Paramètres du compte" aria-label="Paramètres du compte"><x-tenant.icon name="lock" :size="18"/></a>
               <form method="POST" action="{{ route('pro.logout') }}">@csrf
                 <button class="grid h-10 w-10 place-items-center rounded-xl text-clay hover:bg-clay/10" title="Se déconnecter" aria-label="Se déconnecter"><x-tenant.icon name="logout" :size="19"/></button></form>

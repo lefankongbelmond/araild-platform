@@ -108,6 +108,9 @@ class ClaimSettlementController extends Controller
                 'moved_on'         => now()->toDateString(),
             ]);
         });
+        // Établissement prévenu du paiement (phase 6, 2026-11-25).
+        \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_paid', 'Facture n° ' . $invoice->id . ' payée',
+            'Montant : ' . \App\Support\ProviderNotifier::money((int) $invoice->amount_minor) . ' · mode : ' . ($request->get('mode', 'bank') === 'bank' ? 'virement' : $request->get('mode')) . '.', 'invoices', 'invoices.view');
 
         return back()->with('success', __('mxconnect.settlement.invoice_paid'));
     }

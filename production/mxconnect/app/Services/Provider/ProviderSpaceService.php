@@ -40,6 +40,7 @@ class ProviderSpaceService
         'verify'   => ['portal.index', 'rights.verify'],
         'claims'   => ['portal.claims', 'claims.view'],
         'invoices' => ['portal.invoices', 'invoices.view'],
+        'preauth'  => ['portal.preauth', 'claims.view'],     // accords préalables (avis de la mutuelle, 2026-11-25)
     ];
 
     /** Droit de l'établissement exigé par chaque route du portail de la mutuelle. */

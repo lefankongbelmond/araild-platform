@@ -260,3 +260,44 @@ Toutes sont couvertes par la règle `portal.*` de `TenantAccess`. La caméra est
 - Pas de recherche par pièce d'identité : `members.id_document` est chiffré, pour la détection des doublons seulement.
 - Les ayants droit n'ont pas de numéro propre : on les trouve par la carte de l'adhérent ou par nom + date de naissance.
 - La part patient reste « total − part mutuelle ». Le ticket modérateur est affiché, mais n'est pas appliqué séparément, comme dans le calcul des déclarations.
+
+---
+
+# Phase 6 (partie 1), VERSION 2026.11.25 : avis des mutuelles aux établissements
+
+## 14. Fonctionnement
+
+- **Émission** : `App\Support\ProviderNotifier::notify($careProviderId, $kind, $title, $body, $target, $permission)`.
+  - Elle est appelée DANS la mutuelle (contexte tenant) au moment de la décision.
+  - Elle écrit dans la table CENTRALE `provider_notifications`, préfixée du nom de la mutuelle.
+  - Un échec d'écriture est consigné et n'empêche jamais la décision.
+
+| Décision de la mutuelle | Où | `kind` | Droit d'établissement | Destination |
+|---|---|---|---|---|
+| Prise en charge validée | `PrestationController::validatePrestation` | `claim_validated` | `claims.view` | Prises en charge |
+| Prise en charge rejetée (avec le motif) | `PrestationController::reject` | `claim_rejected` | `claims.view` | Prises en charge |
+| Facture payée | `ClaimSettlementController::payInvoice` | `invoice_paid` | `invoices.view` | Factures |
+| Facture rejetée (avec le motif) | `InvoiceRegisterController::reject` | `invoice_rejected` | `invoices.view` | Factures |
+| Accord préalable accordé ou refusé | `PreauthorizationService::decide` | `preauth_approved` / `preauth_rejected` | `claims.view` | Accords préalables |
+| Affiliation acceptée | `ProviderController::approveAffiliation` | `affiliation_approved` | `conventions.view` | Mes mutuelles |
+| Affiliation refusée (avec le motif) | `ProviderController::rejectAffiliation` | `affiliation_rejected` | `affiliation.request` | Mes mutuelles |
+
+- **Contenu** : numéro, code adhérent, date des soins, montants dans la devise de la mutuelle, motif de la mutuelle. **Jamais de donnée médicale** : ni l'acte, ni le diagnostic, ni l'information clinique d'un accord préalable. Un test le vérifie.
+- **Lecture** : `pro.notifications` (`/espace-prestataire/avis`), entrée « Avis des mutuelles » du menu, et cloche avec le nombre de non-lus dans l'en-tête.
+  - `ProviderNotifier::visibleFor($membership)` ne garde que les avis de l'établissement en cours dont le droit est accordé à la personne. Par exemple, un médecin ne voit pas les paiements.
+  - Un autre établissement ne voit jamais ces avis.
+  - La visite de la page marque les avis comme lus **pour cette personne** (`provider_memberships.notifications_seen_id`).
+- **Bouton d'un avis** : il ouvre la destination dans le portail de la mutuelle par le jeton d'entrée habituel (`pro.open`). La nouvelle cible `preauth` mène à `portal.preauth`, avec le droit `claims.view`.
+
+**Migration CENTRALE** `2026_11_25_000100_create_provider_notifications` :
+- table `provider_notifications` ;
+- colonne `provider_memberships.notifications_seen_id`.
+
+**Tests** : `tests/Feature/AvisPrestataireTest.php` (2). Ils couvrent les 7 décisions, le contenu sans donnée médicale, le filtrage par droit et par établissement, et la lecture propre à chaque personne.
+
+**Reste de la phase 6** :
+- messagerie par dossier entre le prestataire et la mutuelle ;
+- tableau des signaux ;
+- envoi par e-mail ou SMS des avis.
+
+Aujourd'hui, les avis sont visibles dans l'espace seulement.

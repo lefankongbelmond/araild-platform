@@ -79,7 +79,8 @@ Route::middleware('central.only')->group(function () {
             Route::post('etablissement-en-cours', [$space, 'switch'])->name('switch');
             Route::get('ouvrir/{target}', [$space, 'go'])->name('go')->whereIn('target', ['verify', 'claims', 'invoices']);
             Route::post('rechercher', [$space, 'lookup'])->name('lookup')->middleware('throttle:provider-lookup');
-            Route::post('ouvrir/{target}/{mutual}', [$space, 'open'])->name('open')->whereIn('target', ['verify', 'claims', 'invoices'])->middleware('throttle:30,1');
+            Route::post('ouvrir/{target}/{mutual}', [$space, 'open'])->name('open')->whereIn('target', ['verify', 'claims', 'invoices', 'preauth'])->middleware('throttle:30,1');
+            Route::get('avis', [$space, 'notifications'])->name('notifications');
             Route::get('mutuelles', [$space, 'mutuals'])->name('mutuals');
             Route::get('mutuelles/{mutual}', [$space, 'mutual'])->name('mutuals.show');
             Route::post('affiliations', [$space, 'requestAffiliation'])->name('affiliations.store')->middleware('throttle:10,1');

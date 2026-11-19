@@ -98,6 +98,22 @@ class SpaceController extends Controller
     }
 
     /** Mes mutuelles : conventions en place, demandes, mutuelles disponibles. */
+    /** Avis des mutuelles (phase 6, 2026-11-25) : filtrés par les droits de la personne ; la visite les marque comme lus. */
+    public function notifications()
+    {
+        $m = ProviderAccess::current();
+        $items = \App\Support\ProviderNotifier::visibleFor($m)->orderByDesc('id')->paginate(30);
+        $seen = (int) ($m->notifications_seen_id ?? 0);
+        $max = (int) \App\Support\ProviderNotifier::visibleFor($m)->max('id');
+        if ($max > $seen) {
+            $m->forceFill(['notifications_seen_id' => $max])->save();
+        }
+        $mutuals = \App\Models\Central\Mutual::whereIn('id', collect($items->items())->pluck('mutual_id')->filter()->unique())->pluck('name', 'id');
+        $open = $this->space->conventionedMutuals($m->provider)->pluck('id')->map(fn ($id) => (string) $id)->all();
+
+        return view('provider.notifications', ['items' => $items, 'seen' => $seen, 'mutuals' => $mutuals, 'open' => $open]);
+    }
+
     public function mutuals()
     {
         $m = ProviderAccess::current();
