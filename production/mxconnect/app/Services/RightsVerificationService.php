@@ -49,8 +49,9 @@ class RightsVerificationService
 
         // 4. observation period elapsed
         $subscription = $member->subscriptions()
-            ->where('status', 'validated')
-            ->latest('effective_date')->first();
+            ->where('status', 'validated')->whereDate('effective_date', '<=', $careDate)   // en vigueur à la date des soins (2026-11-23)
+            ->latest('effective_date')->first()
+            ?? $member->subscriptions()->where('status', 'validated')->latest('effective_date')->first();
         if (! $catalog && $subscription && $subscription->observation_ends_on
             && $careDate < $subscription->observation_ends_on->toDateString()) {
             $reasons[] = 'observation_period';

@@ -251,6 +251,16 @@ Route::middleware([
         Route::post('formules/categories', [$fc, 'storeCategory'])->name('formulas.categories.store');
         Route::post('formules/categories/actes', [$fc, 'mapActs'])->name('formulas.categories.map');
         Route::post('formules/exemples', [$fc, 'examples'])->name('formulas.examples');
+        // Changements de formule d'un groupe d'adhérents (Partie 5.2, 2026-11-23)
+        $fm = \App\Http\Controllers\Tenant\FormulaMigrationController::class;
+        Route::get('formules/changements', [$fm, 'index'])->name('formula-migrations.index');
+        Route::get('formules/changements/nouveau', [$fm, 'create'])->name('formula-migrations.create');
+        Route::post('formules/changements', [$fm, 'store'])->name('formula-migrations.store');
+        Route::get('formules/changements/{migration}', [$fm, 'show'])->name('formula-migrations.show')->whereNumber('migration');
+        Route::post('formules/changements/{migration}/valider', [$fm, 'approve'])->name('formula-migrations.approve')->whereNumber('migration');
+        Route::post('formules/changements/{migration}/refuser', [$fm, 'reject'])->name('formula-migrations.reject')->whereNumber('migration');
+        Route::post('formules/changements/{migration}/retirer', [$fm, 'cancel'])->name('formula-migrations.cancel')->whereNumber('migration');
+        Route::post('formules/changements/{migration}/appliquer', [$fm, 'apply'])->name('formula-migrations.apply')->whereNumber('migration');
         // MUTUELLE TEST : réinitialisation des données d'essai (2026-11-22)
         Route::get('mutuelle-test', [\App\Http\Controllers\Tenant\TestEnvironmentController::class, 'index'])->name('test-env.index');
         Route::post('mutuelle-test/reinitialiser', [\App\Http\Controllers\Tenant\TestEnvironmentController::class, 'reset'])->name('test-env.reset');

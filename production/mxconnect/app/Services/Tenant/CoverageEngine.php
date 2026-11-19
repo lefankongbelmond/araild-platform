@@ -349,7 +349,9 @@ class CoverageEngine
      */
     public function coverageStart(Member $member, ?Dependent $dependent, Subscription $sub, GuaranteeVersion $version): Carbon
     {
-        $start = $version->renewal_waiver && $member->joined_at ? Carbon::parse($member->joined_at) : Carbon::parse($sub->effective_date);
+        // Changement de formule avec ancienneté conservée (2026-11-23) : la carence part de l'ancienne date de début.
+        $start = $version->renewal_waiver && $member->joined_at ? Carbon::parse($member->joined_at)
+            : Carbon::parse($sub->waiting_from ?? $sub->effective_date);
         $joined = $dependent ? ($dependent->joined_on ?? $dependent->created_at) : null;
         if ($joined && Carbon::parse($joined)->gt($start)) {
             $start = Carbon::parse($joined);

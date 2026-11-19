@@ -17,6 +17,8 @@
           <div><dt class="text-ink/50">{{ __('mxconnect.subscription.contribution') }}</dt><dd class="font-medium">{{ $currency->format($s->contribution_minor) }} / {{ $s->guaranteeVersion->periodicity }}</dd></div>
           <div><dt class="text-ink/50">{{ __('mxconnect.subscription.effective_date') }}</dt><dd>{{ $s->effective_date?->format('d/m/Y') }}</dd></div>
           <div><dt class="text-ink/50">{{ __('mxconnect.subscription.observation_end') }}</dt><dd>{{ $s->observation_ends_on?->format('d/m/Y') }}</dd></div>
+          @if ($s->ends_on)<div><dt class="text-ink/50">Fin (changement de formule)</dt><dd>{{ $s->ends_on->format('d/m/Y') }} : les soins antérieurs restent couverts par cette souscription</dd></div>@endif
+          @if ($s->migrated_from_id)<div><dt class="text-ink/50">Remplace</dt><dd><a href="{{ route('subscriptions.show', $s->migrated_from_id) }}" class="text-pine underline">la souscription n° {{ $s->migrated_from_id }}</a>{{ $s->waiting_from ? ' · ancienneté conservée depuis le ' . $s->waiting_from->format('d/m/Y') : '' }}</dd></div>@endif
           <div><dt class="text-ink/50">{{ __('mxconnect.subscription.beneficiaries') }}</dt><dd>{{ $s->member->beneficiaryCount() }}</dd></div>
         </dl>
       </div>

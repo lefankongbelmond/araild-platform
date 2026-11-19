@@ -48,7 +48,7 @@ class PilotageService
         $members = Member::query()
             ->when($f['antenna_id'] ?? null, fn ($q, $a) => $q->where('antenna_id', $a))
             ->when($f['member_id'] ?? null, fn ($q, $id) => $q->whereKey($id))
-            ->when($versionIds, fn ($q) => $q->whereIn('id', Subscription::whereIn('guarantee_version_id', $versionIds)->whereIn('status', ['captured', 'validated'])->select('member_id')));
+            ->when($versionIds, fn ($q) => $q->whereIn('id', Subscription::whereIn('guarantee_version_id', $versionIds)->whereIn('status', ['captured', 'validated'])->where(fn ($w) => $w->whereNull('ends_on')->orWhereDate('ends_on', '>=', $today))->select('member_id')));
         $memberIds = (clone $members)->pluck('id');
         $scoped = ! empty($f['antenna_id']) || ! empty($f['member_id']) || $versionIds;
 

@@ -28,7 +28,10 @@ class ClaimCaptureService
     /** Version de garantie applicable à l'adhérent à une date (souscription validée), ou null. */
     public function versionFor(Member $member, string $careDate): ?GuaranteeVersion
     {
-        $subscription = $member->subscriptions()->where('status', 'validated')->latest('effective_date')->first();
+        // Souscription en vigueur à la date des soins (après un changement de formule, les soins
+        // antérieurs relèvent de l'ancienne formule) ; à défaut, la plus récente (comportement d'origine).
+        $subscription = $member->subscriptions()->where('status', 'validated')->whereDate('effective_date', '<=', $careDate)->latest('effective_date')->first()
+            ?? $member->subscriptions()->where('status', 'validated')->latest('effective_date')->first();
 
         return $subscription ? GuaranteeVersion::applicableOn($subscription->guaranteeVersion->guarantee_id, $careDate) : null;
     }

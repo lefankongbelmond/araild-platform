@@ -22,6 +22,10 @@ class SweepOverdueContributions extends Command
 
         Mutual::where('status', 'approved')->each(function (Mutual $mutual) use (&$total) {
             $mutual->run(function () use (&$total) {   // stancl: run closure inside tenant context
+                // Changements de formule validés dont la date d'effet est atteinte (2026-11-23).
+                if (\Illuminate\Support\Facades\Schema::hasTable('formula_migrations')) {
+                    app(\App\Services\Tenant\FormulaMigrationService::class)->applyDue();
+                }
                 // Échéanciers glissants (2026-11-06) + échéances dépassées marquées en retard.
                 $r = app(\App\Services\ScheduleGenerationService::class)->refreshAll();
                 $total += $r['overdue'];

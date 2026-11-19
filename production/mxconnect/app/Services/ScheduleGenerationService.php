@@ -99,8 +99,8 @@ class ScheduleGenerationService
 
         for ($i = 0; ; $i++) {
             $due = $start->copy()->addMonthsNoOverflow($i * $step);
-            if ($due->gt($horizon) || $i > 600) {
-                break;
+            if ($due->gt($horizon) || $i > 600 || ($subscription->ends_on && $due->gt(Carbon::parse($subscription->ends_on)))) {
+                break;   // souscription remplacée par un changement de formule (2026-11-23) : plus rien après sa fin
             }
             $period = $this->periodLabel($due, $periodicity);
             if (in_array($period, $existing, true)) {

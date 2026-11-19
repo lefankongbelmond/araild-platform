@@ -173,6 +173,14 @@ class TenantAccess
             'formulas.show'           => [$A, $E, $C, $B, $T],
             'formulas.categories'     => [$A, $E, $C, $B, $T],
             'formulas.simulate'       => [$A, $E, $C, $B, $T],
+            'formula-migrations.index'   => [$A, $E, $C, $U],   // changements de formule (2026-11-23) : consulter
+            'formula-migrations.show'    => [$A, $E, $C, $U],
+            'formula-migrations.create'  => [$A],               // demander (aperçu des adhérents)
+            'formula-migrations.store'   => [$A],
+            'formula-migrations.cancel'  => [$A],
+            'formula-migrations.approve' => [$A, $C],           // décider : jamais la personne qui a demandé (contrôlé dans le service)
+            'formula-migrations.reject'  => [$A, $C],
+            'formula-migrations.apply'   => [$A, $C],           // appliquer à la date d'effet (sinon tâche de nuit)
             'formulas.*'              => [$A],
             // Dérogations : demande par le gestionnaire des prestations, décision par le contrôleur
             // (jamais par la personne qui a demandé : contrôlé dans le contrôleur).
@@ -212,7 +220,7 @@ class TenantAccess
         'Conformité' => ['audit.index' => 'Journal d’audit', 'quality.index' => 'Qualité des données', 'signal.create' => 'Signaler un incident ou un risque', 'risks.index' => 'Registres risques et incidents', 'risks.status' => 'Traiter risques et incidents', 'complaints.index' => 'Réclamations : consulter', 'complaints.store' => 'Réclamations : enregistrer', 'complaints.status' => 'Réclamations : décider'],
         'Réseau social' => ['social-presence.index' => 'Page, publications, groupes, projets', 'engagement.requests.cv' => 'Candidatures (CV)', 'online-adhesions.index' => 'Adhésions en ligne', 'conversations.index' => 'Messagerie'],
         'Accords préalables et pharmacie' => ['preauth.index' => 'Accords préalables : consulter', 'preauth.store' => 'Accords préalables : demander', 'preauth.decide' => 'Accords préalables : décider (examen médical : médecin-conseil)', 'pharmacy.index' => 'Registre des délivrances en pharmacie', 'pharmacy.policy' => 'Politique pharmaceutique et liste des médicaments'],
-        'Formules et garanties' => ['formulas.index' => 'Catalogue des formules : consulter, simuler', 'formulas.rules.store' => 'Catalogue des formules : modifier (garanties, plafonds, carences)', 'derogations.index' => 'Dérogations : consulter', 'derogations.store' => 'Dérogations : demander', 'derogations.approve' => 'Dérogations : accorder ou refuser'],
+        'Formules et garanties' => ['formulas.index' => 'Catalogue des formules : consulter, simuler', 'formulas.rules.store' => 'Catalogue des formules : modifier (garanties, plafonds, carences)', 'derogations.index' => 'Dérogations : consulter', 'derogations.store' => 'Dérogations : demander', 'derogations.approve' => 'Dérogations : accorder ou refuser', 'formula-migrations.index' => 'Changements de formule : consulter', 'formula-migrations.store' => 'Changements de formule : demander', 'formula-migrations.approve' => 'Changements de formule : valider ou refuser, appliquer'],
         'Paramètres' => ['guarantees.index' => 'Garanties, actes, médicaments : consulter', 'guarantees.store' => 'Garanties, actes, médicaments : modifier', 'providers.index' => 'Prestataires conventionnés : consulter', 'providers.store' => 'Prestataires conventionnés : gérer', 'team.index' => 'Équipe et rôles', 'test-env.index' => 'MUTUELLE TEST : réinitialiser les données d’essai'],
         'Portail prestataire' => ['portal.index' => 'Vérifier les droits, déclarer, suivre ses factures'],
     ];

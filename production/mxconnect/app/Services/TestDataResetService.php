@@ -41,7 +41,7 @@ class TestDataResetService
 
     /** Effacées : toute l'activité (données d'essai). */
     public const RESET = [
-        'members', 'dependents', 'subscriptions', 'amendments', 'suspensions', 'radiations', 'departures', 'member_groups',
+        'members', 'dependents', 'subscriptions', 'formula_migrations', 'amendments', 'suspensions', 'radiations', 'departures', 'member_groups',
         'contribution_schedules', 'contribution_payments', 'collection_cancellations',
         'care_claims', 'prestations', 'prescribed_medicines', 'reimbursements', 'provider_invoices', 'coverage_exceptions',
         'preauthorizations', 'prescriptions', 'dispensations', 'dispensation_lines', 'rights_checks', 'beneficiary_searches', 'alerts',
@@ -61,7 +61,7 @@ class TestDataResetService
         'budgets' => 'Budgets', 'complaints' => 'Réclamations', 'member_change_requests' => 'Demandes des adhérents',
         'member_notifications' => 'Notifications aux membres', 'incidents' => 'Incidents', 'risks' => 'Risques',
         'guarantees' => 'Formules (garanties)', 'guarantee_versions' => 'Versions de formules',
-        'amendments' => 'Avenants', 'suspensions' => 'Suspensions', 'radiations' => 'Radiations', 'departures' => 'Départs',
+        'formula_migrations' => 'Changements de formule', 'amendments' => 'Avenants', 'suspensions' => 'Suspensions', 'radiations' => 'Radiations', 'departures' => 'Départs',
         'member_groups' => 'Groupes de membres', 'collection_cancellations' => 'Annulations d’encaissement',
         'prescribed_medicines' => 'Médicaments prescrits (recours)', 'reimbursements' => 'Remboursements', 'dispensation_lines' => 'Lignes de délivrance',
         'beneficiary_searches' => 'Recherches de bénéficiaires', 'accounting_days' => 'Journées comptables', 'accounting_periods' => 'Périodes comptables',
