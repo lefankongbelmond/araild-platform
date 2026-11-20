@@ -8,7 +8,7 @@
   $decide = $canDecide && ! $mine && $inv->status === 'captured' && $pending->isNotEmpty();
 @endphp
 <x-layouts.tenant title="Facture {{ $inv->label() }}">
-  <x-tenant.hero icon="receipt" kicker="Factures des prestataires" tone="teal">
+  <x-tenant.hero icon="receipt" kicker="{{ __('Factures des prestataires') }}" tone="teal">
     <x-slot:title>{{ __('Facture :label', ['label' => $inv->label()]) }}</x-slot:title>
     <x-slot:subtitle>{{ $provider?->name ?? __('Prestataire n° :id', ['id' => $inv->provider_id]) }} · {{ __('reçue le :date', ['date' => $inv->created_at?->format('d/m/Y')]) }}@if ($inv->provider_reference) · {{ __('réf. :reference', ['reference' => $inv->provider_reference]) }}@endif · {{ $S[$inv->status] ?? $inv->status }}</x-slot:subtitle>
     <x-slot:actions>

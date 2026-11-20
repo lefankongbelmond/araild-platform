@@ -11,7 +11,7 @@
 @endphp
 <x-layouts.tenant :title="$title">
   @include('tenant.accounting._nav')
-  <x-tenant.hero icon="book" kicker="Comptabilité SYSCOHADA" tone="violet">
+  <x-tenant.hero icon="book" kicker="{{ __('Comptabilité SYSCOHADA') }}" tone="violet">
     <x-slot:title>{{ $title }}</x-slot:title>
     <x-slot:subtitle>{{ tenant('name') }} — {{ $etat === 'sheet' ? __('situation au :date', ['date' => $to->format('d/m/Y')]) : __('du :from au :to', ['from' => $from->format('d/m/Y'), 'to' => $to->format('d/m/Y')]) }} {{ __('(exercice :year).', ['year' => $year]) }} {{ __('Calculé à l’instant depuis le journal : écritures validées seulement ; montants en :currency, jamais convertis.', ['currency' => $c->code]) }}</x-slot:subtitle>
     <x-slot:actions>

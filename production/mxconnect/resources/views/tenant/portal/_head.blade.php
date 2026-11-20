@@ -1,5 +1,5 @@
 {{-- En-tête commun du portail prestataire : établissement + état de la convention. --}}
-<x-tenant.hero icon="shield" kicker="Portail prestataire" tone="teal">
+<x-tenant.hero icon="shield" kicker="{{ __('Portail prestataire') }}" tone="teal">
   <x-slot:title>{{ $title }}</x-slot:title>
   <x-slot:subtitle>{{ $provider->name }}@if($provider->locality) · {{ $provider->locality }}@endif — {{ tenant('name') }}</x-slot:subtitle>
 </x-tenant.hero>

@@ -1,7 +1,7 @@
 <x-layouts.tenant title="{{ __('Catégories de soins') }}">
   @php $canEdit = \App\Support\TenantAccess::can('formulas.categories.map'); $f = 'mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm'; @endphp
   <a href="{{ route('formulas.index') }}" class="text-sm text-ink/50 hover:underline">{{ __('&larr; Catalogue des formules') }}</a>
-  <x-tenant.hero icon="list" kicker="Catalogue des formules" tone="brand" class="mt-2">
+  <x-tenant.hero icon="list" kicker="{{ __('Catalogue des formules') }}" tone="brand" class="mt-2">
     <x-slot:title>{{ __('Catégories de soins') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Bibliothèque des catégories utilisées par les garanties, et rattachement de chaque acte à une catégorie. Une catégorie ne porte aucun taux : les taux sont fixés dans chaque formule.') }}</x-slot:subtitle>
   </x-tenant.hero>

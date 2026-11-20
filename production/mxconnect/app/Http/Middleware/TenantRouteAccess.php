@@ -18,7 +18,7 @@ class TenantRouteAccess
     {
         $route = (string) $request->route()?->getName();
         if (! TenantAccess::can($route, $request->user('web'))) {
-            abort(403, 'Cette rubrique n’est pas ouverte à votre rôle. Demandez à l’administrateur de la mutuelle si besoin.');
+            abort(403, __('Cette rubrique n’est pas ouverte à votre rôle. Demandez à l’administrateur de la mutuelle si besoin.'));
         }
 
         return $next($request);

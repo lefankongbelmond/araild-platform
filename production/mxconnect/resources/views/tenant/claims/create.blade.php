@@ -1,6 +1,6 @@
 <x-layouts.tenant :title="__('mxconnect.claim.new')">
   <a href="{{ route('claims.index') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.back') }}</a>
-  <x-tenant.hero icon="clipboard" kicker="Prestations santé" tone="teal">
+  <x-tenant.hero icon="clipboard" kicker="{{ __('Prestations santé') }}" tone="teal">
     <x-slot:title>{{ __('mxconnect.claim.new') }}</x-slot:title>
   </x-tenant.hero>
 

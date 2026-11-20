@@ -10,7 +10,7 @@
     <a href="{{ route('contributions.index') }}" class="text-ink/50 hover:underline">&larr; {{ __('mxconnect.contribution.plural') }}</a>
     @acces('members.show')<a href="{{ route('members.show', $member) }}" class="text-pine hover:underline">{{ __('Fiche de l’adhérent') }}</a>@endacces
   </div>
-  <x-tenant.hero icon="coins" kicker="Relevé de cotisations" tone="leaf">
+  <x-tenant.hero icon="coins" kicker="{{ __('Relevé de cotisations') }}" tone="leaf">
     <x-slot:title>{{ $member->last_name }} {{ $member->first_name }}</x-slot:title>
     <x-slot:subtitle>{{ $member->member_code }}@if ($member->phone) · {{ $member->phone }}@endif · {{ tenant('name') }} · {{ __('montants en :currency. Relevé arrêté au :date.', ['currency' => $c->code, 'date' => $today->format('d/m/Y')]) }}</x-slot:subtitle>
     <x-slot:actions>
@@ -20,10 +20,10 @@
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
   <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-tenant.kpi label="Appelé à ce jour" :value="$c->format($summary['due_to_date'])" icon="file" tone="brand" hint="échéances déjà arrivées" />
-    <x-tenant.kpi label="Total encaissé" :value="$c->format($summary['paid'])" icon="coins" tone="leaf" hint="tous encaissements" />
-    <x-tenant.kpi label="En retard" :value="$c->format($summary['arrears'])" icon="alert" tone="amber" :hint="$summary['arrears'] ? 'droits suspendus jusqu’au paiement' : 'à jour'" />
-    <x-tenant.kpi label="À venir" :value="$c->format($summary['upcoming'])" icon="history" tone="violet" hint="échéances futures" />
+    <x-tenant.kpi label="{{ __('Appelé à ce jour') }}" :value="$c->format($summary['due_to_date'])" icon="file" tone="brand" hint="{{ __('échéances déjà arrivées') }}" />
+    <x-tenant.kpi label="{{ __('Total encaissé') }}" :value="$c->format($summary['paid'])" icon="coins" tone="leaf" hint="{{ __('tous encaissements') }}" />
+    <x-tenant.kpi label="{{ __('En retard') }}" :value="$c->format($summary['arrears'])" icon="alert" tone="amber" :hint="$summary['arrears'] ? 'droits suspendus jusqu’au paiement' : 'à jour'" />
+    <x-tenant.kpi label="{{ __('À venir') }}" :value="$c->format($summary['upcoming'])" icon="history" tone="violet" hint="{{ __('échéances futures') }}" />
   </div>
 
   @if ($canCollect)

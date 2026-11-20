@@ -10,7 +10,7 @@
 @endphp
 <x-layouts.tenant title="{{ __('Opérations diverses') }}">
   @include('tenant.accounting._nav')
-  <x-tenant.hero icon="book" kicker="Comptabilité" tone="violet">
+  <x-tenant.hero icon="book" kicker="{{ __('Comptabilité') }}" tone="violet">
     <x-slot:title>{{ __('Opérations diverses') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Écritures saisies à la main : achats, salaires, amortissements, affectation du résultat… Le trésorier-comptable saisit ; l’administrateur ou le contrôleur valide. Personne ne valide sa propre saisie, et seules les écritures validées entrent dans les états.') }}</x-slot:subtitle>
   </x-tenant.hero>

@@ -1,7 +1,7 @@
 @php $f = 'rounded-md border border-ink/15 bg-white px-3 py-2 text-sm'; @endphp
 <x-layouts.tenant :title="__('mxconnect.accounting.chart')">
   @include('tenant.accounting._nav')
-  <x-tenant.hero icon="book" kicker="Comptabilité" tone="violet">
+  <x-tenant.hero icon="book" kicker="{{ __('Comptabilité') }}" tone="violet">
     <x-slot:title>{{ __('mxconnect.accounting.chart') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Plan comptable SYSCOHADA de la mutuelle, par classe. Un compte qui a des écritures, figure dans un budget ou sert à la comptabilisation automatique ne peut pas être supprimé.') }}</x-slot:subtitle>
   </x-tenant.hero>

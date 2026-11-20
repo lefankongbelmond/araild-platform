@@ -1,17 +1,17 @@
 <x-layouts.tenant :title="__('mxconnect.alert.plural')">
-  <x-tenant.hero icon="bell" kicker="Contrôle et anti-fraude" tone="red">
+  <x-tenant.hero icon="bell" kicker="{{ __('Contrôle et anti-fraude') }}" tone="red">
     <x-slot:title>{{ __('mxconnect.alert.plural') }}</x-slot:title>
     <x-slot:subtitle>{{ __('mxconnect.alert.sub') }}</x-slot:subtitle>
     <x-slot:actions>
 
-    <div class="flex gap-2 text-sm">
+    <div class="flex flex-wrap gap-2 text-sm">
       @if ($counts['critical'])<span class="rounded-full bg-clay/10 px-3 py-1 text-clay">{{ $counts['critical'] }} {{ __('mxconnect.alert.level_critical') }}</span>@endif
       @if ($counts['watch'])<span class="rounded-full bg-sage/10 px-3 py-1 text-sage">{{ $counts['watch'] }} {{ __('mxconnect.alert.level_watch') }}</span>@endif
     </div>
     </x-slot:actions>
   </x-tenant.hero>
 
-  <div class="mt-6 flex gap-2 text-sm">
+  <div class="mt-6 flex flex-wrap gap-2 text-sm">
     <a href="{{ route('alerts.index') }}" class="rounded-md px-3 py-1.5 {{ ! $level ? 'bg-pine text-white' : 'bg-white border border-ink/10 text-ink/70' }}">{{ __('mxconnect.alert.all') }}</a>
     @foreach (['critical','watch','normal'] as $lv)
       <a href="{{ route('alerts.index', ['level' => $lv]) }}" class="rounded-md px-3 py-1.5 {{ $level === $lv ? 'bg-pine text-white' : 'bg-white border border-ink/10 text-ink/70' }}">{{ __('mxconnect.alert.level_'.$lv) }}</a>

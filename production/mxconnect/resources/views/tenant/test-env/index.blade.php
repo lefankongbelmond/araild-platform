@@ -5,7 +5,7 @@
   $n = fn ($v) => number_format((int) $v, 0, ',', ' ');
 @endphp
 <x-layouts.tenant title="{{ __('Mutuelle de test') }}">
-  <x-tenant.hero icon="alert" kicker="Paramètres" tone="amber">
+  <x-tenant.hero icon="alert" kicker="{{ __('Paramètres') }}" tone="amber">
     <x-slot:title>{{ __('MUTUELLE TEST : réinitialiser les données d’essai') }}</x-slot:title>
     <x-slot:subtitle>{{ __(':name est marquée « mutuelle de test » par l’administration du réseau. Ses données servent aux essais et peuvent être remises à zéro.', ['name' => $mutual->name]) }}</x-slot:subtitle>
   </x-tenant.hero>

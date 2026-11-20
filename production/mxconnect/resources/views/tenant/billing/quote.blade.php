@@ -6,7 +6,7 @@
   $r = $result;
 @endphp
 <x-layouts.tenant title="{{ __('Calcul de quote-part') }}">
-  <x-tenant.hero icon="calculator" kicker="Facturation · Formations sanitaires" tone="teal" class="print:hidden">
+  <x-tenant.hero icon="calculator" kicker="{{ __('Facturation · Formations sanitaires') }}" tone="teal" class="print:hidden">
     <x-slot:title>{{ __('Calcul de quote-part') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Avant les soins ou à l’accueil d’une formation sanitaire : vérifiez les droits de l’adhérent et calculez la part prise en charge par la mutuelle et le ticket modérateur à payer, selon la garantie et ses plafonds.') }}</x-slot:subtitle>
   </x-tenant.hero>

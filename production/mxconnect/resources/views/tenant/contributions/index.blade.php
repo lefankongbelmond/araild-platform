@@ -4,7 +4,7 @@
   $tabs = ['overdue' => 'En retard', 'to_pay' => 'À venir', 'paid' => 'Payées'];
 @endphp
 <x-layouts.tenant :title="__('mxconnect.contribution.plural')">
-  <x-tenant.hero icon="coins" kicker="Facturation et finances" tone="leaf">
+  <x-tenant.hero icon="coins" kicker="{{ __('Facturation et finances') }}" tone="leaf">
     <x-slot:title>{{ __('mxconnect.contribution.plural') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Échéances des adhérents, retards et encaissements. Pour encaisser un montant partiel ou plusieurs échéances, ouvrez le relevé de l’adhérent. Chaque encaissement produit un reçu et un mouvement de trésorerie.') }}</x-slot:subtitle>
     <x-slot:actions>

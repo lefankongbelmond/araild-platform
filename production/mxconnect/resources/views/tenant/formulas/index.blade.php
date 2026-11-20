@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Catalogue des formules') }}">
   @php $canEdit = \App\Support\TenantAccess::can('formulas.rules.store'); @endphp
-  <x-tenant.hero icon="library" kicker="Paramètres · Catalogue des formules" tone="brand">
+  <x-tenant.hero icon="library" kicker="{{ __('Paramètres · Catalogue des formules') }}" tone="brand">
     <x-slot:title>{{ __('Catalogue des formules') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Chaque formule réunit des garanties détaillées (taux par catégorie de soins et de bénéficiaire), des plafonds et des délais de carence. Tout est paramétré par la mutuelle : aucune valeur n’est imposée par le logiciel.') }}</x-slot:subtitle>
     <x-slot:actions>

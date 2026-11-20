@@ -3,7 +3,7 @@
     $S = array_map('__', \App\Models\Tenant\Preauthorization::STATUSES); $f = 'mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm';
     $canAsk = \App\Support\TenantAccess::can('preauth.store');
   @endphp
-  <x-tenant.hero icon="shield" kicker="Prestations · contrôle « 4 yeux »" tone="teal">
+  <x-tenant.hero icon="shield" kicker="{{ __('Prestations · contrôle « 4 yeux »') }}" tone="teal">
     <x-slot:title>{{ __('Accords préalables') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Demandes des prestataires (et de la mutuelle) pour les soins soumis à accord : contrôles automatiques (droits, garantie, carence, plafonds), puis examen administratif ou médical par une autre personne que le demandeur. Les urgences soignées sans accord arrivent ici pour régularisation.') }}</x-slot:subtitle>
   </x-tenant.hero>

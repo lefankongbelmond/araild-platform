@@ -84,6 +84,11 @@ it('traduit le reste du back-office (M3b) : écrans métier et vocabulaire', fun
     asAdmin()->get($h . '/pharmacie')->assertOk()->assertSee('Dispensas na farmácia');
     asAdmin()->get($h . '/factures-prestataires')->assertOk()->assertSee('Exportar as linhas (CSV)');
     asAdmin()->get($h . '/pilotage')->assertOk()->assertSee('Painel de pilotagem');
+
+    // Page de refus (403) : celle de MX-CONNECT, dans la langue, avec le motif — plus la page anglaise de Laravel.
+    as_('tresor@equipe.test')->get($h . '/parametres/identite')->assertForbidden()
+        ->assertSee('lang="pt"', false)->assertSee('Acesso recusado')->assertSee('Esta rubrica não está aberta ao seu papel')
+        ->assertDontSee('Forbidden');
 });
 
 it('fournit dans chaque langue le vocabulaire (mxconnect.*) employé par le back-office', function () {

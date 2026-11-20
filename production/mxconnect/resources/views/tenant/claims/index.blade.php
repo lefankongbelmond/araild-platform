@@ -1,6 +1,6 @@
 @php $health = \App\Support\TenantAccess::can('capacite.donnees-sante'); @endphp
 <x-layouts.tenant :title="__('mxconnect.claim.plural')">
-  <x-tenant.hero icon="clipboard" kicker="Prestations santé" tone="teal">
+  <x-tenant.hero icon="clipboard" kicker="{{ __('Prestations santé') }}" tone="teal">
     <x-slot:title>{{ __('mxconnect.claim.plural') }}</x-slot:title>
     <x-slot:subtitle>{{ __('mxconnect.claim.sub') }}</x-slot:subtitle>
     <x-slot:actions>

@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Règle de suspension') }}">
   @php $f = 'mt-1 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm'; @endphp
-  <x-tenant.hero icon="coins" kicker="Cotisations" tone="leaf">
+  <x-tenant.hero icon="coins" kicker="{{ __('Cotisations') }}" tone="leaf">
     <x-slot:title>{{ __('Règle de suspension des droits') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Quand une échéance de cotisation n’est pas réglée, les droits aux soins sont suspendus. Le délai de grâce laisse à l’adhérent quelques jours après la date d’échéance avant cette suspension.') }}</x-slot:subtitle>
   </x-tenant.hero>

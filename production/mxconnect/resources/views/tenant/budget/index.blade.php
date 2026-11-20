@@ -8,7 +8,7 @@
   $bar = fn ($rate) => $rate === null ? 'bg-ink/10' : ($rate > 100 ? 'bg-gradient-to-r from-rose-500 to-red-600' : ($rate >= 80 ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-leaf-500 to-leaf-600'));
 @endphp
 <x-layouts.tenant title="{{ __('Budget') }}">
-  <x-tenant.hero icon="pie" kicker="Facturation et finances · Gestion budgétaire" tone="violet">
+  <x-tenant.hero icon="pie" kicker="{{ __('Facturation et finances · Gestion budgétaire') }}" tone="violet">
     <x-slot:title>{{ __('Budget :year', ['year' => $year]) }}</x-slot:title>
     <x-slot:subtitle>{{ __('Prévisions de recettes et de dépenses par compte du plan comptable, et exécution réelle calculée automatiquement à partir des écritures comptables validées.') }}</x-slot:subtitle>
     <x-slot:actions>
@@ -48,10 +48,10 @@
       $rateE = $t['expense_b'] > 0 ? round($t['expense_r'] * 100 / $t['expense_b'], 1) : null;
     @endphp
     <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <x-tenant.kpi label="Recettes prévues" :value="$fmt($t['income_b'])" icon="coins" tone="leaf" :hint="'Réalisé : ' . $fmt($t['income_r']) . ($rateI !== null ? ' (' . number_format($rateI, 1, ',', ' ') . ' %)' : '')" />
-      <x-tenant.kpi label="Dépenses prévues" :value="$fmt($t['expense_b'])" icon="wallet" tone="amber" :hint="'Réalisé : ' . $fmt($t['expense_r']) . ($rateE !== null ? ' (' . number_format($rateE, 1, ',', ' ') . ' %)' : '')" />
-      <x-tenant.kpi label="Solde prévu" :value="$fmt($t['income_b'] - $t['expense_b'])" icon="pie" tone="violet" />
-      <x-tenant.kpi label="Solde réalisé" :value="$fmt($t['income_r'] - $t['expense_r'])" icon="chart" tone="brand" />
+      <x-tenant.kpi label="{{ __('Recettes prévues') }}" :value="$fmt($t['income_b'])" icon="coins" tone="leaf" :hint="'Réalisé : ' . $fmt($t['income_r']) . ($rateI !== null ? ' (' . number_format($rateI, 1, ',', ' ') . ' %)' : '')" />
+      <x-tenant.kpi label="{{ __('Dépenses prévues') }}" :value="$fmt($t['expense_b'])" icon="wallet" tone="amber" :hint="'Réalisé : ' . $fmt($t['expense_r']) . ($rateE !== null ? ' (' . number_format($rateE, 1, ',', ' ') . ' %)' : '')" />
+      <x-tenant.kpi label="{{ __('Solde prévu') }}" :value="$fmt($t['income_b'] - $t['expense_b'])" icon="pie" tone="violet" />
+      <x-tenant.kpi label="{{ __('Solde réalisé') }}" :value="$fmt($t['income_r'] - $t['expense_r'])" icon="chart" tone="brand" />
     </div>
 
     <form method="POST" action="{{ route('budget.lines.update', $budget) }}" class="mt-5 space-y-5">

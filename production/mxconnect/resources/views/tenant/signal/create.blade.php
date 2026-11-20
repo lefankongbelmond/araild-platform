@@ -1,6 +1,6 @@
 @php $f = 'w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm'; @endphp
 <x-layouts.tenant title="{{ __('Signaler un incident ou un risque') }}">
-  <x-tenant.hero icon="alert" kicker="Conformité et qualité" tone="red">
+  <x-tenant.hero icon="alert" kicker="{{ __('Conformité et qualité') }}" tone="red">
     <x-slot:title>{{ __('Signaler un incident ou un risque') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Une erreur, une fraude soupçonnée, une fuite de données, un dysfonctionnement ? Signalez-le : l’administrateur et le contrôleur-validateur le traitent. Ne mettez aucune donnée médicale dans la description.') }}</x-slot:subtitle>
   </x-tenant.hero>

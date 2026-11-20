@@ -1,6 +1,6 @@
 @php $L = \App\Support\TenantNav::ROLE_LABELS; @endphp
 <x-layouts.tenant title="{{ __('Équipe et rôles') }}">
-  <x-tenant.hero icon="lock" kicker="Paramètres" tone="brand">
+  <x-tenant.hero icon="lock" kicker="{{ __('Paramètres') }}" tone="brand">
     <x-slot:title>{{ __('Équipe et rôles') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Les personnes qui travaillent dans l’espace de gestion de la mutuelle, leurs rôles et leurs accès. Les mots de passe provisoires s’affichent une seule fois.') }}</x-slot:subtitle>
     <x-slot:actions>

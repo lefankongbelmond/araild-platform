@@ -5,7 +5,7 @@
   $tariffValue = old('tariff', $e && $e->tariff_minor !== null ? number_format($e->tariff_minor / (10 ** $currency->minor_unit), $currency->minor_unit, '.', '') : '');
 @endphp
 <x-layouts.tenant :title="__('mxconnect.param.act_types')">
-  <x-tenant.hero icon="stethoscope" kicker="Paramètres · Catalogue" tone="teal">
+  <x-tenant.hero icon="stethoscope" kicker="{{ __('Paramètres · Catalogue') }}" tone="teal">
     <x-slot:title>{{ __('Actes de soins') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Nomenclature des actes pris en charge et tarifs conventionnels avec les formations sanitaires. Les plafonds se règlent dans chaque garantie.') }}</x-slot:subtitle>
     @if ($canManage)

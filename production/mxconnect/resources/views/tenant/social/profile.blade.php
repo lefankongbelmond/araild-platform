@@ -24,7 +24,7 @@
         <label class="block text-sm font-medium">{{ __('Adresse') }}<input name="address" maxlength="255" value="{{ old('address', $profile->address) }}" class="{{ $field }}"></label>
       </div>
       <label class="block text-sm font-medium">{{ __('E-mail d’alerte (privé, jamais affiché)') }}
-        <input type="email" name="alert_email" maxlength="180" value="{{ old('alert_email', $profile->alert_email) }}" class="{{ $field }}" placeholder="ex. adhesions@votre-mutuelle.org">
+        <input type="email" name="alert_email" maxlength="180" value="{{ old('alert_email', $profile->alert_email) }}" class="{{ $field }}" placeholder="{{ __('ex. adhesions@votre-mutuelle.org') }}">
         <span class="mt-1 block text-xs font-normal text-ink/50">{{ __('Reçoit une alerte (sans données personnelles) à chaque nouvelle demande d’adhésion, nouveau message d’un membre ou demande d’entrée dans un groupe privé.') }}@unless (\App\Support\MailStatus::configured()) <b>{{ __('L’envoi d’e-mails n’est pas encore configuré sur le site.') }}</b>@endunless</span></label>
     </div>
     <div class="space-y-4">

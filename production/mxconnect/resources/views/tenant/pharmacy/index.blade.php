@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Pharmacie') }}">
   @php $S = ['captured' => __('En attente'), 'controlled' => __('Contrôlée'), 'validated' => __('Validée'), 'rejected' => __('Rejetée')]; @endphp
-  <x-tenant.hero icon="pill" kicker="Prestations · pharmacie" tone="violet">
+  <x-tenant.hero icon="pill" kicker="{{ __('Prestations · pharmacie') }}" tone="violet">
     <x-slot:title>{{ __('Délivrances en pharmacie') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Ordonnances délivrées par les pharmacies conventionnées : médicaments, quantités, lignes non prises en charge. Une même ordonnance ne peut pas être facturée deux fois ; les prix au-dessus du prix de référence et les délivrances rapprochées créent des alertes à examiner.') }}</x-slot:subtitle>
     <x-slot:actions>

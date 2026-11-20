@@ -5,7 +5,7 @@
     $canDecide = \App\Support\TenantAccess::can('derogations.approve');
     $tone = ['requested' => 'bg-amber-100 text-amber-800', 'approved' => 'bg-leaf-50 text-leaf-700', 'rejected' => 'bg-mist text-ink/60', 'revoked' => 'bg-mist text-ink/60'];
   @endphp
-  <x-tenant.hero icon="shield" kicker="Prestations · contrôle « 4 yeux »" tone="amber">
+  <x-tenant.hero icon="shield" kicker="{{ __('Prestations · contrôle « 4 yeux »') }}" tone="amber">
     <x-slot:title>{{ __('Dérogations') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Prise en charge exceptionnelle pour un bénéficiaire : dispense de carence, plafond supplémentaire ou acte exclu accordé. Demandée avec une justification, décidée par une autre personne. La formule n’est jamais modifiée et chaque prestation qui utilise une dérogation en garde la trace.') }}</x-slot:subtitle>
   </x-tenant.hero>

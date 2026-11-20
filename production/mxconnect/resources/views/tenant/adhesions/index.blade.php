@@ -1,6 +1,6 @@
 @php $S = array_map('__', \App\Models\Social\AdhesionRequest::STATUSES); $col = ['submitted' => 'clay', 'in_review' => 'pine', 'info_requested' => 'sage', 'accepted' => 'pine', 'rejected' => 'ink/50', 'withdrawn' => 'ink/50']; @endphp
 <x-layouts.tenant title="{{ __('Adhésions en ligne') }}">
-  <x-tenant.hero icon="user-plus" kicker="Réseau social" tone="leaf">
+  <x-tenant.hero icon="user-plus" kicker="{{ __('Réseau social') }}" tone="leaf">
     <x-slot:title>{{ __('Demandes d’adhésion reçues en ligne') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Dossiers envoyés depuis votre page publique MX-CONNECT. Données personnelles : à traiter uniquement pour l’instruction de la demande.') }}</x-slot:subtitle>
   </x-tenant.hero>

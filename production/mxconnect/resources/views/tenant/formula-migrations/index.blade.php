@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Changements de formule') }}">
   @php $S = \App\Models\Tenant\FormulaMigration::STATUSES; @endphp
-  <x-tenant.hero icon="users" kicker="Formules · contrôle « 4 yeux »" tone="brand">
+  <x-tenant.hero icon="users" kicker="{{ __('Formules · contrôle « 4 yeux »') }}" tone="brand">
     <x-slot:title>{{ __('Changements de formule') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Faire passer un groupe d’adhérents d’une formule à une autre à une date d’effet. Une autre personne valide ; le changement s’applique à la date prévue. Les soins antérieurs restent pris en charge selon l’ancienne formule.') }}</x-slot:subtitle>
     @acces('formula-migrations.create')

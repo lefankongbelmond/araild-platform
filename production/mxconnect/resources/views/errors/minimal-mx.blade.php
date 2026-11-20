@@ -9,8 +9,8 @@
   .i{font-size:40px}
 </style></head>
 <body><main class="c"><div class="i">{{ $icon }}</div><h1>{{ $title }}</h1><p>{{ $text }}</p>
-@if (! empty($action))<a class="b" href="{{ $action }}">{{ $actionLabel ?? 'Continuer' }}</a>
-@elseif (empty($noRetry))<a class="b" href="javascript:location.reload()">Réessayer</a>@endif
-<p style="margin-top:14px;font-size:13px"><a href="/" style="color:#667085">Retour à l’accueil</a></p></main>
+@if (! empty($action))<a class="b" href="{{ $action }}">{{ $actionLabel ?? __('Continuer') }}</a>
+@elseif (empty($noRetry))<a class="b" href="javascript:location.reload()">{{ __('Réessayer') }}</a>@endif
+<p style="margin-top:14px;font-size:13px"><a href="/" style="color:#667085">{{ __('Retour à l’accueil') }}</a></p></main>
 @if (! empty($retry))<script>setTimeout(function () { location.reload(); }, {{ (int) $retry * 1000 }});</script>@endif
 </body></html>

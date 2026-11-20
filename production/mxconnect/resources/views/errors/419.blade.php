@@ -1,1 +1,1 @@
-@include('errors.minimal-mx', ['icon' => '🔒', 'title' => 'Session expirée', 'text' => 'Pour votre sécurité, la page a expiré. Rechargez-la puis recommencez : sur le réseau social, votre texte en cours est conservé en brouillon.', 'retry' => 0])
+@include('errors.minimal-mx', ['icon' => '🔒', 'title' => __('Session expirée'), 'text' => __('Pour votre sécurité, la page a expiré. Rechargez-la puis recommencez : sur le réseau social, votre texte en cours est conservé en brouillon.'), 'retry' => 0])

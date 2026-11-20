@@ -1,6 +1,6 @@
 @php $T = \App\Models\Tenant\ProviderConvention::TYPES; @endphp
 <x-layouts.tenant title="{{ __('Prestataires conventionnés') }}">
-  <x-tenant.hero icon="stethoscope" kicker="Paramètres" tone="teal">
+  <x-tenant.hero icon="stethoscope" kicker="{{ __('Paramètres') }}" tone="teal">
     <x-slot:title>{{ __('Prestataires conventionnés') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Hôpitaux, centres de santé, pharmacies et laboratoires avec lesquels la mutuelle a signé une convention. Chacun peut recevoir des comptes « Prestataire de soins » pour vérifier les droits des adhérents et déclarer ses prises en charge.') }}</x-slot:subtitle>
     <x-slot:actions>

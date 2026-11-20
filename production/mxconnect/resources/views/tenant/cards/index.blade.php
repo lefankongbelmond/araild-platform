@@ -1,15 +1,15 @@
 @php $f = 'h-11 rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100'; @endphp
 <x-layouts.tenant title="{{ __('Cartes de membre') }}">
-  <x-tenant.hero icon="card" kicker="Gestion des adhérents" tone="brand">
+  <x-tenant.hero icon="card" kicker="{{ __('Gestion des adhérents') }}" tone="brand">
     <x-slot:title>{{ __('Cartes de membre') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Suivi des cartes : droits ouverts, cartes à imprimer ou déjà remises. Impression individuelle ou par planche A4 (10 cartes). Le QR code porte un jeton signé, vérifiable par les formations sanitaires, sans aucune donnée médicale.') }}</x-slot:subtitle>
   </x-tenant.hero>
 
   <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-tenant.kpi label="Adhérents avec droits ouverts" :value="number_format($stats['eligible'], 0, ',', ' ')" icon="shield" tone="leaf" />
-    <x-tenant.kpi label="Cartes à imprimer" :value="number_format($stats['to_print'], 0, ',', ' ')" icon="printer" tone="amber" />
-    <x-tenant.kpi label="Cartes imprimées" :value="number_format($stats['printed'], 0, ',', ' ')" icon="card" tone="brand" />
-    <x-tenant.kpi label="Adhérents non actifs" :value="number_format($stats['blocked'], 0, ',', ' ')" icon="alert" tone="red" />
+    <x-tenant.kpi label="{{ __('Adhérents avec droits ouverts') }}" :value="number_format($stats['eligible'], 0, ',', ' ')" icon="shield" tone="leaf" />
+    <x-tenant.kpi label="{{ __('Cartes à imprimer') }}" :value="number_format($stats['to_print'], 0, ',', ' ')" icon="printer" tone="amber" />
+    <x-tenant.kpi label="{{ __('Cartes imprimées') }}" :value="number_format($stats['printed'], 0, ',', ' ')" icon="card" tone="brand" />
+    <x-tenant.kpi label="{{ __('Adhérents non actifs') }}" :value="number_format($stats['blocked'], 0, ',', ' ')" icon="alert" tone="red" />
   </div>
 
   <x-tenant.panel class="mt-5" title="{{ __('Adhérents') }}" icon="users">

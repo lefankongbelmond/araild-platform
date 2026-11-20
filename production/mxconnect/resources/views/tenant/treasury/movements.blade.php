@@ -1,6 +1,6 @@
 <x-layouts.tenant :title="__('mxconnect.treasury.movements')">
   <a href="{{ route('treasury.dashboard') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.treasury.title') }}</a>
-  <x-tenant.hero icon="wallet" kicker="Facturation et finances" tone="brand">
+  <x-tenant.hero icon="wallet" kicker="{{ __('Facturation et finances') }}" tone="brand">
     <x-slot:title>{{ __('mxconnect.treasury.movements') }}</x-slot:title>
   </x-tenant.hero>
 

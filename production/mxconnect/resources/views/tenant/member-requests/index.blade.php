@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Demandes des adhérents') }}">
   @php $K = \App\Models\Tenant\MemberChangeRequest::KINDS; $S = \App\Models\Tenant\MemberChangeRequest::STATUSES; $rel = ['spouse' => __('Conjoint(e)'), 'child' => __('Enfant'), 'adopted_child' => __('Enfant adopté'), 'ascendant' => __('Parent'), 'other' => __('Autre')]; @endphp
-  <x-tenant.hero icon="inbox" kicker="Adhérents · portail adhérent" tone="brand">
+  <x-tenant.hero icon="inbox" kicker="{{ __('Adhérents · portail adhérent') }}" tone="brand">
     <x-slot:title>{{ __('Demandes des adhérents') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Changements demandés par les adhérents depuis leur portail : coordonnées, ajout, modification ou retrait d’un bénéficiaire. Rien n’est appliqué avant votre décision ; un bénéficiaire ajouté est couvert à partir du jour de la validation. Demandez au besoin un justificatif au guichet.') }}</x-slot:subtitle>
   </x-tenant.hero>

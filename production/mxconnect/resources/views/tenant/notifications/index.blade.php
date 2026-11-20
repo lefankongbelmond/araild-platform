@@ -3,16 +3,16 @@
   $aud = old('audience', $prefill['audience'] ?? 'all');
 @endphp
 <x-layouts.tenant title="{{ __('Notifications aux membres') }}">
-  <x-tenant.hero icon="send" kicker="Gestion des adhérents · Communication" tone="leaf">
+  <x-tenant.hero icon="send" kicker="{{ __('Gestion des adhérents · Communication') }}" tone="leaf">
     <x-slot:title>{{ __('Notifications aux membres') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Informez un adhérent ou un groupe d’adhérents : appel de cotisation, rappel, campagne de santé, assemblée générale… Chaque envoi est tracé.') }}</x-slot:subtitle>
   </x-tenant.hero>
 
   <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-tenant.kpi label="Adhérents actifs" :value="number_format($stats['active'], 0, ',', ' ')" icon="users" tone="brand" />
-    <x-tenant.kpi label="Joignables dans l’application" :value="number_format($stats['linked'], 0, ',', ' ')" icon="globe" tone="leaf" hint="compte du réseau relié à la fiche" />
-    <x-tenant.kpi label="Avec numéro de téléphone" :value="number_format($stats['phones'], 0, ',', ' ')" icon="message" tone="teal" hint="WhatsApp ou SMS" />
-    <x-tenant.kpi label="Destinataires notifiés" :value="number_format($stats['sent'], 0, ',', ' ')" icon="send" tone="violet" hint="depuis le début" />
+    <x-tenant.kpi label="{{ __('Adhérents actifs') }}" :value="number_format($stats['active'], 0, ',', ' ')" icon="users" tone="brand" />
+    <x-tenant.kpi label="{{ __('Joignables dans l’application') }}" :value="number_format($stats['linked'], 0, ',', ' ')" icon="globe" tone="leaf" hint="{{ __('compte du réseau relié à la fiche') }}" />
+    <x-tenant.kpi label="{{ __('Avec numéro de téléphone') }}" :value="number_format($stats['phones'], 0, ',', ' ')" icon="message" tone="teal" hint="{{ __('WhatsApp ou SMS') }}" />
+    <x-tenant.kpi label="{{ __('Destinataires notifiés') }}" :value="number_format($stats['sent'], 0, ',', ' ')" icon="send" tone="violet" hint="{{ __('depuis le début') }}" />
   </div>
 
   <div class="mt-5 grid gap-5 xl:grid-cols-[400px_minmax(0,1fr)]">

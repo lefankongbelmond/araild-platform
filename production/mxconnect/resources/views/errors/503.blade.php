@@ -1,1 +1,1 @@
-@include('errors.minimal-mx', ['icon' => '🚦', 'title' => 'Réseau très sollicité', 'text' => 'MX-CONNECT reçoit beaucoup de visites en ce moment. La page va se recharger automatiquement dans quelques secondes.', 'retry' => 20])
+@include('errors.minimal-mx', ['icon' => '🚦', 'title' => __('Réseau très sollicité'), 'text' => __('MX-CONNECT reçoit beaucoup de visites en ce moment. La page va se recharger automatiquement dans quelques secondes.'), 'retry' => 20])

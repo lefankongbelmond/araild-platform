@@ -1,5 +1,5 @@
 <x-layouts.tenant :title="__('mxconnect.member.plural')">
-  <x-tenant.hero icon="users" kicker="Gestion des adhérents" tone="leaf">
+  <x-tenant.hero icon="users" kicker="{{ __('Gestion des adhérents') }}" tone="leaf">
     <x-slot:title>{{ __('mxconnect.member.plural') }}</x-slot:title>
     <x-slot:subtitle>{{ __('mxconnect.member.sub') }}</x-slot:subtitle>
     <x-slot:actions>

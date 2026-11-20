@@ -4,7 +4,7 @@
   $O = \App\Models\Social\Opportunity::class;
 @endphp
 <x-layouts.tenant title="{{ __('Projets et opportunités') }}">
-  <x-tenant.hero icon="clipboard" kicker="Réseau social" tone="leaf">
+  <x-tenant.hero icon="clipboard" kicker="{{ __('Réseau social') }}" tone="leaf">
     <x-slot:title>{{ __('Projets, emplois et opportunités') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Présentez vos projets et leurs résultats, publiez vos offres (emploi, stage, bénévolat, appel à partenaires) et traitez les demandes reçues depuis le réseau.') }}</x-slot:subtitle>
     <x-slot:actions>

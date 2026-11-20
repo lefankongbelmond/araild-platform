@@ -8,7 +8,7 @@
 @endphp
 <x-layouts.tenant title="{{ __('Suivi de notification') }}">
   <a href="{{ route('member-notifications.index') }}" class="text-sm text-ink/50 hover:underline">{{ __('&larr; Notifications aux membres') }}</a>
-  <x-tenant.hero icon="send" kicker="Suivi d’envoi" tone="leaf" class="mt-2">
+  <x-tenant.hero icon="send" kicker="{{ __('Suivi d’envoi') }}" tone="leaf" class="mt-2">
     <x-slot:title>{{ $n->title }}</x-slot:title>
     <x-slot:subtitle>{{ $n->audience_label }} · {{ $n->created_at->format('d/m/Y à H:i') }}</x-slot:subtitle>
     <x-slot:actions>
@@ -17,9 +17,9 @@
   </x-tenant.hero>
 
   <div class="mt-5 grid grid-cols-3 gap-3">
-    <x-tenant.kpi label="Adhérents ciblés" :value="$n->recipients" icon="users" tone="brand" />
-    <x-tenant.kpi label="Reçus dans l’application" :value="$n->in_app" icon="globe" tone="leaf" />
-    <x-tenant.kpi label="Joignables par téléphone" :value="$n->with_phone" icon="message" tone="teal" />
+    <x-tenant.kpi label="{{ __('Adhérents ciblés') }}" :value="$n->recipients" icon="users" tone="brand" />
+    <x-tenant.kpi label="{{ __('Reçus dans l’application') }}" :value="$n->in_app" icon="globe" tone="leaf" />
+    <x-tenant.kpi label="{{ __('Joignables par téléphone') }}" :value="$n->with_phone" icon="message" tone="teal" />
   </div>
 
   <x-tenant.panel class="mt-5" title="{{ __('Message') }}" icon="message">

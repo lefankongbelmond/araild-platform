@@ -5,7 +5,7 @@
 @endphp
 <x-layouts.tenant :title="__('mxconnect.accounting.journal')">
   @include('tenant.accounting._nav')
-  <x-tenant.hero icon="book" kicker="Comptabilité" tone="violet">
+  <x-tenant.hero icon="book" kicker="{{ __('Comptabilité') }}" tone="violet">
     <x-slot:title>{{ __('mxconnect.accounting.journal') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Toutes les écritures, des plus récentes aux plus anciennes. Une écriture validée ne se modifie pas : elle se corrige par une extourne, validée par une autre personne.') }}</x-slot:subtitle>
   </x-tenant.hero>

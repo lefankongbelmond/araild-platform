@@ -6,7 +6,7 @@
     $me = auth()->id();
     $due = $m->effective_date->toDateString() <= now()->toDateString();
   @endphp
-  <x-tenant.hero icon="users" kicker="Changements de formule" tone="brand">
+  <x-tenant.hero icon="users" kicker="{{ __('Changements de formule') }}" tone="brand">
     <x-slot:title>{{ $m->reference }} : {{ $m->source?->name }} → {{ $m->target?->name }}</x-slot:title>
     <x-slot:subtitle>Date d’effet {{ $m->effective_date->format('d/m/Y') }} · {{ $m->keep_seniority ? __('ancienneté conservée (pas de nouvelle carence)') : __('nouvelle carence à partir de la date d’effet') }} · état : {{ __($S[$m->status] ?? $m->status) }}</x-slot:subtitle>
   </x-tenant.hero>

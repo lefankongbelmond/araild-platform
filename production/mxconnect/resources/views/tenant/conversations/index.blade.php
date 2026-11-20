@@ -1,5 +1,5 @@
 <x-layouts.tenant title="{{ __('Messagerie') }}">
-  <x-tenant.hero icon="message" kicker="Réseau social" tone="brand">
+  <x-tenant.hero icon="message" kicker="{{ __('Réseau social') }}" tone="brand">
     <x-slot:title>{{ __('Messagerie') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Messages privés envoyés par les membres du réseau depuis votre page publique. (Les messages des visiteurs non inscrits sont dans') }} <a class="text-pine underline" href="{{ route('social-presence.messages') }}">{{ __('Réseau social › Messages') }}</a>.)</x-slot:subtitle>
   </x-tenant.hero>

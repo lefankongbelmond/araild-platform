@@ -1,0 +1,1 @@
+@include('errors.minimal-mx', ['icon' => '🚫', 'title' => __('Accès refusé'), 'text' => (isset($exception) && $exception->getMessage() !== '') ? __($exception->getMessage()) : __('Cette page n’est pas ouverte à votre compte. Si vous pensez qu’il s’agit d’une erreur, contactez l’administrateur.'), 'noRetry' => true])

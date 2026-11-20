@@ -1,7 +1,7 @@
 <x-layouts.tenant title="{{ __('Politique pharmaceutique') }}">
   @php $f = 'mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm'; @endphp
   <a href="{{ route('pharmacy.index') }}" class="text-sm text-ink/50 hover:underline">{{ __('&larr; Délivrances en pharmacie') }}</a>
-  <x-tenant.hero icon="pill" kicker="Pharmacie" tone="violet" class="mt-2">
+  <x-tenant.hero icon="pill" kicker="{{ __('Pharmacie') }}" tone="violet" class="mt-2">
     <x-slot:title>{{ __('Politique pharmaceutique') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Réglages de la mutuelle et liste des médicaments pris en charge. Un réglage laissé vide n’est pas appliqué : aucune valeur n’est imposée par le logiciel. Les quantités prescrites ne sont jamais modifiées : au-delà du maximum, la part en trop reste à la charge du patient.') }}</x-slot:subtitle>
   </x-tenant.hero>

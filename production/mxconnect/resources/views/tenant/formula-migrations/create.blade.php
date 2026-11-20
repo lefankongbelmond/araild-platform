@@ -3,7 +3,7 @@
     $f = 'mt-1 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
     $fmt = fn ($v) => $v === null ? '—' : $currency->format((int) $v);
   @endphp
-  <x-tenant.hero icon="users" kicker="Changements de formule" tone="brand">
+  <x-tenant.hero icon="users" kicker="{{ __('Changements de formule') }}" tone="brand">
     <x-slot:title>{{ __('Nouveau changement de formule') }}</x-slot:title>
     <x-slot:subtitle>{{ __('1. Choisissez la formule actuelle, la formule cible et la date d’effet, puis « Voir les adhérents ». 2. Vérifiez la liste, décochez au besoin, indiquez le motif et envoyez : une autre personne validera.') }}</x-slot:subtitle>
   </x-tenant.hero>

@@ -3,7 +3,7 @@
   $labels = ['published' => [__('En ligne'), 'sage'], 'draft' => [__('Brouillon'), 'ink/50'], 'archived' => [__('Archivée'), 'ink/50'], 'hidden' => [__('Masquée par la modération'), 'clay']];
 @endphp
 <x-layouts.tenant title="{{ __('Réseau social') }}">
-  <x-tenant.hero icon="globe" kicker="Réseau social" tone="brand">
+  <x-tenant.hero icon="globe" kicker="{{ __('Réseau social') }}" tone="brand">
     <x-slot:title>{{ __('Réseau social') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Votre page publique sur MX-CONNECT, vos publications et les messages reçus.') }}</x-slot:subtitle>
     <x-slot:actions>

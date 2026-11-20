@@ -1,6 +1,6 @@
 <x-layouts.tenant title="{{ __('Groupes') }}">
   <a href="{{ route('social-presence.index') }}" class="text-sm text-pine hover:underline">{{ __('← Réseau social') }}</a>
-  <x-tenant.hero icon="users" kicker="Réseau social" tone="violet">
+  <x-tenant.hero icon="users" kicker="{{ __('Réseau social') }}" tone="violet">
     <x-slot:title>{{ __('Groupes animés par la mutuelle') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Espaces d’échange thématiques. Vous en êtes responsable : approuvez les membres des groupes privés et modérez les publications.') }}</x-slot:subtitle>
     <x-slot:actions>

@@ -1,7 +1,7 @@
 @php $f = 'rounded-md border border-ink/15 bg-white px-3 py-2 text-sm'; @endphp
 <x-layouts.tenant title="{{ __('Clôture de l’exercice') }}">
   @include('tenant.accounting._nav')
-  <x-tenant.hero icon="lock" kicker="Comptabilité" tone="violet">
+  <x-tenant.hero icon="lock" kicker="{{ __('Comptabilité') }}" tone="violet">
     <x-slot:title>{{ __('Clôture de l’exercice') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Une fois l’année terminée et toutes ses écritures validées, la clôture solde les comptes de charges et de produits dans le résultat (131 bénéfice ou 139 perte) et verrouille l’année : plus aucune écriture ni mouvement de trésorerie ne peut y être daté.') }}</x-slot:subtitle>
   </x-tenant.hero>

@@ -8,7 +8,7 @@
 @endphp
 <x-layouts.tenant :title="$titles[$kind]">
   <a href="{{ route($back) }}" class="text-sm text-ink/50 hover:underline">{{ __('&larr; Retour') }}</a>
-  <x-tenant.hero :icon="$icons[$kind]" kicker="Paramètres · Listes de référence" tone="teal" class="mt-2">
+  <x-tenant.hero :icon="$icons[$kind]" kicker="{{ __('Paramètres · Listes de référence') }}" tone="teal" class="mt-2">
     <x-slot:title>{{ $titles[$kind] }}</x-slot:title>
     <x-slot:subtitle>{{ __('Modèle inspiré des pratiques courantes des mutuelles de santé d’Afrique de l’Ouest et d’Afrique centrale. Cochez ce que votre mutuelle utilise : les éléments déjà présents (même code) ne sont jamais modifiés.') }}</x-slot:subtitle>
   </x-tenant.hero>

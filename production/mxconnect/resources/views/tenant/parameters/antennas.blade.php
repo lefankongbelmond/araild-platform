@@ -1,5 +1,5 @@
 <x-layouts.tenant :title="__('mxconnect.param.antennas')">
-  <x-tenant.hero icon="pin" kicker="Paramètres · Réseau" tone="amber">
+  <x-tenant.hero icon="pin" kicker="{{ __('Paramètres · Réseau') }}" tone="amber">
     <x-slot:title>{{ __('mxconnect.param.antennas') }}</x-slot:title>
   </x-tenant.hero>
   @include('tenant.parameters.partials.tabs')

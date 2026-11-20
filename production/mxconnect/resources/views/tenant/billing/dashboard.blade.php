@@ -4,7 +4,7 @@
   $monthNames = [__('Janv.'), __('Févr.'), __('Mars'), __('Avr.'), __('Mai'), __('Juin'), __('Juil.'), __('Août'), __('Sept.'), __('Oct.'), __('Nov.'), __('Déc.')];
 @endphp
 <x-layouts.tenant title="{{ __('Facturation') }}">
-  <x-tenant.hero icon="receipt" kicker="Facturation et finances" tone="leaf">
+  <x-tenant.hero icon="receipt" kicker="{{ __('Facturation et finances') }}" tone="leaf">
     <x-slot:title>{{ __('Facturation') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Cotisations appelées et encaissées, retards, factures des formations sanitaires et prestations prises en charge — chiffres réels de votre mutuelle.') }}</x-slot:subtitle>
     <x-slot:actions>
@@ -19,10 +19,10 @@
   </x-tenant.hero>
 
   <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-tenant.kpi label="Cotisations appelées" :value="$fmt($kpi['called'])" icon="file" tone="brand" />
-    <x-tenant.kpi label="Cotisations encaissées" :value="$fmt($kpi['collected'])" icon="coins" tone="leaf" :hint="$kpi['payments'] . ' paiement(s)'" />
-    <x-tenant.kpi label="Taux de recouvrement" :value="$kpi['rate'] !== null ? number_format($kpi['rate'], 1, ',', ' ') . ' %' : '—'" icon="chart" tone="violet" />
-    <x-tenant.kpi label="Retards de cotisation (toutes années)" :value="$fmt($kpi['overdue_amount'])" icon="alert" tone="red" :hint="$kpi['overdue_count'] . ' échéance(s)'" />
+    <x-tenant.kpi label="{{ __('Cotisations appelées') }}" :value="$fmt($kpi['called'])" icon="file" tone="brand" />
+    <x-tenant.kpi label="{{ __('Cotisations encaissées') }}" :value="$fmt($kpi['collected'])" icon="coins" tone="leaf" :hint="$kpi['payments'] . ' paiement(s)'" />
+    <x-tenant.kpi label="{{ __('Taux de recouvrement') }}" :value="$kpi['rate'] !== null ? number_format($kpi['rate'], 1, ',', ' ') . ' %' : '—'" icon="chart" tone="violet" />
+    <x-tenant.kpi label="{{ __('Retards de cotisation (toutes années)') }}" :value="$fmt($kpi['overdue_amount'])" icon="alert" tone="red" :hint="$kpi['overdue_count'] . ' échéance(s)'" />
   </div>
 
   <div class="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">

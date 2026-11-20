@@ -1,5 +1,5 @@
 <x-layouts.tenant :title="__('mxconnect.risk.title')">
-  <x-tenant.hero icon="alert" kicker="Conformité et qualité" tone="amber">
+  <x-tenant.hero icon="alert" kicker="{{ __('Conformité et qualité') }}" tone="amber">
     <x-slot:title>{{ __('mxconnect.risk.title') }}</x-slot:title>
     <x-slot:subtitle>{{ __('mxconnect.risk.sub') }}</x-slot:subtitle>
   </x-tenant.hero>

@@ -1,6 +1,6 @@
 <x-layouts.tenant :title="__('mxconnect.member.new')">
   <a href="{{ route('members.index') }}" class="text-sm text-ink/50 hover:underline">&larr; {{ __('mxconnect.back') }}</a>
-  <x-tenant.hero icon="user-plus" kicker="Gestion des adhérents" tone="leaf">
+  <x-tenant.hero icon="user-plus" kicker="{{ __('Gestion des adhérents') }}" tone="leaf">
     <x-slot:title>{{ __('mxconnect.member.new') }}</x-slot:title>
   </x-tenant.hero>
 

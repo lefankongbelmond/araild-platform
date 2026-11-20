@@ -4,7 +4,7 @@
   $me = auth()->id();
 @endphp
 <x-layouts.tenant title="{{ __('Factures des prestataires') }}">
-  <x-tenant.hero icon="receipt" kicker="Facturation et finances" tone="teal">
+  <x-tenant.hero icon="receipt" kicker="{{ __('Facturation et finances') }}" tone="teal">
     <x-slot:title>{{ __('Factures des prestataires') }}</x-slot:title>
     <x-slot:subtitle>{{ __('Toutes les factures des établissements conventionnés (tiers payant) : contrôle ligne par ligne, validation, puis paiement. Le paiement se fait hors de la plateforme ; MX-CONNECT l’enregistre en trésorerie avec sa référence.') }}</x-slot:subtitle>
     <x-slot:actions>

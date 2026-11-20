@@ -10,7 +10,7 @@
   $mem = $r['members']; $ct = $r['contributions']; $pr = $r['prestations'];
 @endphp
 <x-layouts.tenant title="{{ __('Tableau de bord') }}">
-  <x-tenant.hero icon="chart" kicker="Pilotage" tone="brand">
+  <x-tenant.hero icon="chart" kicker="{{ __('Pilotage') }}" tone="brand">
     <x-slot:title>{{ __('Tableau de bord de pilotage') }}</x-slot:title>
     <x-slot:subtitle>{{ tenant('name') }} — {{ __('du :from au :to', ['from' => $r['from']->format('d/m/Y'), 'to' => $r['to']->format('d/m/Y')]) }}@if ($filterLabel) · {{ $filterLabel }}@endif. {{ __('Chiffres réels, calculés à l’instant ; montants en :currency.', ['currency' => $c->code]) }}</x-slot:subtitle>
     <x-slot:actions>
@@ -40,18 +40,18 @@
 
   {{-- Adhésions --}}
   <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-    <x-tenant.kpi label="Adhérents" :value="$n($mem['total'])" icon="users" tone="brand" :hint="$n($mem['beneficiaries']) . ' bénéficiaire(s) couverts ou suspendus'" />
-    <x-tenant.kpi label="Adhésions actives" :value="$n($mem['active'])" icon="shield" tone="leaf" :hint="$n($mem['pending']) . ' en attente de validation'" />
-    <x-tenant.kpi label="Adhésions suspendues" :value="$n($mem['suspended'])" icon="alert" tone="amber" hint="Suspendus ou cotisations en retard" />
-    <x-tenant.kpi label="Adhésions expirées" :value="$n($mem['expired'])" icon="history" tone="red" hint="Sortis, radiés ou sans formule en cours" />
+    <x-tenant.kpi label="{{ __('Adhérents') }}" :value="$n($mem['total'])" icon="users" tone="brand" :hint="$n($mem['beneficiaries']) . ' bénéficiaire(s) couverts ou suspendus'" />
+    <x-tenant.kpi label="{{ __('Adhésions actives') }}" :value="$n($mem['active'])" icon="shield" tone="leaf" :hint="$n($mem['pending']) . ' en attente de validation'" />
+    <x-tenant.kpi label="{{ __('Adhésions suspendues') }}" :value="$n($mem['suspended'])" icon="alert" tone="amber" hint="{{ __('Suspendus ou cotisations en retard') }}" />
+    <x-tenant.kpi label="{{ __('Adhésions expirées') }}" :value="$n($mem['expired'])" icon="history" tone="red" hint="{{ __('Sortis, radiés ou sans formule en cours') }}" />
   </div>
 
   {{-- Cotisations et prestations --}}
   <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-    <x-tenant.kpi label="Cotisations attendues" :value="$fmt($ct['expected'])" icon="coins" tone="brand" :hint="'Encaissé sur ces échéances : ' . $fmt($ct['paid_on_expected'])" />
-    <x-tenant.kpi label="Taux de recouvrement" :value="$pct($ct['rate'])" icon="chart" tone="leaf" :hint="'Encaissé sur la période : ' . $fmt($ct['collected'])" />
-    <x-tenant.kpi label="Prise en charge (mutuelle)" :value="$fmt($pr['covered'])" icon="clipboard" tone="amber" :hint="'Facturé : ' . $fmt($pr['billed']) . ' · tickets modérateurs : ' . $fmt($pr['copay'])" />
-    <x-tenant.kpi label="Taux de sinistralité" :value="$pct($pr['loss_ratio'])" icon="pie" tone="violet" hint="Prise en charge ÷ cotisations encaissées" />
+    <x-tenant.kpi label="{{ __('Cotisations attendues') }}" :value="$fmt($ct['expected'])" icon="coins" tone="brand" :hint="'Encaissé sur ces échéances : ' . $fmt($ct['paid_on_expected'])" />
+    <x-tenant.kpi label="{{ __('Taux de recouvrement') }}" :value="$pct($ct['rate'])" icon="chart" tone="leaf" :hint="'Encaissé sur la période : ' . $fmt($ct['collected'])" />
+    <x-tenant.kpi label="{{ __('Prise en charge (mutuelle)') }}" :value="$fmt($pr['covered'])" icon="clipboard" tone="amber" :hint="'Facturé : ' . $fmt($pr['billed']) . ' · tickets modérateurs : ' . $fmt($pr['copay'])" />
+    <x-tenant.kpi label="{{ __('Taux de sinistralité') }}" :value="$pct($pr['loss_ratio'])" icon="pie" tone="violet" hint="{{ __('Prise en charge ÷ cotisations encaissées') }}" />
   </div>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-3">

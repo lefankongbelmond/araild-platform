@@ -5,7 +5,7 @@
   $line = fn ($label, $value, $hint = null) => '<div class="flex flex-wrap justify-between gap-2 py-2"><dt class="text-ink/60">' . e($label) . ($hint ? '<span class="block text-xs text-ink/45">' . e($hint) . '</span>' : '') . '</dt><dd class="font-semibold tabular-nums">' . e($value) . '</dd></div>';
 @endphp
 <x-layouts.tenant title="{{ __('Rapports d’activité') }}">
-  <x-tenant.hero icon="chart" kicker="Facturation et finances" tone="violet">
+  <x-tenant.hero icon="chart" kicker="{{ __('Facturation et finances') }}" tone="violet">
     <x-slot:title>{{ __('Rapport d’activité') }}</x-slot:title>
     <x-slot:subtitle>{{ __(':value — du :date au :date2. Chiffres réels, calculés à l’instant depuis les données de la mutuelle ; montants en :reference.', ['value' => tenant('name'), 'date' => $r['from']->format('d/m/Y'), 'date2' => $r['to']->format('d/m/Y'), 'reference' => $c->code]) }}</x-slot:subtitle>
     <x-slot:actions>
@@ -28,10 +28,10 @@
   </form>
 
   <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-    <x-tenant.kpi label="Adhérents actifs" :value="number_format($r['members']['active'], 0, ',', ' ')" icon="users" tone="brand" :hint="$r['members']['new'] . ' nouveau(x) sur la période'" />
-    <x-tenant.kpi label="Cotisations encaissées" :value="$fmt($r['contributions']['collected'])" icon="coins" tone="leaf" :hint="'Recouvrement : ' . $pct($r['contributions']['rate'])" />
-    <x-tenant.kpi label="Part de la mutuelle" :value="$fmt($r['prestations']['mutual'])" icon="clipboard" tone="amber" :hint="$r['prestations']['validated'] . ' prestation(s) validée(s)'" />
-    <x-tenant.kpi label="Prestations / cotisations" :value="$pct($r['prestations']['claims_ratio'])" icon="chart" tone="violet" hint="Part mutuelle ÷ encaissements" />
+    <x-tenant.kpi label="{{ __('Adhérents actifs') }}" :value="number_format($r['members']['active'], 0, ',', ' ')" icon="users" tone="brand" :hint="$r['members']['new'] . ' nouveau(x) sur la période'" />
+    <x-tenant.kpi label="{{ __('Cotisations encaissées') }}" :value="$fmt($r['contributions']['collected'])" icon="coins" tone="leaf" :hint="'Recouvrement : ' . $pct($r['contributions']['rate'])" />
+    <x-tenant.kpi label="{{ __('Part de la mutuelle') }}" :value="$fmt($r['prestations']['mutual'])" icon="clipboard" tone="amber" :hint="$r['prestations']['validated'] . ' prestation(s) validée(s)'" />
+    <x-tenant.kpi label="{{ __('Prestations / cotisations') }}" :value="$pct($r['prestations']['claims_ratio'])" icon="chart" tone="violet" hint="{{ __('Part mutuelle ÷ encaissements') }}" />
   </div>
 
   <section class="mt-6 min-w-0 rounded-lg border border-ink/10 bg-white p-5">
