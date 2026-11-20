@@ -10,6 +10,7 @@ use App\Models\Tenant\Preauthorization;
 use App\Models\Tenant\Prestation;
 use App\Models\Tenant\User;
 use App\Services\AccountingRefusal;
+use App\Support\Msg;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -101,11 +102,21 @@ class PreauthorizationService
             }
             // Établissement prévenu (phase 6, 2026-11-25) : numéro, montant accordé ou motif ; jamais l'information clinique.
             $code = Member::whereKey($p->member_id)->value('member_code');
-            \App\Support\ProviderNotifier::notify((int) $p->provider_id, $to === 'approved' ? 'preauth_approved' : 'preauth_rejected',
-                $to === 'approved' ? 'Accord préalable accordé' . ($p->number ? ' (' . $p->number . ')' : '') : 'Accord préalable refusé (demande n° ' . $p->id . ')',
-                'Adhérent ' . $code . ($to === 'approved'
-                    ? ($p->approved_minor !== null ? ' · montant accordé : ' . \App\Support\ProviderNotifier::money((int) $p->approved_minor) : '') . ($p->valid_until ? ' · valable jusqu’au ' . $p->valid_until->format('d/m/Y') : '')
-                    : ' · motif : ' . $p->decision_note), 'preauth', 'claims.view');
+            // Texte traduisible (M4) : chaque personne de l'établissement le lit dans sa langue.
+            $title = $to !== 'approved' ? Msg::of('Accord préalable refusé (demande n° :id)', ['id' => $p->id])
+                : ($p->number ? Msg::of('Accord préalable accordé (:number)', ['number' => $p->number]) : Msg::of('Accord préalable accordé'));
+            $body = [Msg::of('Adhérent :code', ['code' => $code])];
+            if ($to === 'approved') {
+                if ($p->approved_minor !== null) {
+                    $body[] = Msg::of('montant accordé : :amount', ['amount' => \App\Support\ProviderNotifier::money((int) $p->approved_minor)]);
+                }
+                if ($p->valid_until) {
+                    $body[] = Msg::of('valable jusqu’au :date', ['date' => $p->valid_until->format('d/m/Y')]);
+                }
+            } else {
+                $body[] = Msg::of('motif : :note', ['note' => (string) $p->decision_note]);
+            }
+            \App\Support\ProviderNotifier::notify((int) $p->provider_id, $to === 'approved' ? 'preauth_approved' : 'preauth_rejected', $title, $body, 'preauth', 'claims.view');
 
             return $p;
         });

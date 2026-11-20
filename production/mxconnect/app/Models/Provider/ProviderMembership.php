@@ -33,6 +33,6 @@ class ProviderMembership extends Model implements Auditable
 
     public function roleLabel(): string
     {
-        return ProviderAccess::ROLES[$this->role] ?? $this->role;
+        return __(ProviderAccess::ROLES[$this->role] ?? $this->role);
     }
 }

@@ -52,6 +52,10 @@ class TranslatableLabels
         [\App\Services\Tenant\PilotageService::class, 'STATUSES'], [\App\Services\TestDataResetService::class, 'LABELS'],
         [\App\Support\HealthAccessLog::class, 'LABELS'], [\App\Models\Tenant\DispensationLine::class, 'REASONS'],
         [\App\Services\Tenant\ProviderBillingService::class, 'MODES'],
+        // Espace prestataire central (M4)
+        [\App\Support\ProviderAccess::class, 'ROLES'], [\App\Support\ProviderAccess::class, 'PERMISSIONS'],
+        [\App\Models\Provider\ProviderDocument::class, 'KINDS'], [\App\Models\Provider\ProviderAffiliation::class, 'STATUSES'],
+        [\App\Http\Controllers\Provider\EstablishmentController::class, 'DAYS'],
     ];
 
     /** Tous les textes (chaînes) de ces listes, à plat et sans doublon. */
@@ -109,6 +113,11 @@ class TranslatableLabels
             foreach ($actions as $label) {
                 $out[] = $label;
             }
+        }
+
+        // Groupes de droits de l'espace prestataire (clés du tableau).
+        foreach (array_keys(ProviderAccess::PERMISSIONS) as $group) {
+            $out[] = $group;
         }
 
         return $out;

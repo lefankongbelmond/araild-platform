@@ -1,5 +1,5 @@
 @php $R = \App\Models\Social\AdhesionRequest::class; @endphp
-<x-layouts.social :title="'Adhésion · ' . $mutual->name" active="adhesions">
+<x-layouts.social :title="__('Adhésion · :name', ['name' => $mutual->name])" active="adhesions">
   <a class="mx-small" href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'offres']) }}"><x-mx.icon name="arrow-left" :size="14"/> {{ $mutual->name }}</a>
   <section class="mx-card mx-card__pad mx-stack">
     <div class="mx-row" style="gap:12px">

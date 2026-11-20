@@ -1,5 +1,5 @@
 @php $R = \App\Models\Social\SocialRequest::class; @endphp
-<x-layouts.social :title="'Demandes reçues · ' . $page->name" active="pages">
+<x-layouts.social :title="__('Demandes reçues · :name', ['name' => $page->name])" active="pages">
   @include('social.manage._head')
   <div class="mx-chips" aria-label="{{ __('Type de demande') }}">
     <a href="{{ route('social.manage.requests', array_filter([$page->slug, 'statut' => $status])) }}" @class(['mx-chip', 'is-active' => ! $kind])>{{ __('Toutes') }}</a>

@@ -61,8 +61,8 @@ class ProviderController extends Controller
         $aff->decision_note = null;
         $aff->save();
         ProviderSpaceService::syncFromConvention($c, 'Demande acceptée, convention créée', $request->user()->name);
-        \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_approved', 'Demande d’affiliation acceptée',
-            'La convention est créée : votre personnel peut ouvrir le portail de la mutuelle depuis cet espace.', 'mutuals', 'conventions.view');
+        \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_approved', \App\Support\Msg::of('Demande d’affiliation acceptée'),
+            \App\Support\Msg::of('La convention est créée : votre personnel peut ouvrir le portail de la mutuelle depuis cet espace.'), 'mutuals', 'conventions.view');
 
         return redirect()->route('providers.show', $c->id)->with('success', __('Demande acceptée : la convention est créée. Le personnel de l’établissement peut désormais ouvrir votre portail depuis son espace prestataire.'));
     }
@@ -74,8 +74,8 @@ class ProviderController extends Controller
         $aff->fill(['status' => 'rejected', 'decision_note' => trim($data['note']), 'decided_at' => now()]);
         $aff->log('Demande refusée', $request->user()->name, trim($data['note']));
         $aff->save();
-        \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_rejected', 'Demande d’affiliation refusée',
-            'Motif : ' . trim($data['note']), 'mutuals', 'affiliation.request');
+        \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_rejected', \App\Support\Msg::of('Demande d’affiliation refusée'),
+            \App\Support\Msg::of('Motif : :note', ['note' => trim($data['note'])]), 'mutuals', 'affiliation.request');
 
         return back()->with('success', __('Demande refusée ; le motif est communiqué à l’établissement.'));
     }

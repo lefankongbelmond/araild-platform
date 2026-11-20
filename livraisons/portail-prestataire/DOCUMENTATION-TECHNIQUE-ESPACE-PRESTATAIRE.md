@@ -295,6 +295,12 @@ Toutes sont couvertes par la règle `portal.*` de `TenantAccess`. La caméra est
 
 **Tests** : `tests/Feature/AvisPrestataireTest.php` (2). Ils couvrent les 7 décisions, le contenu sans donnée médicale, le filtrage par droit et par établissement, et la lecture propre à chaque personne.
 
+**Langue des avis (multilingue M4, 2026-12-03)** :
+- La mutuelle passe le titre et le texte sous forme traduisible : `Msg::of('Prise en charge n° :id validée', ['id' => …])`, ou une liste de `Msg` dont les morceaux sont joints par « · ». Une valeur peut elle-même être un `Msg` (`Msg::of('n° :id', …)`) ou `['__' => 'Libellé']`.
+- `ProviderNotifier::notify` enregistre le texte français dans `title`/`body` et la forme traduisible, avec le nom de la mutuelle, dans la colonne JSON `i18n`.
+- L'écran « Avis des mutuelles » affiche `displayTitle()`/`displayBody()` : chaque personne de l'établissement lit l'avis dans **sa** langue. Un avis antérieur, sans `i18n`, s'affiche tel qu'il a été enregistré.
+- Migration CENTRALE `2026_12_03_000100_add_i18n_to_provider_notifications` (colonne `i18n`, nullable). Test : `tests/Feature/MultilinguePrestataireTest.php`.
+
 **Reste de la phase 6** :
 - messagerie par dossier entre le prestataire et la mutuelle ;
 - tableau des signaux ;

@@ -5,7 +5,7 @@
   $today = now()->startOfDay();
   $label = ['paid' => __('Payée'), 'overdue' => __('En retard'), 'to_pay' => __('À venir')];
 @endphp
-<x-layouts.tenant :title="'Cotisations — ' . $member->last_name . ' ' . $member->first_name">
+<x-layouts.tenant :title="__('Cotisations — :name', ['name' => $member->last_name . ' ' . $member->first_name])">
   <div class="print:hidden flex flex-wrap items-center gap-x-4 text-sm" style="row-gap:.25rem">
     <a href="{{ route('contributions.index') }}" class="text-ink/50 hover:underline">&larr; {{ __('mxconnect.contribution.plural') }}</a>
     @acces('members.show')<a href="{{ route('members.show', $member) }}" class="text-pine hover:underline">{{ __('Fiche de l’adhérent') }}</a>@endacces

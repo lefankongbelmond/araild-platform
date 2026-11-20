@@ -50,7 +50,7 @@ class SpaceController extends Controller
     public function go(string $target)
     {
         [, $perm] = ProviderSpaceService::TARGETS[$target];
-        abort_unless(ProviderAccess::allowed($perm), 403, 'Votre rôle dans l’établissement ne permet pas cette action.');
+        abort_unless(ProviderAccess::allowed($perm), 403, __('Votre rôle dans l’établissement ne permet pas cette action.'));
         $mutuals = $this->space->conventionedMutuals(ProviderAccess::current()->provider);
 
         return view('provider.go', ['target' => $target, 'mutuals' => $mutuals, 'lookup' => null]);
@@ -77,8 +77,8 @@ class SpaceController extends Controller
      */
     public function lookup(Request $request)
     {
-        abort_unless(ProviderAccess::allowed('rights.verify'), 403, 'Votre rôle dans l’établissement ne permet pas cette action.');
-        $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => 'Saisissez le code de la carte ou lisez son QR code.']);
+        abort_unless(ProviderAccess::allowed('rights.verify'), 403, __('Votre rôle dans l’établissement ne permet pas cette action.'));
+        $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => __('Saisissez le code de la carte ou lisez son QR code.')]);
         $m = ProviderAccess::current();
         $res = $this->space->lookup($m->provider, $request->user('provider'), $data['code'], $request);
 
@@ -161,14 +161,14 @@ class SpaceController extends Controller
     public function requestAffiliation(Request $request)
     {
         $data = $request->validate(['mutual_id' => ['required', 'string', 'max:64'], 'message' => ['nullable', 'string', 'max:1000']],
-            ['mutual_id.required' => 'Choisissez une mutuelle.']);
+            ['mutual_id.required' => __('Choisissez une mutuelle.')]);
         $m = ProviderAccess::current();
         $aff = $this->space->requestAffiliation($m->provider, $data['mutual_id'], $request->user('provider'), $data['message'] ?? null);
         if (! $aff) {
-            return back()->with('error', 'Cette mutuelle n’est pas disponible pour une demande (déjà conventionnée, demande en cours, ou autre pays).');
+            return back()->with('error', __('Cette mutuelle n’est pas disponible pour une demande (déjà conventionnée, demande en cours, ou autre pays).'));
         }
 
-        return back()->with('success', 'Demande d’affiliation envoyée à ' . ($aff->mutual?->name ?? 'la mutuelle') . '. Elle sera examinée par la mutuelle.');
+        return back()->with('success', __('Demande d’affiliation envoyée à :mutual. Elle sera examinée par la mutuelle.', ['mutual' => $aff->mutual?->name ?? __('la mutuelle')]));
     }
 
     public function withdraw(Request $request, int $affiliation)
@@ -179,6 +179,6 @@ class SpaceController extends Controller
         $aff->log('Demande retirée par l’établissement', $request->user('provider')->name);
         $aff->save();
 
-        return back()->with('success', 'Demande retirée.');
+        return back()->with('success', __('Demande retirée.'));
     }
 }

@@ -1,4 +1,4 @@
-<x-layouts.social :title="'Projets · ' . $page->name" active="pages">
+<x-layouts.social :title="__('Projets · :name', ['name' => $page->name])" active="pages">
   @include('social.manage._head')
   <div class="mx-row mx-between mx-row--wrap" style="gap:10px;padding:0 4px">
     <p class="mx-small mx-muted" style="flex:1;min-width:220px">{{ __('Présentez vos projets, publiez leurs résultats et dites si vous cherchez des bénévoles ou des partenaires.') }}</p>

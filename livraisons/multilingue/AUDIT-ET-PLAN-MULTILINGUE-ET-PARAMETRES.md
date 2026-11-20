@@ -86,7 +86,7 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 | M3a Mutuelle : page Paramètres en cartes, fiche « Identité et langue », cadre du back-office et écrans de paramétrage | Faite (VERSION 2026.11.30) | `LISEZMOI-20261130.md` |
 | M3b Mutuelle : reste du back-office (adhérents, prestations, cotisations, comptabilité, trésorerie, rapports, pharmacie, portail prestataire de la mutuelle) + vocabulaire `mxconnect.php` complet dans les 6 langues | Faite (VERSION 2026.12.01) | `LISEZMOI-20261201.md` |
 | M3c Mutuelle : messages renvoyés par le serveur (contrôleurs et services du back-office, `AccountingRefusal`, `TeamService`…) — **étape M3 terminée** | Faite (VERSION 2026.12.02) | `LISEZMOI-20261202.md` |
-| M4 Prestataires | À faire | — |
+| M4 Prestataires : espace prestataire central (connexion, inscription, tableau de bord, avis, conventions, personnel, rôles et droits, documents, paramètres), messages du serveur, avis des mutuelles lus dans la langue de chaque personne (colonne centrale `provider_notifications.i18n`) | Faite (VERSION 2026.12.03) | `LISEZMOI-20261203.md` |
 | M5 Super-admin, accueil | À faire | — |
 | M6 Documents | À faire | — |
 
@@ -102,6 +102,14 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Nouvelle rubrique de paramétrage** : l'ajouter à `App\Support\TenantSettings::SECTIONS` (carte affichée seulement si `TenantAccess::can()` l'autorise).
 - **Libellés de menu, rôles, sections** : traduits à l'affichage avec `__()` ; déclarés via `TranslatableLabels::extra()`.
 - **Vocabulaire `lang/<code>/mxconnect.php`** : complet en anglais ; en pt, es, ar, sw, ha, complet pour toutes les clés employées par le back-office (M3b, 351 clés ; test de couverture dans `MultilingueMutuelleTest`). Les clés propres au super-admin restent à faire en M5 (repli : français).
+
+### Règles ajoutées par M4
+- **Avis à un établissement** (`ProviderNotifier::notify`) : titre et texte en `Msg::of('Texte :var', [...])` ou liste de `Msg` (morceaux joints par « · ») ; une valeur peut être un `Msg` (ex. `Msg::of('n° :id', …)`) ou `['__' => 'Libellé']`. Le texte français est aussi enregistré dans `title`/`body` (anciens écrans, exports) ; l'affichage passe par `ProviderNotification::displayTitle()`/`displayBody()`. Jamais de donnée médicale, comme avant.
+- **Données lues en cache** (tableau de bord prestataire) : la langue fait partie de la clé de cache quand le contenu contient du texte traduit.
+- **Attributs liés** (`:title="…"`, `:label`, `:hint`, `:kicker`) : `__('Titre :name', [...])`, jamais `'Titre ' . $x` (test dans `MultilinguePrestataireTest`, sur toutes les vues).
+- **Mois abrégés** : `Carbon::translatedFormat('M y')` (Carbon suit la langue), pas de tableau de mois écrit en français.
+- **Pluriels** : la traduction peut avoir plus de formes que le français (arabe : 6 formes, 0/1/2/3–10/11–99/100+) ; le test compare l'ensemble des variables.
+- **Adresse inconnue (404 sans route)** : la langue est reprise du cookie `mx_lang` ou du navigateur (`bootstrap/app.php`).
 
 ### Règles ajoutées par M3c
 - **Message renvoyé par le serveur** (flash, `withErrors`, `abort`, `refuse(…)`, `AccountingRefusal`, messages de validation) : toujours `__('Texte :var', ['var' => …])`, jamais de concaténation ni de `"{$x}"`. Outil : `devtools/i18n/messages-php.py` (reconnaît aussi `refuse(`).

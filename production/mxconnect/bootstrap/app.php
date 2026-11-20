@@ -84,6 +84,22 @@ return Application::configure(basePath: dirname(__DIR__))
             \Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException::class,
         ]);
 
+        // Adresse inconnue (aucune route) : le middleware de langue n'a pas tourné. La page 404 suit
+        // quand même le choix de la personne (cookie mx_lang, non chiffré) ou son navigateur (M4, 2026-12-03).
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+            if ($request->route() === null) {
+                try {
+                    $c = $request->cookies->get(\App\Support\Locales::COOKIE);
+                    \App\Support\Locales::apply(is_string($c) && \App\Support\Locales::isActive($c) ? $c
+                        : (\App\Support\Locales::fromBrowser($request) ?? \App\Support\Locales::SOURCE));
+                } catch (\Throwable) {
+                    // base injoignable : page en français
+                }
+            }
+
+            return null;
+        });
+
         // Base de données saturée (trop de connexions simultanées sur l'hébergement) :
         // page « réseau très sollicité » avec nouvel essai automatique, au lieu d'une erreur 500.
         $exceptions->render(function (\Illuminate\Database\QueryException $e, Request $request) {

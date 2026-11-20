@@ -3,7 +3,7 @@
   $field = 'mt-1 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
   $labels = ['in_review' => __('Passer en étude'), 'accepted' => __('Accepter'), 'rejected' => __('Ne pas retenir'), 'closed' => __('Clôturer')];
 @endphp
-<x-layouts.tenant :title="'Demande ' . $r->reference">
+<x-layouts.tenant :title="__('Demande :ref', ['ref' => $r->reference])">
   <a href="{{ route('engagement.index') }}" class="text-sm text-pine hover:underline">{{ __('← Projets et opportunités') }}</a>
   <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
     <div><h1 class="text-2xl font-semibold tracking-tight">{{ $r->contact_name }}</h1><p class="text-sm text-ink/60">{{ __(':kindlabel · :reference · reçue le :date', ['kindlabel' => $r->kindLabel(), 'reference' => $r->reference, 'date' => $r->created_at->format('d/m/Y à H:i')]) }}</p></div>

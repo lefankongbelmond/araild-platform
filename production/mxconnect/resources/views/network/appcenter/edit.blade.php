@@ -1,4 +1,4 @@
-<x-layouts.network :title="'App Center · ' . $app->name">
+<x-layouts.network :title="__('App Center · :name', ['name' => $app->name])">
   <p class="text-sm"><a class="text-pine hover:underline" href="{{ route('network.appcenter.index') }}">← App Center</a></p>
   <h1 class="mt-1 text-2xl font-semibold tracking-tight">{{ $app->name }}</h1>
   <p class="mt-1 text-sm text-ink/60">

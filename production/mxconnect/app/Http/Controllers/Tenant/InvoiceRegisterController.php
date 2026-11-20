@@ -150,8 +150,10 @@ class InvoiceRegisterController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected', 'Facture ' . $invoice->label() . ' rejetée',
-            'Montant : ' . \App\Support\ProviderNotifier::money((int) $invoice->amount_minor) . ' · motif : ' . trim($data['note']), 'invoices', 'invoices.view');
+        \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected',
+            \App\Support\Msg::of('Facture :ref rejetée', ['ref' => $invoice->reference ?? \App\Support\Msg::of('n° :id', ['id' => $invoice->id])]),
+            [\App\Support\Msg::of('Montant : :amount', ['amount' => \App\Support\ProviderNotifier::money((int) $invoice->amount_minor)]),
+                \App\Support\Msg::of('motif : :note', ['note' => trim($data['note'])])], 'invoices', 'invoices.view');
 
         return back()->with('success', $invoice->hasLines()
             ? __('Facture :label rejetée. Le prestataire voit le motif dans son portail et peut renvoyer les prestations dans une nouvelle facture.', ['label' => $invoice->label()])

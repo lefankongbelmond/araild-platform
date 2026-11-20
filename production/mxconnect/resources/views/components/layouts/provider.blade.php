@@ -1,4 +1,4 @@
-@props(['title' => 'Espace prestataire', 'bare' => false])
+@props(['title' => null, 'bare' => false])
 @php
   // Espace prestataire central (2026-11-16) : même identité visuelle que le portail des mutuelles
   // (barre latérale marine, élément actif vert, cartes arrondies). Menu filtré par les droits de la
@@ -10,19 +10,19 @@
   $route = (string) request()->route()?->getName();
   $target = request()->route('target');
   $nav = [
-    'Portail prestataire' => [
-      ['pro.dashboard', [], 'Tableau de bord', 'chart', null],
-      ['pro.notifications', [], 'Avis des mutuelles', 'bell', null],
-      ['pro.go', ['verify'], 'Vérifier les droits', 'shield', 'rights.verify'],
-      ['pro.go', ['claims'], 'Prises en charge', 'clipboard', 'claims.view'],
-      ['pro.go', ['invoices'], 'Mes factures', 'receipt', 'invoices.view'],
-      ['pro.mutuals', [], 'Conventions et tarifs', 'book', 'conventions.view'],
+    __('Portail prestataire') => [
+      ['pro.dashboard', [], __('Tableau de bord'), 'chart', null],
+      ['pro.notifications', [], __('Avis des mutuelles'), 'bell', null],
+      ['pro.go', ['verify'], __('Vérifier les droits'), 'shield', 'rights.verify'],
+      ['pro.go', ['claims'], __('Prises en charge'), 'clipboard', 'claims.view'],
+      ['pro.go', ['invoices'], __('Mes factures'), 'receipt', 'invoices.view'],
+      ['pro.mutuals', [], __('Conventions et tarifs'), 'book', 'conventions.view'],
     ],
-    'Gestion de l’établissement' => [
-      ['pro.profile', [], 'Profil de l’établissement', 'stethoscope', null],
-      ['pro.staff', [], 'Personnel et utilisateurs', 'users', 'staff.manage'],
-      ['pro.documents', [], 'Agréments et documents', 'file', 'conventions.view'],
-      ['pro.settings', [], 'Paramètres', 'lock', null],
+    __('Gestion de l’établissement') => [
+      ['pro.profile', [], __('Profil de l’établissement'), 'stethoscope', null],
+      ['pro.staff', [], __('Personnel et utilisateurs'), 'users', 'staff.manage'],
+      ['pro.documents', [], __('Agréments et documents'), 'file', 'conventions.view'],
+      ['pro.settings', [], __('Paramètres'), 'lock', null],
     ],
   ];
   $isActive = function ($r, $params) use ($route, $target) {
@@ -40,7 +40,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex">
-    <title>{{ $title }} · MX-CONNECT Prestataire</title>
+    <title>{{ __(':title · MX-CONNECT Prestataire', ['title' => $title ?? __('Espace prestataire')]) }}</title>
     <link rel="icon" href="{{ $base }}/brand/favicon.png" type="image/png">
     <link rel="preload" href="{{ $base }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ $base }}/css/mx-tenant.css?v={{ config('mxconnect.asset_version') }}">
@@ -60,10 +60,10 @@
     <header class="border-b border-ink/[.06] bg-white">
       <div class="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <a href="{{ $base }}/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow ring-1 ring-ink/[.05]"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-8 w-8"></span>
-          <span class="leading-tight"><span class="block font-extrabold tracking-wide text-[15px] text-[#0B1F3A]">MX<span class="text-leaf-600">-</span>CONNECT</span><span class="block text-[11px] text-ink/55">Espace prestataire de soins</span></span></a>
+          <span class="leading-tight"><span class="block font-extrabold tracking-wide text-[15px] text-[#0B1F3A]">MX<span class="text-leaf-600">-</span>CONNECT</span><span class="block text-[11px] text-ink/55">{{ __('Espace prestataire de soins') }}</span></span></a>
         <x-lang-switcher class="ml-auto" />
         @if ($account)
-          <form method="POST" action="{{ route('pro.logout') }}">@csrf<button class="rounded-xl px-3 py-2 text-sm text-clay hover:bg-clay/10">Se déconnecter</button></form>
+          <form method="POST" action="{{ route('pro.logout') }}">@csrf<button class="rounded-xl px-3 py-2 text-sm text-clay hover:bg-clay/10">{{ __('Se déconnecter') }}</button></form>
         @endif
       </div>
     </header>
@@ -74,20 +74,20 @@
     </div>
     <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{{ $slot }}</main>
     <footer class="border-t border-ink/[.06] bg-white/70"><div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-ink/50 sm:px-6">
-      <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> · Espace prestataire</span>
-      <span class="flex flex-wrap items-center gap-4"><span class="flex items-center gap-1.5"><x-tenant.icon name="lock" :size="14"/> Double authentification obligatoire</span>@if ($version)<span>Version {{ trim($version) }}</span>@endif</span>
+      <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> · {{ __('Espace prestataire') }}</span>
+      <span class="flex flex-wrap items-center gap-4"><span class="flex items-center gap-1.5"><x-tenant.icon name="lock" :size="14"/> {{ __('Double authentification obligatoire') }}</span>@if ($version)<span>{{ __('Version :value', ['value' => trim($version)]) }}</span>@endif</span>
     </div></footer>
   </div>
 @else
   <input type="checkbox" id="mx-nav-toggle" class="hidden" aria-hidden="true">
   <div class="mx-shell min-h-screen lg:pl-64 print:pl-0">
     <label for="mx-nav-toggle" class="mx-scrim fixed inset-0 z-30 hidden bg-navy-deep/50 lg:hidden" aria-hidden="true"></label>
-    <aside class="mx-side print:hidden fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-gradient-to-b from-[#0B2A5B] via-[#08234D] to-[#061A3A] text-white transition-transform duration-200 lg:translate-x-0" aria-label="Navigation de l’espace prestataire">
+    <aside class="mx-side print:hidden fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-gradient-to-b from-[#0B2A5B] via-[#08234D] to-[#061A3A] text-white transition-transform duration-200 lg:translate-x-0" aria-label="{{ __('Navigation de l’espace prestataire') }}">
       <div class="flex h-16 items-center gap-3 px-5 border-b border-white/10">
         <span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-8 w-8"></span>
         <div class="leading-tight min-w-0">
           <div class="font-extrabold tracking-wide text-[15px]">MX<span class="text-[#7BD389]">-</span>CONNECT</div>
-          <div class="truncate text-[11px] text-white/60">{{ $m?->provider?->name ?? 'Espace prestataire' }}</div>
+          <div class="truncate text-[11px] text-white/60">{{ $m?->provider?->name ?? __('Espace prestataire') }}</div>
         </div>
       </div>
       <nav class="px-3 py-4 space-y-5 text-[13.5px]">
@@ -110,15 +110,15 @@
         @endforeach
       </nav>
       <div class="m-3 mt-2 rounded-2xl bg-white/[.06] p-4 ring-1 ring-white/10">
-        <div class="flex items-center gap-2 text-sm font-semibold"><x-tenant.icon name="lock" :size="16"/> Données protégées</div>
-        <p class="mt-1 text-[11.5px] leading-relaxed text-white/60">Les soins et les adhérents restent dans la base de chaque mutuelle. Accès par rôles, double authentification et journal d’audit.</p>
+        <div class="flex items-center gap-2 text-sm font-semibold"><x-tenant.icon name="lock" :size="16"/> {{ __('Données protégées') }}</div>
+        <p class="mt-1 text-[11.5px] leading-relaxed text-white/60">{{ __('Les soins et les adhérents restent dans la base de chaque mutuelle. Accès par rôles, double authentification et journal d’audit.') }}</p>
       </div>
     </aside>
 
     <div class="flex min-h-screen flex-col">
       <header class="print:hidden sticky top-0 z-20 border-b border-ink/[.06] bg-white/85 backdrop-blur">
         <div class="flex h-16 items-center gap-3 px-4 sm:px-6">
-          <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="Ouvrir le menu"><x-tenant.icon name="menu" :size="22"/></label>
+          <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="{{ __('Ouvrir le menu') }}"><x-tenant.icon name="menu" :size="22"/></label>
           <div class="ml-auto flex items-center gap-2 sm:gap-3">
             <x-lang-switcher />
             @if ($account)
@@ -128,13 +128,13 @@
               </div>
               @if ($m)
                 @php $unread = \App\Support\ProviderNotifier::unread($m); @endphp
-                <a href="{{ route('pro.notifications') }}" class="relative grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Avis des mutuelles" aria-label="Avis des mutuelles{{ $unread ? ' : ' . $unread . ' non lu(s)' : '' }}">
+                <a href="{{ route('pro.notifications') }}" class="relative grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="{{ __('Avis des mutuelles') }}" aria-label="{{ $unread ? __('Avis des mutuelles : :count non lu(s)', ['count' => $unread]) : __('Avis des mutuelles') }}">
                   <x-tenant.icon name="bell" :size="19"/>@if ($unread)<span class="absolute grid h-5 place-items-center rounded-full bg-clay px-1 text-[11px] font-bold text-white" style="top:-2px;right:-2px;min-width:20px">{{ $unread > 99 ? '99+' : $unread }}</span>@endif
                 </a>
               @endif
-              <a href="{{ route('pro.settings') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Paramètres du compte" aria-label="Paramètres du compte"><x-tenant.icon name="lock" :size="18"/></a>
+              <a href="{{ route('pro.settings') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="{{ __('Paramètres du compte') }}" aria-label="{{ __('Paramètres du compte') }}"><x-tenant.icon name="lock" :size="18"/></a>
               <form method="POST" action="{{ route('pro.logout') }}">@csrf
-                <button class="grid h-10 w-10 place-items-center rounded-xl text-clay hover:bg-clay/10" title="Se déconnecter" aria-label="Se déconnecter"><x-tenant.icon name="logout" :size="19"/></button></form>
+                <button class="grid h-10 w-10 place-items-center rounded-xl text-clay hover:bg-clay/10" title="{{ __('Se déconnecter') }}" aria-label="{{ __('Se déconnecter') }}"><x-tenant.icon name="logout" :size="19"/></button></form>
             @endif
           </div>
         </div>
@@ -146,7 +146,7 @@
         @endforeach
         @if ($memberships->count() > 1)
           <form method="POST" action="{{ route('pro.switch') }}" class="mt-3 max-w-md">@csrf
-            <label for="mx-est-m" class="text-xs text-ink/50">Établissement</label>
+            <label for="mx-est-m" class="text-xs text-ink/50">{{ __('Établissement') }}</label>
             <select id="mx-est-m" name="membership" onchange="this.form.submit()" class="mt-1 h-10 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm">
               @foreach ($memberships as $ms)<option value="{{ $ms->id }}" @selected($ms->id === $m?->id)>{{ $ms->provider?->name }}</option>@endforeach
             </select>
@@ -158,11 +158,11 @@
 
       <footer class="print:hidden border-t border-ink/[.06] bg-white/70">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-ink/50 sm:px-6">
-          <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> · Espace prestataire de soins</span>
+          <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> · {{ __('Espace prestataire de soins') }}</span>
           <span class="flex flex-wrap items-center gap-4">
-            <span class="flex items-center gap-1.5"><x-tenant.icon name="lock" :size="14"/> Accès par rôles</span>
-            <span class="flex items-center gap-1.5"><x-tenant.icon name="history" :size="14"/> Journal d’audit</span>
-            @if ($version)<span>Version {{ trim($version) }}</span>@endif
+            <span class="flex items-center gap-1.5"><x-tenant.icon name="lock" :size="14"/> {{ __('Accès par rôles') }}</span>
+            <span class="flex items-center gap-1.5"><x-tenant.icon name="history" :size="14"/> {{ __('Journal d’audit') }}</span>
+            @if ($version)<span>{{ __('Version :value', ['value' => trim($version)]) }}</span>@endif
           </span>
         </div>
       </footer>

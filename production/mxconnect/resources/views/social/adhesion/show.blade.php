@@ -1,5 +1,5 @@
 @php $R = \App\Models\Social\AdhesionRequest::class; @endphp
-<x-layouts.social :title="'Dossier ' . $r->reference" active="adhesions">
+<x-layouts.social :title="__('Dossier :ref', ['ref' => $r->reference])" active="adhesions">
   <a class="mx-small" href="{{ route('social.adhesions') }}"><x-mx.icon name="arrow-left" :size="14"/> {{ __('Mes demandes') }}</a>
   <section class="mx-card mx-card__pad mx-stack">
     <div class="mx-row mx-between mx-row--wrap">

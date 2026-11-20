@@ -1,5 +1,5 @@
 @php $O = \App\Models\Social\Opportunity::class; @endphp
-<x-layouts.social :title="'Opportunités · ' . $page->name" active="pages">
+<x-layouts.social :title="__('Opportunités · :name', ['name' => $page->name])" active="pages">
   @include('social.manage._head')
   <div class="mx-row mx-between mx-row--wrap" style="gap:10px;padding:0 4px">
     <p class="mx-small mx-muted" style="flex:1;min-width:220px">{{ __('Emplois, stages, bénévolat, consultances, appels d’offres ou à partenaires : vos offres apparaissent dans « Emplois et opportunités ».') }}</p>

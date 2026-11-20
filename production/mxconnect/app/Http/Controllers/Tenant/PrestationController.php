@@ -60,9 +60,11 @@ class PrestationController extends Controller
         \App\Support\MemberNotifier::notify((int) $claim->member_id, \App\Support\Msg::of('Une prise en charge a été validée'),
             \App\Support\Msg::of('Soins du :date : détail dans votre espace.', ['date' => $prestation->care_date?->format('d/m/Y')]), 'prestations/' . $prestation->id);
         // Établissement de soins prévenu (phase 6, 2026-11-25) : sans donnée médicale.
-        \App\Support\ProviderNotifier::notify((int) $prestation->provider_id, 'claim_validated', 'Prise en charge n° ' . $prestation->id . ' validée',
-            'Adhérent ' . $claim->member?->member_code . ' · soins du ' . $prestation->care_date?->format('d/m/Y') . ' · part de la mutuelle : '
-            . \App\Support\ProviderNotifier::money((int) $prestation->mutual_part_minor) . '. Elle peut être facturée.', 'claims', 'claims.view');
+        \App\Support\ProviderNotifier::notify((int) $prestation->provider_id, 'claim_validated', \App\Support\Msg::of('Prise en charge n° :id validée', ['id' => $prestation->id]),
+            [\App\Support\Msg::of('Adhérent :code', ['code' => (string) $claim->member?->member_code]),
+                \App\Support\Msg::of('soins du :date', ['date' => (string) $prestation->care_date?->format('d/m/Y')]),
+                \App\Support\Msg::of('part de la mutuelle : :amount. Elle peut être facturée.', ['amount' => \App\Support\ProviderNotifier::money((int) $prestation->mutual_part_minor)])],
+            'claims', 'claims.view');
         return back()->with('success', __('mxconnect.prestation.validated'));
     }
 
@@ -84,8 +86,10 @@ class PrestationController extends Controller
         $this->capture->releaseException($prestation);
         \App\Support\MemberNotifier::notify((int) $claim->member_id, \App\Support\Msg::of('Une prise en charge a été rejetée'),
             \App\Support\Msg::of('Soins du :date : motif dans votre espace.', ['date' => $prestation->care_date?->format('d/m/Y')]), 'prestations/' . $prestation->id);
-        \App\Support\ProviderNotifier::notify((int) $prestation->provider_id, 'claim_rejected', 'Prise en charge n° ' . $prestation->id . ' rejetée',
-            'Adhérent ' . $claim->member?->member_code . ' · soins du ' . $prestation->care_date?->format('d/m/Y') . ' · motif : ' . trim($data['note']), 'claims', 'claims.view');
+        \App\Support\ProviderNotifier::notify((int) $prestation->provider_id, 'claim_rejected', \App\Support\Msg::of('Prise en charge n° :id rejetée', ['id' => $prestation->id]),
+            [\App\Support\Msg::of('Adhérent :code', ['code' => (string) $claim->member?->member_code]),
+                \App\Support\Msg::of('soins du :date', ['date' => (string) $prestation->care_date?->format('d/m/Y')]),
+                \App\Support\Msg::of('motif : :note', ['note' => trim($data['note'])])], 'claims', 'claims.view');
         return back()->with('success', __('mxconnect.prestation.rejected'));
     }
 

@@ -18,7 +18,13 @@ use Illuminate\Support\Facades\Schema;
  */
 final class ProviderNotifier
 {
-    public static function notify(int $careProviderId, string $kind, string $title, ?string $body, ?string $target, string $permission): void
+    /**
+     * Titre et texte : une chaîne simple, un Msg::of(clé française, valeurs), ou une liste de Msg
+     * (morceaux joints par « · »). Les valeurs peuvent elles-mêmes être un Msg ou ['__' => libellé].
+     * La forme traduisible est gardée (colonne i18n) pour l'affichage dans la langue de chaque personne ;
+     * title/body reçoivent le texte français (multilingue M4, 2026-12-03).
+     */
+    public static function notify(int $careProviderId, string $kind, string|array $title, string|array|null $body, ?string $target, string $permission): void
     {
         if ($careProviderId <= 0) {
             return;
@@ -28,14 +34,43 @@ final class ProviderNotifier
                 return;
             }
             $mutual = function_exists('tenant') && tenant() ? tenant() : null;
-            ProviderNotification::create([
+            $name = $mutual ? (string) $mutual->name : null;
+            $row = [
                 'care_provider_id' => $careProviderId, 'mutual_id' => $mutual ? (string) $mutual->getTenantKey() : null,
-                'kind' => $kind, 'title' => mb_substr(($mutual ? $mutual->name . ' · ' : '') . $title, 0, 160),
-                'body' => $body, 'target' => $target, 'permission' => $permission,
-            ]);
+                'kind' => $kind, 'title' => mb_substr(($name ? $name . ' · ' : '') . self::render($title, 'fr'), 0, 160),
+                'body' => $body === null ? null : self::render($body, 'fr'), 'target' => $target, 'permission' => $permission,
+            ];
+            if ((is_array($title) || is_array($body)) && Schema::connection('central')->hasColumn('provider_notifications', 'i18n')) {
+                $row['i18n'] = ['t' => $title, 'b' => $body, 'm' => $name];   // cast « array » du modèle
+            }
+            ProviderNotification::create($row);
         } catch (\Throwable $e) {
             report($e);
         }
+    }
+
+    /** Rend un texte d'avis (chaîne, Msg ou liste de Msg) dans la langue donnée (par défaut : celle affichée). */
+    public static function render(string|array|null $text, ?string $locale = null): string
+    {
+        if ($text === null) {
+            return '';
+        }
+        if (is_string($text)) {
+            return $text;
+        }
+        if (! is_string($text[0] ?? null)) {   // liste de morceaux
+            return implode(' · ', array_map(fn ($p) => self::render($p, $locale), array_values($text)));
+        }
+        $replace = [];
+        foreach ($text[1] ?? [] as $k => $v) {
+            $replace[$k] = match (true) {
+                is_array($v) && isset($v['__']) => __((string) $v['__'], [], $locale),
+                is_array($v) => self::render($v, $locale),
+                default => (string) $v,
+            };
+        }
+
+        return __((string) $text[0], $replace, $locale);
     }
 
     /** Avis visibles par cette personne dans cet établissement (selon ses droits). */

@@ -122,7 +122,7 @@ it('réserve la gestion des langues au super-admin, garde le français toujours 
 it('livre un catalogue complet dans chaque langue, avec les mêmes variables', function () {
     $source = Locales::entries('fr');
     expect($source)->not->toBeEmpty();
-    $vars = fn (string $s) => collect(preg_match_all('/:([a-z_]+)/i', $s, $m) ? $m[1] : [])->sort()->values()->all();
+    $vars = fn (string $s) => collect(preg_match_all('/:([a-z_]+)/i', $s, $m) ? $m[1] : [])->unique()->sort()->values()->all();   // ensemble : un pluriel peut avoir plus de formes (arabe : 6)
     foreach (array_diff(Locales::supported(), ['fr']) as $code) {
         $t = Locales::entries($code);
         foreach ($source as $key => $text) {

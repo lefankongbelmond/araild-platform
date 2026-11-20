@@ -1,4 +1,4 @@
-<x-layouts.tenant :title="'Membres · ' . $group->name">
+<x-layouts.tenant :title="__('Membres · :name', ['name' => $group->name])">
   <a href="{{ route('social-groups.index') }}" class="text-sm text-pine hover:underline">{{ __('← Groupes') }}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ __('Membres de « :name »', ['name' => $group->name]) }}</h1>
   @if ($pending->isNotEmpty())

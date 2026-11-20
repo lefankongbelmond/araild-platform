@@ -11,6 +11,7 @@ use App\Models\Tenant\TreasuryMovement;
 use App\Models\Tenant\User;
 use App\Services\AccountingRefusal;
 use App\Services\AccountingService;
+use App\Support\Msg;
 use App\Support\ProviderNotifier;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -173,15 +174,17 @@ class ProviderBillingService
         });
 
         if ($result['done']) {
-            $ref = $invoice->reference ?? ('n° ' . $invoice->id);
+            $ref = $invoice->reference ?? Msg::of('n° :id', ['id' => $invoice->id]);
             if ($result['accepted'] > 0) {
-                ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_checked', 'Facture ' . $ref . ' validée, en attente de paiement',
-                    'Montant accepté : ' . ProviderNotifier::money($result['amount']) . ' (' . $result['accepted'] . ' ligne(s))'
-                    . ($result['rejected'] ? ' · ' . $result['rejected'] . ' ligne(s) rejetée(s), à corriger et renvoyer : motifs dans le détail de la facture.' : '.'),
-                    'invoices', 'invoices.view');
+                $body = [Msg::of('Montant accepté : :amount (:count ligne(s))', ['amount' => ProviderNotifier::money($result['amount']), 'count' => $result['accepted']])];
+                if ($result['rejected']) {
+                    $body[] = Msg::of(':count ligne(s) rejetée(s), à corriger et renvoyer : motifs dans le détail de la facture.', ['count' => $result['rejected']]);
+                }
+                ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_checked', Msg::of('Facture :ref validée, en attente de paiement', ['ref' => $ref]),
+                    $body, 'invoices', 'invoices.view');
             } else {
-                ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected', 'Facture ' . $ref . ' rejetée',
-                    'Toutes les lignes ont été rejetées : motifs dans le détail de la facture. Vous pouvez les corriger et les renvoyer.', 'invoices', 'invoices.view');
+                ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected', Msg::of('Facture :ref rejetée', ['ref' => $ref]),
+                    Msg::of('Toutes les lignes ont été rejetées : motifs dans le détail de la facture. Vous pouvez les corriger et les renvoyer.'), 'invoices', 'invoices.view');
             }
         }
 
@@ -268,8 +271,11 @@ class ProviderBillingService
             return $inv;
         });
 
-        ProviderNotifier::notify((int) $paid->provider_id, 'invoice_paid', 'Facture ' . ($paid->reference ?? 'n° ' . $paid->id) . ' payée',
-            'Montant : ' . ProviderNotifier::money((int) $paid->amount_minor) . ' · ' . mb_strtolower(self::MODES[$mode]) . ' du ' . $day->format('d/m/Y') . ' · réf. ' . $reference . '.',
+        ProviderNotifier::notify((int) $paid->provider_id, 'invoice_paid',
+            Msg::of('Facture :ref payée', ['ref' => $paid->reference ?? Msg::of('n° :id', ['id' => $paid->id])]),
+            [Msg::of('Montant : :amount', ['amount' => ProviderNotifier::money((int) $paid->amount_minor)]),
+                Msg::of(':mode du :date', ['mode' => ['__' => self::MODES[$mode]], 'date' => $day->format('d/m/Y')]),
+                Msg::of('réf. :ref', ['ref' => $reference])],
             'invoices', 'invoices.view');
     }
 

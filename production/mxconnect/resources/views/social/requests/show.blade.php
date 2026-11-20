@@ -1,5 +1,5 @@
 @php $R = \App\Models\Social\SocialRequest::class; @endphp
-<x-layouts.social :title="'Demande ' . $r->reference" active="demandes">
+<x-layouts.social :title="__('Demande :ref', ['ref' => $r->reference])" active="demandes">
   <a class="mx-small" href="{{ route('social.requests') }}"><x-mx.icon name="arrow-left" :size="14"/> {{ __('Mes candidatures et engagements') }}</a>
   <section class="mx-card mx-card__pad mx-stack">
     <div class="mx-row mx-between mx-row--wrap" style="gap:10px">

@@ -48,7 +48,7 @@ class ProviderDashboardService
             $currency = Currency::on('central')->find($mutual->currency_id);
             $code = $currency?->code ?? '—';
             try {
-                $d = Cache::remember("prov-dash:{$provider->id}:{$mutual->id}", 120, fn () => $mutual->run(fn () => $this->collect($provider->id, $months)));
+                $d = Cache::remember("prov-dash:{$provider->id}:{$mutual->id}:" . app()->getLocale(), 120, fn () => $mutual->run(fn () => $this->collect($provider->id, $months)));
             } catch (\Throwable $e) {
                 report($e);
                 $out['errors'][] = $mutual->name;   // une mutuelle injoignable n'empêche pas les autres
@@ -148,7 +148,7 @@ class ProviderDashboardService
             ],
             'series' => $series,
             'careTotal' => (int) $pres->sum() - (int) ($pres['rejected'] ?? 0),
-            'byAct' => $byAct->mapWithKeys(fn ($v, $id) => [($labels[$id] ?? 'Acte n° ' . $id) => (int) $v])->all(),
+            'byAct' => $byAct->mapWithKeys(fn ($v, $id) => [($labels[$id] ?? __('Acte n° :id', ['id' => $id])) => (int) $v])->all(),
             'delay' => $delay,
             'alerts' => $this->tenantAlerts($pid, $hasDecided),
         ];
@@ -161,34 +161,34 @@ class ProviderDashboardService
         $c = ProviderConvention::forProvider($pid);
         if ($c) {
             if (! $c->active) {
-                $alerts[] = ['level' => 'danger', 'kind' => 'convention', 'text' => 'Convention suspendue par la mutuelle : vérification des droits et déclarations fermées.'];
+                $alerts[] = ['level' => 'danger', 'kind' => 'convention', 'text' => __('Convention suspendue par la mutuelle : vérification des droits et déclarations fermées.')];
             } elseif ($c->ends_on && $c->ends_on->lt(today())) {
-                $alerts[] = ['level' => 'danger', 'kind' => 'convention', 'text' => 'Convention arrivée à échéance le ' . $c->ends_on->format('d/m/Y') . '.'];
+                $alerts[] = ['level' => 'danger', 'kind' => 'convention', 'text' => __('Convention arrivée à échéance le :date.', ['date' => $c->ends_on->format('d/m/Y')])];
             } elseif ($c->ends_on && $c->ends_on->lte(today()->addDays(60))) {
-                $alerts[] = ['level' => 'warning', 'kind' => 'convention', 'text' => 'Convention arrivant à échéance le ' . $c->ends_on->format('d/m/Y') . '.'];
+                $alerts[] = ['level' => 'warning', 'kind' => 'convention', 'text' => __('Convention arrivant à échéance le :date.', ['date' => $c->ends_on->format('d/m/Y')])];
             }
             // « Facture en retard » seulement si la convention fixe un délai de paiement (jamais de délai inventé).
             $days = Schema::hasColumn('provider_conventions', 'payment_days') ? $c->payment_days : null;
             if ($days) {
                 $late = ProviderInvoice::where('provider_id', $pid)->whereIn('status', ProviderInvoice::PAYABLE)->where('created_at', '<', now()->subDays($days));
                 if (($cnt = (clone $late)->count()) > 0) {
-                    $alerts[] = ['level' => 'warning', 'kind' => 'late', 'text' => "{$cnt} facture(s) non payée(s) au-delà du délai de paiement de la convention ({$days} jours).", 'amount' => (int) $late->sum('amount_minor')];
+                    $alerts[] = ['level' => 'warning', 'kind' => 'late', 'text' => __(':count facture(s) non payée(s) au-delà du délai de paiement de la convention (:days jours).', ['count' => $cnt, 'days' => $days]), 'amount' => (int) $late->sum('amount_minor')];
                 }
             }
         }
         $since = now()->subDays(30);
         $rejected = Prestation::where('provider_id', $pid)->where('status', 'rejected')->where('updated_at', '>=', $since)->count();
         if ($rejected) {
-            $alerts[] = ['level' => 'warning', 'kind' => 'rejected', 'text' => "{$rejected} prise(s) en charge rejetée(s) ces 30 derniers jours : le motif est visible dans « Prises en charge »."];
+            $alerts[] = ['level' => 'warning', 'kind' => 'rejected', 'text' => __(':count prise(s) en charge rejetée(s) ces 30 derniers jours : le motif est visible dans « Prises en charge ».', ['count' => $rejected])];
         }
         $invRejected = ProviderInvoice::where('provider_id', $pid)->where('status', 'rejected')->where('updated_at', '>=', $since)->count();
         if ($invRejected) {
-            $alerts[] = ['level' => 'warning', 'kind' => 'rejected', 'text' => "{$invRejected} facture(s) rejetée(s) ces 30 derniers jours."];
+            $alerts[] = ['level' => 'warning', 'kind' => 'rejected', 'text' => __(':count facture(s) rejetée(s) ces 30 derniers jours.', ['count' => $invRejected])];
         }
         if ($hasDecided) {
             $paid = ProviderInvoice::where('provider_id', $pid)->where('status', 'paid')->where('decided_at', '>=', now()->subDays(14));
             if (($cnt = (clone $paid)->count()) > 0) {
-                $alerts[] = ['level' => 'success', 'kind' => 'paid', 'text' => "{$cnt} paiement(s) enregistré(s) par la mutuelle ces 14 derniers jours.", 'amount' => (int) $paid->sum('amount_minor')];
+                $alerts[] = ['level' => 'success', 'kind' => 'paid', 'text' => __(':count paiement(s) enregistré(s) par la mutuelle ces 14 derniers jours.', ['count' => $cnt]), 'amount' => (int) $paid->sum('amount_minor')];
             }
         }
 
@@ -200,18 +200,20 @@ class ProviderDashboardService
     {
         $alerts = [];
         if ($provider->isPending()) {
-            $alerts[] = ['level' => 'info', 'kind' => 'pending', 'text' => 'Établissement en attente : il sera reconnu dès qu’une mutuelle aura accepté votre demande d’affiliation.'];
+            $alerts[] = ['level' => 'info', 'kind' => 'pending', 'text' => __('Établissement en attente : il sera reconnu dès qu’une mutuelle aura accepté votre demande d’affiliation.')];
         }
         if ($provider->approval_expires_on) {
             if ($provider->approval_expires_on->lt(today())) {
-                $alerts[] = ['level' => 'danger', 'kind' => 'approval', 'text' => 'Agrément expiré depuis le ' . $provider->approval_expires_on->format('d/m/Y') . ' : mettez à jour la fiche et le document.'];
+                $alerts[] = ['level' => 'danger', 'kind' => 'approval', 'text' => __('Agrément expiré depuis le :date : mettez à jour la fiche et le document.', ['date' => $provider->approval_expires_on->format('d/m/Y')])];
             } elseif ($provider->approval_expires_on->lte(today()->addDays(60))) {
-                $alerts[] = ['level' => 'warning', 'kind' => 'approval', 'text' => 'Agrément expirant le ' . $provider->approval_expires_on->format('d/m/Y') . '.'];
+                $alerts[] = ['level' => 'warning', 'kind' => 'approval', 'text' => __('Agrément expirant le :date.', ['date' => $provider->approval_expires_on->format('d/m/Y')])];
             }
         }
         foreach (ProviderDocument::where('care_provider_id', $provider->id)->whereNotNull('expires_on')->where('expires_on', '<=', today()->addDays(60))->orderBy('expires_on')->limit(5)->get() as $doc) {
             $alerts[] = ['level' => $doc->expires_on->lt(today()) ? 'danger' : 'warning', 'kind' => 'document',
-                'text' => '« ' . $doc->title . ' » ' . ($doc->expires_on->lt(today()) ? 'expiré depuis le ' : 'expire le ') . $doc->expires_on->format('d/m/Y') . '.'];
+                'text' => $doc->expires_on->lt(today())
+                    ? __('« :title » expiré depuis le :date.', ['title' => $doc->title, 'date' => $doc->expires_on->format('d/m/Y')])
+                    : __('« :title » expire le :date.', ['title' => $doc->title, 'date' => $doc->expires_on->format('d/m/Y')])];
         }
         foreach (ProviderAffiliation::with('mutual')->where('care_provider_id', $provider->id)->whereIn('status', ['approved', 'rejected'])
             ->where('decided_at', '>=', now()->subDays(30))->get() as $a) {
@@ -219,8 +221,10 @@ class ProviderDashboardService
                 continue;
             }
             $alerts[] = $a->status === 'approved'
-                ? ['level' => 'success', 'kind' => 'convention', 'text' => 'Nouvelle convention avec ' . $a->mutual->name . ' (' . $a->decided_at->format('d/m/Y') . ').']
-                : ['level' => 'danger', 'kind' => 'affiliation', 'text' => 'Demande d’affiliation refusée par ' . $a->mutual->name . ($a->decision_note ? ' : ' . $a->decision_note : '.')];
+                ? ['level' => 'success', 'kind' => 'convention', 'text' => __('Nouvelle convention avec :mutual (:date).', ['mutual' => $a->mutual->name, 'date' => $a->decided_at->format('d/m/Y')])]
+                : ['level' => 'danger', 'kind' => 'affiliation', 'text' => $a->decision_note
+                    ? __('Demande d’affiliation refusée par :mutual : :note', ['mutual' => $a->mutual->name, 'note' => $a->decision_note])
+                    : __('Demande d’affiliation refusée par :mutual.', ['mutual' => $a->mutual->name])];
         }
 
         return $alerts;

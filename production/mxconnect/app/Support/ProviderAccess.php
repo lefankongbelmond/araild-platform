@@ -102,7 +102,7 @@ final class ProviderAccess
     {
         foreach (self::PERMISSIONS as $items) {
             if (isset($items[$perm])) {
-                return $items[$perm];
+                return __($items[$perm]);
             }
         }
 

@@ -33,16 +33,16 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']],
-            ['email.required' => 'Indiquez votre adresse e-mail.', 'password.required' => 'Indiquez votre mot de passe.']);
+            ['email.required' => __('Indiquez votre adresse e-mail.'), 'password.required' => __('Indiquez votre mot de passe.')]);
         $data['email'] = Str::lower(trim($data['email']));
 
         if (! Auth::guard('provider')->attempt($data, $request->boolean('remember'))) {
-            throw ValidationException::withMessages(['email' => 'Adresse e-mail ou mot de passe incorrect.']);
+            throw ValidationException::withMessages(['email' => __('Adresse e-mail ou mot de passe incorrect.')]);
         }
         $account = Auth::guard('provider')->user();
         if (! $account->active) {
             Auth::guard('provider')->logout();
-            throw ValidationException::withMessages(['email' => 'Ce compte a été désactivé. Contactez l’administrateur de votre établissement.']);
+            throw ValidationException::withMessages(['email' => __('Ce compte a été désactivé. Contactez l’administrateur de votre établissement.')]);
         }
         $request->session()->regenerate();
         $request->session()->put('provider_mfa_passed', false);
@@ -57,7 +57,7 @@ class AuthController extends Controller
         $request->session()->forget(['provider_mfa_passed', 'provider_membership']);
         $request->session()->regenerateToken();
 
-        return redirect()->route('pro.login')->with('success', 'Vous êtes déconnecté de l’espace prestataire.');
+        return redirect()->route('pro.login')->with('success', __('Vous êtes déconnecté de l’espace prestataire.'));
     }
 
     // --- Inscription d'un établissement (validation par une mutuelle) ---
@@ -91,11 +91,11 @@ class AuthController extends Controller
             'message'             => ['nullable', 'string', 'max:1000'],
             'attest'              => ['accepted'],
         ], [
-            'establishment.required' => 'Indiquez le nom de l’établissement.',
-            'locality.required'      => 'Indiquez la localité de l’établissement.',
-            'email.unique'           => 'Un compte existe déjà avec cette adresse : connectez-vous, ou demandez à l’administrateur de votre établissement de vous ajouter.',
-            'attest.accepted'        => 'Vous devez attester que vous représentez cet établissement.',
-            'password.confirmed'     => 'Les deux mots de passe ne correspondent pas.',
+            'establishment.required' => __('Indiquez le nom de l’établissement.'),
+            'locality.required'      => __('Indiquez la localité de l’établissement.'),
+            'email.unique'           => __('Un compte existe déjà avec cette adresse : connectez-vous, ou demandez à l’administrateur de votre établissement de vous ajouter.'),
+            'attest.accepted'        => __('Vous devez attester que vous représentez cet établissement.'),
+            'password.confirmed'     => __('Les deux mots de passe ne correspondent pas.'),
         ]);
         $data['email'] = Str::lower(trim($data['email']));
         [$account] = $space->register($data);
@@ -104,7 +104,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('provider_mfa_passed', false);
 
-        return redirect()->route('pro.mfa.enroll')->with('success', 'Établissement inscrit. Activez la double authentification pour protéger votre compte. Vos demandes d’affiliation sont envoyées aux mutuelles choisies.');
+        return redirect()->route('pro.mfa.enroll')->with('success', __('Établissement inscrit. Activez la double authentification pour protéger votre compte. Vos demandes d’affiliation sont envoyées aux mutuelles choisies.'));
     }
 
     // --- Mot de passe oublié ---
@@ -116,11 +116,11 @@ class AuthController extends Controller
 
     public function sendReset(Request $request)
     {
-        abort_unless(MailStatus::configured(), 503, 'L’envoi d’e-mails n’est pas encore configuré sur ce site : demandez à l’administrateur de votre établissement de réinitialiser votre mot de passe.');
+        abort_unless(MailStatus::configured(), 503, __('L’envoi d’e-mails n’est pas encore configuré sur ce site : demandez à l’administrateur de votre établissement de réinitialiser votre mot de passe.'));
         $data = $request->validate(['email' => ['required', 'email:rfc', 'max:180']]);
         Password::broker('provider_accounts')->sendResetLink(['email' => Str::lower(trim($data['email']))]);
 
-        return back()->with('success', 'Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé. Pensez à regarder dans les courriers indésirables.');
+        return back()->with('success', __('Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé. Pensez à regarder dans les courriers indésirables.'));
     }
 
     public function showReset(Request $request, string $token)
@@ -139,10 +139,10 @@ class AuthController extends Controller
             $a->forceFill(['password' => $password, 'must_change_password' => false, 'remember_token' => Str::random(60)])->save();
         });
         if ($status !== Password::PASSWORD_RESET) {
-            return back()->withInput(['email' => $data['email']])->withErrors(['email' => 'Ce lien n’est plus valable (expiré ou déjà utilisé). Refaites une demande.']);
+            return back()->withInput(['email' => $data['email']])->withErrors(['email' => __('Ce lien n’est plus valable (expiré ou déjà utilisé). Refaites une demande.')]);
         }
 
-        return redirect()->route('pro.login')->with('success', 'Mot de passe modifié. Vous pouvez vous connecter.');
+        return redirect()->route('pro.login')->with('success', __('Mot de passe modifié. Vous pouvez vous connecter.'));
     }
 
     // --- Mot de passe provisoire (compte créé par l'administrateur de l'établissement ou par une mutuelle) ---
@@ -158,16 +158,16 @@ class AuthController extends Controller
         $data = $request->validate([
             'current_password' => ['required', 'string'],
             'password'         => ['required', 'confirmed', PasswordRule::min(10)->letters()->numbers()],
-        ], ['password.confirmed' => 'Les deux mots de passe ne correspondent pas.']);
+        ], ['password.confirmed' => __('Les deux mots de passe ne correspondent pas.')]);
         if (! Hash::check($data['current_password'], $account->password)) {
-            return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.']);
+            return back()->withErrors(['current_password' => __('Mot de passe actuel incorrect.')]);
         }
         if (Hash::check($data['password'], $account->password)) {
-            return back()->withErrors(['password' => 'Choisissez un mot de passe différent du mot de passe provisoire.']);
+            return back()->withErrors(['password' => __('Choisissez un mot de passe différent du mot de passe provisoire.')]);
         }
         $account->forceFill(['password' => $data['password'], 'must_change_password' => false])->save();
 
-        return redirect()->route('pro.dashboard')->with('success', 'Mot de passe enregistré.');
+        return redirect()->route('pro.dashboard')->with('success', __('Mot de passe enregistré.'));
     }
 
     // --- Double authentification (TOTP) ---
@@ -187,15 +187,15 @@ class AuthController extends Controller
 
     public function confirm(Request $request, Google2FA $g2fa)
     {
-        $request->validate(['code' => ['required', 'digits:6']], ['code.digits' => 'Le code comporte 6 chiffres.']);
+        $request->validate(['code' => ['required', 'digits:6']], ['code.digits' => __('Le code comporte 6 chiffres.')]);
         $account = $request->user('provider');
         if ($account->mfa_enabled || ! $account->mfa_secret || ! $g2fa->verifyKey($account->mfa_secret, $request->code)) {
-            return back()->withErrors(['code' => 'Code incorrect. Vérifiez l’heure de votre téléphone et réessayez.']);
+            return back()->withErrors(['code' => __('Code incorrect. Vérifiez l’heure de votre téléphone et réessayez.')]);
         }
         $account->forceFill(['mfa_enabled' => true])->save();
         $request->session()->put('provider_mfa_passed', true);
 
-        return redirect()->route('pro.dashboard')->with('success', 'Double authentification activée.');
+        return redirect()->route('pro.dashboard')->with('success', __('Double authentification activée.'));
     }
 
     public function challenge(Request $request)
@@ -209,10 +209,10 @@ class AuthController extends Controller
 
     public function verify(Request $request, Google2FA $g2fa)
     {
-        $request->validate(['code' => ['required', 'digits:6']], ['code.digits' => 'Le code comporte 6 chiffres.']);
+        $request->validate(['code' => ['required', 'digits:6']], ['code.digits' => __('Le code comporte 6 chiffres.')]);
         $account = $request->user('provider');
         if (! $account->mfa_enabled || ! $g2fa->verifyKey($account->mfa_secret, $request->code)) {
-            return back()->withErrors(['code' => 'Code incorrect. Vérifiez l’heure de votre téléphone et réessayez.']);
+            return back()->withErrors(['code' => __('Code incorrect. Vérifiez l’heure de votre téléphone et réessayez.')]);
         }
         $request->session()->put('provider_mfa_passed', true);
 
@@ -234,7 +234,7 @@ class AuthController extends Controller
         ]);
         $request->user('provider')->update($data);
 
-        return back()->with('success', 'Vos informations sont enregistrées.');
+        return back()->with('success', __('Vos informations sont enregistrées.'));
     }
 
     public function changePassword(Request $request)
@@ -243,12 +243,12 @@ class AuthController extends Controller
         $data = $request->validate([
             'current_password' => ['required', 'string'],
             'password'         => ['required', 'confirmed', PasswordRule::min(10)->letters()->numbers()],
-        ], ['password.confirmed' => 'Les deux mots de passe ne correspondent pas.']);
+        ], ['password.confirmed' => __('Les deux mots de passe ne correspondent pas.')]);
         if (! Hash::check($data['current_password'], $account->password)) {
-            return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.']);
+            return back()->withErrors(['current_password' => __('Mot de passe actuel incorrect.')]);
         }
         $account->forceFill(['password' => $data['password'], 'remember_token' => Str::random(60)])->save();
 
-        return back()->with('success', 'Mot de passe modifié.');
+        return back()->with('success', __('Mot de passe modifié.'));
     }
 }

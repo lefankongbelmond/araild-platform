@@ -1,4 +1,4 @@
-<x-layouts.tenant :title="'Publications · ' . $group->name">
+<x-layouts.tenant :title="__('Publications · :name', ['name' => $group->name])">
   <a href="{{ route('social-groups.index') }}" class="text-sm text-pine hover:underline">{{ __('← Groupes') }}</a>
   <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ __('Publications de « :name »', ['name' => $group->name]) }}</h1>
   <p class="mt-1 text-sm text-ink/60">{{ __('Masquer retire la publication de l’affichage sans la supprimer.') }}</p>

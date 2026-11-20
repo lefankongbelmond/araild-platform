@@ -26,7 +26,7 @@
   </div>
 
   <div class="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-    <x-tenant.panel :title="'Cotisations ' . $year . ' : appelées et encaissées'" icon="chart" class="min-w-0">
+    <x-tenant.panel :title="__('Cotisations :year : appelées et encaissées', ['year' => $year])" icon="chart" class="min-w-0">
       <x-slot:aside>
         <span class="inline-flex items-center gap-1.5 text-xs text-ink/60"><span class="h-2.5 w-2.5 rounded-sm bg-brand-100 ring-1 ring-brand-500/40"></span>{{ __('Appelées') }}</span>
         <span class="inline-flex items-center gap-1.5 text-xs text-ink/60"><span class="h-2.5 w-2.5 rounded-sm bg-leaf-500"></span>{{ __('Encaissées') }}</span>
@@ -64,7 +64,7 @@
   </div>
 
   <div class="mt-5 grid gap-5 lg:grid-cols-2">
-    <x-tenant.panel :title="'Prestations ' . $year" icon="clipboard">
+    <x-tenant.panel :title="__('Prestations :year', ['year' => $year])" icon="clipboard">
       <div class="grid grid-cols-3 gap-3 p-5 sm:p-6">
         @foreach ([['Montant des soins', $prest->total ?? 0, 'text-[#0B1F3A]'], ['Part mutuelle', $prest->mutual ?? 0, 'text-leaf-700'], ['Part adhérents', $prest->member ?? 0, 'text-amber-700']] as [$l, $v, $c])
           <div class="rounded-2xl bg-paper p-4"><div class="text-xs font-medium text-ink/50">{{ $l }}</div><div class="mt-1 text-lg font-extrabold tabular-nums {{ $c }}">{{ $fmt($v) }}</div></div>

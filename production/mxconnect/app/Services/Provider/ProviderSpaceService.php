@@ -115,7 +115,7 @@ class ProviderSpaceService
     {
         [, $perm] = self::TARGETS[$target] ?? self::TARGETS['verify'];
         if (! $membership->can($perm)) {
-            $why = 'Votre rôle dans l’établissement ne permet pas cette action.';
+            $why = __('Votre rôle dans l’établissement ne permet pas cette action.');
 
             return null;
         }
@@ -123,7 +123,7 @@ class ProviderSpaceService
             ->whereIn('status', ['approved', 'suspended'])->first();
         $base = $this->mutualBaseUrl($mutual);
         if (! $aff || ! $base || $mutual->status === 'suspended') {
-            $why = 'Aucune convention en place avec cette mutuelle.';
+            $why = __('Aucune convention en place avec cette mutuelle.');
 
             return null;
         }
@@ -200,7 +200,7 @@ class ProviderSpaceService
         $used = ProviderHandoff::where('token_hash', $hash)->where('mutual_id', (string) tenant('id'))
             ->whereNull('used_at')->where('expires_at', '>', now())->update(['used_at' => now()]);
         if ($used !== 1) {
-            throw new ProviderSpaceRefusal('Ce lien d’entrée a expiré ou a déjà servi. Repassez par votre espace prestataire.');
+            throw new ProviderSpaceRefusal(__('Ce lien d’entrée a expiré ou a déjà servi. Repassez par votre espace prestataire.'));
         }
         $h = ProviderHandoff::where('token_hash', $hash)->firstOrFail();
         $account = ProviderAccount::find($h->provider_account_id);
@@ -209,15 +209,15 @@ class ProviderSpaceService
         [$route, $perm] = self::TARGETS[$h->target] ?? self::TARGETS['verify'];
 
         if (! $account?->active || ! $membership || ! $membership->can($perm) || ! $provider || $provider->active === false) {
-            throw new ProviderSpaceRefusal('Votre accès à cet établissement n’est plus actif. Contactez l’administrateur de votre établissement.');
+            throw new ProviderSpaceRefusal(__('Votre accès à cet établissement n’est plus actif. Contactez l’administrateur de votre établissement.'));
         }
         if (! ProviderConvention::forProvider($provider->id)) {
-            throw new ProviderSpaceRefusal('Aucune convention de votre établissement avec cette mutuelle.');
+            throw new ProviderSpaceRefusal(__('Aucune convention de votre établissement avec cette mutuelle.'));
         }
 
         $user = $this->tenantUser($account, $provider);
         if (! $user->active) {
-            throw new ProviderSpaceRefusal('La mutuelle a désactivé votre accès à son portail. Contactez la mutuelle.');
+            throw new ProviderSpaceRefusal(__('La mutuelle a désactivé votre accès à son portail. Contactez la mutuelle.'));
         }
 
         Auth::guard('web')->login($user);

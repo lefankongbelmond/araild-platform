@@ -57,13 +57,13 @@ class EstablishmentController extends Controller
             'manager_name'        => ['nullable', 'string', 'max:120'],
             'hours'               => ['array'],
             'hours.*'             => ['nullable', 'string', 'max:40'],
-        ], ['name.required' => 'Indiquez le nom de l’établissement.', 'latitude.required_with' => 'Indiquez la latitude ET la longitude.', 'longitude.required_with' => 'Indiquez la latitude ET la longitude.']);
+        ], ['name.required' => __('Indiquez le nom de l’établissement.'), 'latitude.required_with' => __('Indiquez la latitude ET la longitude.'), 'longitude.required_with' => __('Indiquez la latitude ET la longitude.')]);
 
         $hours = collect($data['hours'] ?? [])->only(array_keys(self::DAYS))->map(fn ($v) => trim((string) $v))->filter()->all();
         $specialties = collect(preg_split('/[,;\n]+/', (string) ($data['specialties'] ?? '')))->map(fn ($s) => trim($s))->filter()->unique()->take(20)->values()->all();
         $p->update(collect($data)->except(['hours', 'specialties'])->all() + ['opening_hours' => $hours ?: null, 'specialties' => $specialties ?: null]);
 
-        return back()->with('success', 'Fiche de l’établissement enregistrée.');
+        return back()->with('success', __('Fiche de l’établissement enregistrée.'));
     }
 
     public function bank(Request $request)
@@ -81,7 +81,7 @@ class EstablishmentController extends Controller
         // Le journal d'audit ne garde pas les coordonnées (chiffrées) : on note seulement le fait.
         \Illuminate\Support\Facades\Log::info('provider.bank_updated', ['care_provider_id' => $p->id, 'by' => $request->user('provider')->id]);
 
-        return back()->with('success', 'Coordonnées bancaires enregistrées (stockées chiffrées). Elles servent aux paiements faits par les mutuelles, hors plateforme.');
+        return back()->with('success', __('Coordonnées bancaires enregistrées (stockées chiffrées). Elles servent aux paiements faits par les mutuelles, hors plateforme.'));
     }
 
     // --- Personnel et droits ---
@@ -103,12 +103,12 @@ class EstablishmentController extends Controller
             'first_name' => ['required', 'string', 'max:120'], 'last_name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:180'], 'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::in(array_keys(ProviderAccess::ROLES))], 'job_title' => ['nullable', 'string', 'max:120'],
-        ], ['email.required' => 'Indiquez l’adresse e-mail de la personne (elle sert d’identifiant).']);
+        ], ['email.required' => __('Indiquez l’adresse e-mail de la personne (elle sert d’identifiant).')]);
         $email = Str::lower(trim($data['email']));
 
         $existing = ProviderAccount::where('email', $email)->first();
         if ($existing && ProviderMembership::where('provider_account_id', $existing->id)->where('care_provider_id', $m->care_provider_id)->exists()) {
-            return back()->withInput()->withErrors(['email' => 'Cette personne fait déjà partie du personnel de l’établissement.']);
+            return back()->withInput()->withErrors(['email' => __('Cette personne fait déjà partie du personnel de l’établissement.')]);
         }
 
         $temp = null;
@@ -126,8 +126,8 @@ class EstablishmentController extends Controller
         });
 
         return back()->with('success', $existing
-            ? 'Cette personne avait déjà un compte MX-CONNECT prestataire : elle est rattachée à l’établissement et se connecte avec son mot de passe habituel.'
-            : 'Compte créé. Transmettez le mot de passe provisoire à la personne : il ne sera plus affiché.')
+            ? __('Cette personne avait déjà un compte MX-CONNECT prestataire : elle est rattachée à l’établissement et se connecte avec son mot de passe habituel.')
+            : __('Compte créé. Transmettez le mot de passe provisoire à la personne : il ne sera plus affiché.'))
             ->with('temp_password', $temp ? ['email' => $email, 'password' => $temp] : null);
     }
 
@@ -144,7 +144,7 @@ class EstablishmentController extends Controller
         // L'établissement garde toujours au moins un administrateur actif.
         $losesAdmin = $target->role === 'admin' && $target->active && ($data['role'] !== 'admin' || ! $active);
         if ($losesAdmin && ProviderMembership::where('care_provider_id', $m->care_provider_id)->where('role', 'admin')->where('active', true)->count() <= 1) {
-            return back()->with('error', 'L’établissement doit garder au moins un administrateur actif : nommez-en un autre d’abord.');
+            return back()->with('error', __('L’établissement doit garder au moins un administrateur actif : nommez-en un autre d’abord.'));
         }
         // Les cases cochées sont comparées aux droits du NOUVEAU rôle (écarts enregistrés).
         $overrides = $request->has('perms_sent')
@@ -153,7 +153,7 @@ class EstablishmentController extends Controller
         $target->update(['role' => $data['role'], 'job_title' => $data['job_title'] ?? null, 'active' => $active,
             'permissions' => array_filter($overrides) ? $overrides : null]);
 
-        return back()->with('success', 'Droits de ' . ($target->account?->name ?? 'la personne') . ' enregistrés.');
+        return back()->with('success', __('Droits de :name enregistrés.', ['name' => $target->account?->name ?? __('la personne')]));
     }
 
     public function resetStaff(Request $request, int $membership)
@@ -164,15 +164,15 @@ class EstablishmentController extends Controller
         abort_unless($account, 404);
         // Un compte rattaché à d'autres établissements n'est pas réinitialisé d'ici (il ne nous appartient pas seul).
         if (ProviderMembership::where('provider_account_id', $account->id)->where('care_provider_id', '!=', $m->care_provider_id)->exists()) {
-            return back()->with('error', 'Ce compte est aussi utilisé dans un autre établissement : la personne utilise « Mot de passe oublié » sur la page de connexion.');
+            return back()->with('error', __('Ce compte est aussi utilisé dans un autre établissement : la personne utilise « Mot de passe oublié » sur la page de connexion.'));
         }
         if ($account->id === $request->user('provider')->id) {
-            return back()->with('error', 'Pour votre propre compte, utilisez « Paramètres ».');
+            return back()->with('error', __('Pour votre propre compte, utilisez « Paramètres ».'));
         }
         $temp = self::temporaryPassword();
         $account->forceFill(['password' => $temp, 'must_change_password' => true, 'mfa_enabled' => false, 'mfa_secret' => null, 'remember_token' => Str::random(60)])->save();
 
-        return back()->with('success', 'Mot de passe et double authentification réinitialisés. Transmettez le mot de passe provisoire : il ne sera plus affiché.')
+        return back()->with('success', __('Mot de passe et double authentification réinitialisés. Transmettez le mot de passe provisoire : il ne sera plus affiché.'))
             ->with('temp_password', ['email' => $account->email, 'password' => $temp]);
     }
 
@@ -210,9 +210,9 @@ class EstablishmentController extends Controller
             'mutual_id' => ['nullable', 'string', 'max:64'],
             'file' => ['required', 'file', 'max:' . self::DOC_MAX_KB, 'mimetypes:application/pdf,application/x-pdf'],
         ], [
-            'file.required' => 'Choisissez le fichier PDF.', 'file.max' => 'Le document ne doit pas dépasser 5 Mo.',
-            'file.mimetypes' => 'Le document doit être un fichier PDF.', 'title.required' => 'Donnez un titre au document.',
-            'expires_on.after_or_equal' => 'La date d’expiration doit suivre la date de délivrance.',
+            'file.required' => __('Choisissez le fichier PDF.'), 'file.max' => __('Le document ne doit pas dépasser 5 Mo.'),
+            'file.mimetypes' => __('Le document doit être un fichier PDF.'), 'title.required' => __('Donnez un titre au document.'),
+            'expires_on.after_or_equal' => __('La date d’expiration doit suivre la date de délivrance.'),
         ]);
         $fh = fopen($request->file('file')->getRealPath(), 'rb');
         $head = $fh ? fread($fh, 5) : '';
@@ -220,7 +220,7 @@ class EstablishmentController extends Controller
             fclose($fh);
         }
         if ($head !== '%PDF-') {
-            throw ValidationException::withMessages(['file' => 'Ce fichier n’est pas un PDF valide.']);
+            throw ValidationException::withMessages(['file' => __('Ce fichier n’est pas un PDF valide.')]);
         }
         $mutualId = ! empty($data['mutual_id']) && \App\Models\Provider\ProviderAffiliation::where('care_provider_id', $m->care_provider_id)->where('mutual_id', $data['mutual_id'])->exists()
             ? $data['mutual_id'] : null;
@@ -237,7 +237,7 @@ class EstablishmentController extends Controller
             $m->provider->update(['approval_expires_on' => $data['expires_on']] + (! empty($data['reference']) ? ['approval_number' => $data['reference']] : []));
         }
 
-        return back()->with('success', 'Document enregistré.');
+        return back()->with('success', __('Document enregistré.'));
     }
 
     public function download(int $document)
@@ -256,6 +256,6 @@ class EstablishmentController extends Controller
         $doc = ProviderDocument::where('care_provider_id', ProviderAccess::current()->care_provider_id)->findOrFail($document);
         $doc->delete();   // suppression logique : l'historique reste consultable par l'audit, le fichier est conservé
 
-        return back()->with('success', 'Document retiré de la liste (conservé dans l’historique).');
+        return back()->with('success', __('Document retiré de la liste (conservé dans l’historique).'));
     }
 }

@@ -5,7 +5,7 @@
   $canEnroll = auth()->user()->hasAnyRole(['mutual_admin', 'enrollment_agent']);
   $labels = ['in_review' => __('Passer en étude'), 'info_requested' => __('Demander un complément'), 'accepted' => __('Accepter'), 'rejected' => __('Refuser')];
 @endphp
-<x-layouts.tenant :title="'Dossier ' . $r->reference">
+<x-layouts.tenant :title="__('Dossier :ref', ['ref' => $r->reference])">
   <a href="{{ route('online-adhesions.index') }}" class="text-sm text-pine hover:underline">{{ __('← Adhésions en ligne') }}</a>
   <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
     <div><h1 class="text-2xl font-semibold tracking-tight">{{ $r->name }}</h1><p class="text-sm text-ink/60">{{ __('Dossier :reference · reçu le :date', ['reference' => $r->reference, 'date' => $r->created_at->format('d/m/Y à H:i')]) }}</p></div>
