@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>MX-CONNECT — Fiche de présentation v2.0</title>
+<style>
+@font-face{font-family:"MS";font-weight:500;src:url("F2/montserrat-latin-500-normal.woff2")}
+@font-face{font-family:"MS";font-weight:600;src:url("F2/montserrat-latin-600-normal.woff2")}
+@font-face{font-family:"MS";font-weight:700;src:url("F2/montserrat-latin-700-normal.woff2")}
+@font-face{font-family:"MS";font-weight:800;src:url("F2/montserrat-latin-800-normal.woff2")}
+@font-face{font-family:"OS";font-weight:400;src:url("F2/open-sans-latin-400-normal.woff2")}
+@font-face{font-family:"OS";font-weight:400;font-style:italic;src:url("F2/open-sans-latin-400-italic.woff2")}
+@font-face{font-family:"OS";font-weight:600;src:url("F2/open-sans-latin-600-normal.woff2")}
+@font-face{font-family:"OS";font-weight:700;src:url("F2/open-sans-latin-700-normal.woff2")}
+/* Les anciennes familles pointent vers le nouveau couple typographique */
+@font-face{font-family:"IS";font-weight:400;src:url("F2/montserrat-latin-700-normal.woff2")}
+@font-face{font-family:"ISans";font-weight:400;src:url("F2/open-sans-latin-400-normal.woff2")}
+@font-face{font-family:"ISans";font-weight:700;src:url("F2/open-sans-latin-700-normal.woff2")}
+@font-face{font-family:"ISans";font-style:italic;src:url("F2/open-sans-latin-400-italic.woff2")}
+@font-face{font-family:"Mono";src:url("F2/montserrat-latin-700-normal.woff2")}
+@page{size:A4;margin:0}
+:root{
+  --paper:#FFFFFF; --tint:#F3F6FA; --ink:#0A2A5E; --text:#29323F; --muted:#677180; --hair:#DCE2EA;
+  --green:#2F8F0E; --lime:#5BB81E; --greenw:#EAF5E1; --blue:#1F68C9; --bluew:#E4EEFB;
+  --ochre:#D9661A; --ochrew:#FDF0E5; --both:#0A2A5E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#7d7d7d}
+body{font-family:"OS",sans-serif;color:var(--text);font-size:9.6pt;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;background:var(--paper);padding:31mm 20mm 21mm 24mm;page-break-after:always;break-after:page;display:flex;flex-direction:column;gap:6mm}
+.page:last-child{page-break-after:auto}
+/* Bande verte à coupe oblique sous l'en-tête, et coin bleu nuit coupé en haut à droite */
+.page:not(.dark):not(.cover)::before{content:"";position:absolute;left:0;top:21.5mm;width:92mm;height:2.2mm;background:var(--lime);clip-path:polygon(0 0,100% 0,calc(100% - 2.2mm) 100%,0 100%)}
+.page:not(.dark):not(.cover)::after{content:"";position:absolute;right:0;top:21.5mm;width:46mm;height:2.2mm;background:var(--ink);clip-path:polygon(2.2mm 0,100% 0,100% 100%,0 100%)}
+/* En-tête : logo, rubrique, barre verte + sous-rubrique */
+.run{position:absolute;top:9mm;left:24mm;right:20mm;height:9mm;display:flex;align-items:center;gap:3mm;font-family:"MS";font-weight:700;font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.run::before{content:"";width:9mm;height:9mm;background:url("BRAND/mx-mark.png") center/contain no-repeat;flex:none}
+.run span:first-child{margin-right:auto;line-height:1.3}
+.run span:last-child{border-left:.9mm solid var(--lime);padding-left:2.4mm;color:#4A5568;font-weight:600;max-width:78mm;line-height:1.35}
+/* Pied : bande bleu nuit, numéro dans un cartouche vert à coupe oblique */
+.foot{position:absolute;bottom:0;left:0;right:0;height:11mm;padding:0 20mm 0 24mm;display:flex;justify-content:space-between;align-items:center;background:var(--ink);font-family:"MS";font-weight:600;font-size:6.6pt;letter-spacing:.12em;text-transform:uppercase;color:#B8C6DD}
+.foot b{font-family:"MS";font-weight:800;font-size:8.6pt;letter-spacing:.04em;color:var(--ink);background:var(--lime);height:11mm;display:flex;align-items:center;padding:0 4mm 0 6mm;margin-right:-20mm;padding-right:20mm;clip-path:polygon(3.2mm 0,100% 0,100% 100%,0 100%)}
+.mark{font-family:"MS";font-weight:700;font-size:7pt;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.mark.o{color:var(--ochre)} .mark.b{color:var(--blue)} .mark.n{color:var(--ink)}
+h1{font-family:"MS";font-weight:800;font-size:22pt;line-height:1.12;color:var(--ink);letter-spacing:-.01em;max-width:162mm}
+h2{font-family:"MS";font-weight:700;font-size:15.5pt;line-height:1.2;color:var(--ink);max-width:162mm}
+h3{font-family:"MS";font-weight:700;font-size:9.6pt;color:var(--ink);line-height:1.32}
+p{max-width:160mm}
+.it{font-style:italic}
+.small{font-size:8.4pt;color:var(--muted);line-height:1.5}
+.sect{display:flex;flex-direction:column;gap:2.2mm}
+.rule{height:0;border-top:.4pt solid var(--hair)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5mm}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm}
+.fig{display:flex;flex-direction:column;gap:1.2mm}
+.fig::before{content:"";width:9mm;height:1.3mm;background:var(--lime);margin-bottom:1.6mm}
+.fig .n{font-family:"MS";font-weight:800;font-size:22pt;line-height:1;color:var(--ink);letter-spacing:-.01em}
+.fig .n.o{color:var(--ochre)} .fig .n.g{color:var(--green)}
+.fig .l{font-size:8.6pt;line-height:1.42;color:var(--text)}
+ul.l{list-style:none;display:flex;flex-direction:column;gap:1.5mm}
+ul.l li{padding-left:4mm;position:relative}
+ul.l li:before{content:"";position:absolute;left:0;top:2.15mm;width:1.5mm;height:1.5mm;background:var(--lime);transform:rotate(45deg) scale(.8)}
+ul.l.g li:before{background:var(--lime)} ul.l.b li:before{background:var(--blue)} ul.l.o li:before{background:var(--ochre)}
+.card{background:var(--tint);padding:5mm 5.4mm;display:flex;flex-direction:column;gap:2.2mm;clip-path:polygon(0 0,calc(100% - 5mm) 0,100% 5mm,100% 100%,0 100%)}
+.card.g{border-top:1.2mm solid var(--lime)} .card.b{border-top:1.2mm solid var(--blue)} .card.o{border-top:1.2mm solid var(--ochre)} .card.n{border-top:1.2mm solid var(--ink)}
+.card.ink{background:var(--ink);color:#D5DFEE} .card.ink h3{color:#FFFFFF}
+.card.ink ul.l li:before{background:var(--lime)}
+.note{border-left:1.4mm solid var(--ochre);background:var(--ochrew);padding:3.8mm 5mm;font-size:9pt;line-height:1.5}
+.note b{color:var(--ochre);font-family:"MS";font-weight:700}
+.inst{background:var(--ink);color:#DCE5F2;padding:7mm 8mm;font-size:9.6pt;line-height:1.55;clip-path:polygon(0 0,calc(100% - 8mm) 0,100% 8mm,100% 100%,0 100%)}
+.inst b{color:#FFFFFF}
+table{width:100%;border-collapse:collapse;font-size:8.6pt;line-height:1.42}
+th{font-family:"MS";font-weight:700;font-size:6.8pt;letter-spacing:.1em;text-transform:uppercase;color:#FFFFFF;background:var(--ink);text-align:left;padding:2.2mm 2.6mm}
+td{padding:2.4mm 2.6mm;border-bottom:.4pt solid var(--hair);vertical-align:top}
+tr:nth-child(odd) td{background:var(--tint)}
+td b{color:var(--ink);font-family:"MS";font-weight:700;font-size:8.2pt}
+.tight td{padding:1.6mm 2.6mm}
+.num{font-family:"MS";font-weight:800;font-size:15pt;color:var(--ink);line-height:1}
+.chip{display:inline-block;font-family:"MS";font-weight:700;font-size:6.4pt;letter-spacing:.08em;text-transform:uppercase;border:.5pt solid currentColor;padding:.7mm 2.4mm}
+.shot{border:.4pt solid var(--hair);background:#fff;display:block;object-fit:contain}
+.phone{border:1.6mm solid var(--ink);border-radius:5mm;display:block;object-fit:cover;background:#fff}
+.cap{font-size:8pt;line-height:1.4;color:var(--muted)}
+.cap b{color:var(--ink);font-family:"MS";font-weight:700}
+.toc{display:flex;flex-direction:column}
+.toc div{display:flex;justify-content:space-between;align-items:baseline;padding:2.6mm 0;border-bottom:.4pt solid var(--hair)}
+.toc span.t{font-family:"MS";font-weight:600;font-size:10.4pt;color:var(--ink)}
+.toc span.r{font-family:"MS";font-weight:700;font-size:7pt;color:var(--green);letter-spacing:.1em}
+.dark{background:var(--ink);color:#D5DFEE}
+.dark .run{color:#FFFFFF} .dark .run span:last-child{color:#B8C6DD}
+.dark .foot{background:#071E46}
+.spacer{flex:1}
+/* Guillemets verts, signature du style */
+.quote{font-family:"MS";font-weight:800;font-size:46pt;line-height:.6;color:var(--lime);height:9mm}
+/* Couverture : image fournie, prolongée en haut (blanc) et en bas (vert / bleu nuit) */
+.cover{padding:0;background:#FDFDFD}
+
+.step{border-right:.4pt solid var(--hair);padding:0 3.4mm;display:flex;flex-direction:column;gap:1mm}
+.step:first-child{padding-left:0}
+.benef{display:grid;grid-template-columns:repeat(5,1fr);gap:4mm}
+.benef>div{display:flex;flex-direction:column;gap:1.4mm}
+.benef .small{font-size:7.9pt;line-height:1.42}
+.bi{width:10mm;height:10mm;display:flex;align-items:center;justify-content:center;font-family:MS;font-weight:800;font-size:8.4pt;color:#fff;clip-path:polygon(0 0,calc(100% - 2.4mm) 0,100% 2.4mm,100% 100%,0 100%)}
+.fv .card{padding:4.2mm 5mm;gap:1.8mm}
+.fv .card ul.l{gap:1mm;font-size:8pt}
+.fv .small{font-size:8pt}
+.fv .inst{padding:5mm 7mm}
+.chips{display:flex;flex-wrap:wrap;gap:1.6mm}
+.chips span{font-family:MS;font-weight:700;font-size:6.2pt;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--tint);border-left:.9mm solid var(--lime);padding:1.2mm 2.2mm}
+.inst ul.l li:before{background:#5BB81E}
+
+sup.ref{font-family:MS;font-weight:700;font-size:6.2pt;color:var(--ink);vertical-align:super;margin-left:.6mm;letter-spacing:0}
+table.kv{font-size:7.9pt;line-height:1.38}
+table.kv td{padding:1.15mm 0;border-bottom:.4pt solid var(--hair);background:none!important}
+table.kv td:first-child{font-family:MS;font-weight:700;font-size:6.6pt;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);width:24mm;padding-right:2mm}
+table.mods td{font-size:7.9pt;padding:1.25mm 2.4mm;line-height:1.36}
+.st{display:inline-block;font-family:MS;font-weight:700;font-size:6.2pt;letter-spacing:.06em;text-transform:uppercase;padding:.8mm 2mm;white-space:nowrap}
+.st.ok{color:#2F8F0E;background:#EAF5E1}.st.beta{color:#1F68C9;background:#E4EEFB}.st.conv{color:#D9661A;background:#FDF0E5}.st.no{color:#677180;background:#EEF1F5}
+.refs ol{padding-left:4.6mm;font-size:7.3pt;line-height:1.42;color:var(--muted);display:flex;flex-direction:column;gap:.5mm}
+.refs ol li::marker{font-family:MS;font-weight:700;color:var(--ink)}
+</style>
+</head>
+<body>
+<!-- ============ PAGE 1 ============ -->
+<section class="page cover" style="padding:0">
+  <div style="position:absolute;left:0;top:0;width:210mm;height:88mm;background:#0A2A5E"></div>
+  <img src="COVER/famille.jpg" alt="Une famille devant un centre de santé" style="position:absolute;right:0;top:0;width:104mm;height:88mm;object-fit:cover;object-position:50% 50%;clip-path:polygon(18mm 0,100% 0,100% 100%,0 100%)">
+  <div style="position:absolute;left:0;top:88mm;width:150mm;height:2.6mm;background:#5BB81E;clip-path:polygon(0 0,100% 0,calc(100% - 2.6mm) 100%,0 100%)"></div>
+  <div style="position:absolute;left:20mm;top:13mm;display:flex;align-items:center;gap:3mm">
+    <div style="width:12mm;height:12mm;background:#FFFFFF url(BRAND/mx-mark.png) center/9.5mm no-repeat;clip-path:polygon(0 0,calc(100% - 2.6mm) 0,100% 2.6mm,100% 100%,0 100%)"></div>
+    <div style="font-family:MS;font-weight:700;font-size:6.8pt;letter-spacing:.14em;color:#B8C6DD;text-transform:uppercase;border-left:.9mm solid #5BB81E;padding-left:2.4mm;line-height:1.45">Fiche de présentation · Document public<br>Version 2.0 · Novembre 2026</div>
+  </div>
+  <div style="position:absolute;left:20mm;top:32mm;width:88mm;display:flex;flex-direction:column;gap:3.2mm">
+    <div style="font-family:MS;font-weight:800;font-size:31pt;line-height:1;color:#FFFFFF;letter-spacing:-.01em">MX-<span style="color:#5BB81E">CONNECT</span></div>
+    <div style="font-family:MS;font-weight:700;font-size:12.5pt;line-height:1.25;color:#FFFFFF">Plateforme numérique de gestion des mutuelles de santé et de coordination des soins</div>
+    <p style="font-size:9pt;line-height:1.5;color:#C9D4E8">Au service de la solidarité mutualiste et de la marche vers la Couverture Santé Universelle, sans jamais confondre les deux mécanismes.</p>
+  </div>
+
+  <div style="position:absolute;left:20mm;right:20mm;top:97mm;bottom:15mm;display:flex;flex-direction:column;gap:3.6mm">
+    <div class="mark n">Résumé</div>
+    <p style="margin-top:-1.6mm;font-size:9.4pt;max-width:none">MX-CONNECT est une plateforme en ligne qui permet aux <b>mutuelles de santé communautaires</b> de gérer leurs adhérents, leurs cotisations, leurs garanties et leur comptabilité, et aux <b>formations sanitaires</b> de vérifier les droits d’un patient, de déclarer les soins et de suivre leurs factures. Chaque mutuelle dispose d’un espace aux données cloisonnées. La plateforme ne détient aucun fonds et ne publie aucun chiffre qui ne soit réel. Elle est éditée par l’ONG camerounaise <b>ARAILD</b> et fonctionne en production depuis 2026.</p>
+
+    <div class="grid2" style="gap:6mm;align-items:start">
+      <div class="sect" style="gap:2.6mm">
+        <div class="mark o">Contexte · chiffres clés</div>
+        <div class="grid2" style="gap:4mm 5mm">
+          <div class="fig"><div class="n o" style="font-size:18pt">72,2 %<sup class="ref">1</sup></div><div class="l" style="font-size:7.8pt">des dépenses courantes de santé payées directement par les ménages</div></div>
+          <div class="fig"><div class="n o" style="font-size:18pt">&lt; 5 %<sup class="ref">2</sup></div><div class="l" style="font-size:7.8pt">de la population couverte par une assurance ou une mutuelle (estimations)</div></div>
+          <div class="fig"><div class="n o" style="font-size:18pt">1,8 / 5<sup class="ref">3</sup></div><div class="l" style="font-size:7.8pt">maturité de la santé numérique évaluée en 2025 ; données en silos</div></div>
+          <div class="fig"><div class="n" style="font-size:18pt;color:var(--blue)">35 %<sup class="ref">4</sup></div><div class="l" style="font-size:7.8pt">part des paiements directs visée en 2030 par la stratégie CSU</div></div>
+        </div>
+      </div>
+      <div class="card n" style="padding:4.2mm 4.8mm;gap:1.6mm">
+        <div class="mark n">En bref</div>
+        <table class="kv">
+          <tr><td>Nature</td><td>Plateforme web multi-organisations (SaaS) et application Android</td></tr>
+          <tr><td>Utilisateurs</td><td>Mutuelles, formations sanitaires, adhérents, autorités</td></tr>
+          <tr><td>Statut</td><td>En production ; application Android en bêta</td></tr>
+          <tr><td>Langues</td><td>7 : français, anglais, portugais, espagnol, arabe, kiswahili, haoussa</td></tr>
+          <tr><td>Comptabilité</td><td>Référentiel SYSCOHADA révisé (OHADA)</td></tr>
+          <tr><td>Éditeur</td><td>ARAILD, Yaoundé (Cameroun)</td></tr>
+          <tr><td>Accès</td><td>m.araild.com</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <div class="mark">Comment ça marche</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:-1mm">
+      <div class="step"><div class="num" style="color:var(--green)">1</div><h3>Adhérer</h3><p class="small" style="color:var(--text)">Le ménage rejoint une mutuelle et choisit une formule ; reçus pour chaque cotisation.</p></div>
+      <div class="step"><div class="num" style="color:var(--green)">2</div><h3>Recevoir sa carte</h3><p class="small" style="color:var(--text)">Carte de membre à QR code signé, aussi disponible dans l’espace adhérent.</p></div>
+      <div class="step"><div class="num">3</div><h3>Être soigné</h3><p class="small" style="color:var(--text)">Le centre de santé vérifie les droits en quelques secondes et déclare les soins.</p></div>
+      <div class="step" style="border-right:none"><div class="num" style="color:var(--blue)">4</div><h3>Être orienté</h3><p class="small" style="color:var(--text)">Si la personne n’est pas enrôlée, orientation volontaire vers la CSU officielle.</p></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="note" style="font-size:8.4pt"><b>Distinction essentielle.</b> Adhérer à une mutuelle ne vaut pas enrôlement à la CSU. MX-CONNECT ne délivre aucune preuve d’enrôlement et ne se substitue pas au dispositif national.</div>
+  </div>
+  <div class="foot"><span>MX-CONNECT · ARAILD · Fiche de présentation v2.0</span><b>1 / 4</b></div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" style="gap:3.6mm">
+  <div class="run"><span>MX-CONNECT · Fiche de présentation</span><span>Enjeux · Description de la solution</span></div>
+  <div class="mark o">01 · Enjeux</div>
+  <h2 style="font-size:14pt;margin-top:-2mm">Des mutuelles proches des populations, mais peu outillées</h2>
+  <p style="max-width:none;margin-top:-1mm">Les mutuelles de santé communautaires sont un relais de proximité pour les ménages, dont de nombreux travailleurs de l’économie informelle. Leur gestion reste souvent manuelle, ce qui limite la confiance et la qualité des services.</p>
+  <div class="grid3" style="gap:4mm">
+    <div class="card o" style="padding:3mm 4mm;gap:1mm"><h3>Droits invérifiables</h3><p class="small" style="color:var(--text)">Au guichet, le centre de santé ne peut pas confirmer qu’un adhérent est à jour : retards, refus, litiges.</p></div>
+    <div class="card o" style="padding:3mm 4mm;gap:1mm"><h3>Gestion peu traçable</h3><p class="small" style="color:var(--text)">Registres papier, reçus manquants, comptes difficiles à présenter : la confiance s’érode.</p></div>
+    <div class="card o" style="padding:3mm 4mm;gap:1mm"><h3>Données en silos</h3><p class="small" style="color:var(--text)">Aucune donnée agrégée fiable pour piloter, comparer ou rendre compte aux autorités.</p></div>
+  </div>
+  <div class="rule"></div>
+  <div class="mark">02 · Description de la solution</div>
+  <h2 style="font-size:14pt;margin-top:-2mm">Modules et état de disponibilité</h2>
+  <table class="tight mods">
+    <tr><th style="width:25%">Module</th><th>Fonctions principales</th><th style="width:18%">Statut</th></tr>
+    <tr><td><b>Adhésions et formules</b></td><td>Adhérents et ayants droit, catalogue de formules, garanties, plafonds, délais de carence, changement de formule contrôlé</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Cotisations et trésorerie</b></td><td>Encaissement au guichet avec reçu, échéanciers, droit d’adhésion, annulation validée par une seconde personne, délai de grâce</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Prises en charge</b></td><td>Calcul automatique de la part de la mutuelle, accords préalables, médecin-conseil, pharmacie, dérogations, cas d’urgence</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Comptabilité</b></td><td>Journal, balance, grand livre, compte de résultat, bilan simplifié, clôture d’exercice, budget</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Espace prestataire de soins</b></td><td>Un seul compte pour toutes les mutuelles conventionnées, lecture du QR code, bordereaux de facturation, suivi des paiements, avis des mutuelles</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Espace adhérent</b></td><td>Carte, attestation, reçus, prises en charge, demandes de modification, réclamations</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Pilotage</b></td><td>Tableau de bord, taux de recouvrement, sinistralité, rapports d’activité, export Excel</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Réseau communautaire</b></td><td>Pages des mutuelles, projets à résultats vérifiés, opportunités, engagement citoyen</td><td><span class="st ok">Disponible</span></td></tr>
+    <tr><td><b>Application Android</b></td><td>Accès au réseau et à l’espace adhérent depuis un téléphone</td><td><span class="st beta">Bêta</span></td></tr>
+    <tr><td><b>Facilitation de la CSU</b></td><td>Information, orientation volontaire vers l’enrôlement officiel, suivi distinct du statut mutualiste</td><td><span class="st conv">Sous convention</span></td></tr>
+    <tr><td><b>Paiement mobile, SMS</b></td><td>Prévus après le choix d’opérateurs agréés ; jamais simulés en attendant</td><td><span class="st no">Non disponible</span></td></tr>
+  </table>
+  <div class="spacer"></div>
+  <p class="small" style="max-width:none">« Disponible » : en service sur la plateforme en production. « Bêta » : en essai auprès d’utilisateurs. « Sous convention » : développé seulement dans un cadre défini avec les autorités sanitaires.</p>
+  <div class="foot"><span>MX-CONNECT · ARAILD · Fiche de présentation v2.0</span><b>2 / 4</b></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page fv" style="gap:4.2mm">
+  <div class="run"><span>MX-CONNECT · Fiche de présentation</span><span>Bénéficiaires · Sécurité · Cadres de référence</span></div>
+  <div class="mark">03 · Bénéficiaires</div>
+  <h2 style="font-size:14pt;margin-top:-2mm">Chaque acteur y gagne, à sa place</h2>
+  <div class="benef">
+    <div><div class="bi" style="background:var(--lime)">M</div><h3>Ménages et adhérents</h3><p class="small" style="color:var(--text)">Des droits clairs, une carte vérifiable, des reçus pour chaque paiement, un accès accompagné à la CSU.</p></div>
+    <div><div class="bi" style="background:var(--green)">MS</div><h3>Mutuelles de santé</h3><p class="small" style="color:var(--text)">Une gestion en ligne, des comptes présentables, des cotisations tracées, la confiance des membres.</p></div>
+    <div><div class="bi" style="background:var(--ink)">FS</div><h3>Formations sanitaires</h3><p class="small" style="color:var(--text)">Des droits vérifiés en quelques secondes, des factures suivies jusqu’au paiement, moins de fraude.</p></div>
+    <div><div class="bi" style="background:var(--blue)">É</div><h3>Autorités et dispositif CSU</h3><p class="small" style="color:var(--text)">Des relais de proximité et des données agrégées validées, sans régime parallèle.</p></div>
+    <div><div class="bi" style="background:var(--ochre)">J</div><h3>Jeunes et associations</h3><p class="small" style="color:var(--text)">Volontariat, projets locaux aux résultats vérifiés, sensibilisation à la CSU.</p></div>
+  </div>
+  <div class="rule"></div>
+  <div class="mark n">04 · Sécurité, protection des données et éthique</div>
+  <div class="grid2" style="gap:6mm;margin-top:-1mm">
+    <ul class="l" style="font-size:8.5pt">
+      <li><b>Données cloisonnées</b> : chaque mutuelle a son propre espace ; aucune ne peut lire les données d’une autre.</li>
+      <li><b>Double authentification</b> obligatoire pour tout le personnel des mutuelles et des formations sanitaires.</li>
+      <li><b>Droits par rôle</b> et <b>contrôle à quatre yeux</b> : personne ne valide sa propre saisie.</li>
+      <li><b>Journal d’audit</b> : les consultations de données de santé sont tracées.</li>
+    </ul>
+    <ul class="l" style="font-size:8.5pt">
+      <li><b>Données de santé</b> réservées aux personnes habilitées ; jamais dans le réseau social ni dans les notifications.</li>
+      <li><b>Aucun fonds détenu</b> par la plateforme ; coordonnées bancaires chiffrées.</li>
+      <li><b>Consentement</b> : conditions d’utilisation et politique de confidentialité versionnées ; suppression du compte possible.</li>
+      <li><b>Honnêteté des chiffres</b> : uniquement des données réelles ; les données d’essai sont signalées.</li>
+    </ul>
+  </div>
+  <div class="rule"></div>
+  <div class="mark b">05 · Alignement sur les cadres de référence</div>
+  <table class="tight" style="margin-top:-1mm">
+    <tr><th style="width:38%">Cadre</th><th>Contribution de MX-CONNECT</th></tr>
+    <tr><td><b>Objectifs de développement durable</b>, cible 3.8 (couverture sanitaire universelle)<sup class="ref">5</sup></td><td>Renforce la protection financière des ménages par la mutualisation et l’orientation vers la CSU.</td></tr>
+    <tr><td><b>OMS, Stratégie mondiale pour la santé numérique 2020‑2025</b><sup class="ref">6</sup></td><td>Outil centré sur les personnes, protection des données, gouvernance par les acteurs nationaux.</td></tr>
+    <tr><td><b>Principes pour le développement numérique</b><sup class="ref">7</sup></td><td>Conçu avec les utilisateurs, adapté au mobile, multilingue, réutilisable dans d’autres districts.</td></tr>
+    <tr><td><b>SND30 et Plan stratégique national de santé numérique 2026‑2030</b> (Cameroun)<sup class="ref">3</sup></td><td>Numérisation d’un maillon communautaire ; interopérabilité à définir avec le MINSANTE.</td></tr>
+    <tr><td><b>SYSCOHADA révisé</b> (OHADA)</td><td>Plan comptable et états financiers des mutuelles conformes au référentiel régional.</td></tr>
+    <tr><td><b>Protection des données personnelles</b> (loi n° 2024/017)<sup class="ref">8</sup> ; <b>économie sociale</b> (loi n° 2019/004)<sup class="ref">9</sup></td><td>Minimisation, consentement, accès limité aux personnes habilitées ; respect du statut des mutuelles.</td></tr>
+  </table>
+  <div class="foot"><span>MX-CONNECT · ARAILD · Fiche de présentation v2.0</span><b>3 / 4</b></div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page fv" style="gap:4mm">
+  <div class="run"><span>MX-CONNECT · Fiche de présentation</span><span>Résultats attendus · Partenariat · Références</span></div>
+  <div class="mark">06 · Résultats attendus</div>
+  <h2 style="font-size:14pt;margin-top:-2mm">Ce que la plateforme doit permettre de mesurer</h2>
+  <div class="grid2" style="align-items:stretch;gap:5mm">
+    <div class="card g" style="padding:4mm 4.8mm"><div class="mark">Pendant un pilote de 18 mois</div>
+      <ul class="l" style="font-size:8.2pt"><li>Mutuelles pilotes gérées entièrement en ligne</li><li>100 % des encaissements accompagnés d’un reçu</li><li>Formations sanitaires vérifiant les droits au guichet</li><li>Personnes informées, orientées, puis enrôlements CSU confirmés</li><li>Zéro incident de confidentialité</li></ul></div>
+    <div class="card n" style="padding:4mm 4.8mm"><div class="mark n">À plus long terme</div>
+      <ul class="l" style="font-size:8.2pt"><li>Moins de paiements directs pour les ménages</li><li>Plus de personnes couvertes par une mutuelle ou par la CSU</li><li>Des mutuelles plus solides et plus transparentes</li><li>Un modèle reproductible dans d’autres districts et pays</li></ul></div>
+  </div>
+  <p class="small" style="max-width:none;margin-top:-1mm">Les cibles chiffrées seront fixées avec un comité technique après une enquête de référence. Une personne orientée n’est jamais comptée comme enrôlée.</p>
+  <div class="rule"></div>
+  <div class="grid2" style="gap:6mm;align-items:start">
+    <div class="sect">
+      <div class="mark n">07 · Feuille de route</div>
+      <ul class="l" style="font-size:8.3pt">
+        <li>Traduction complète des espaces d’administration et des documents légaux (en cours).</li>
+        <li>Messagerie par dossier entre formations sanitaires et mutuelles.</li>
+        <li>Interopérabilité avec les systèmes nationaux d’information sanitaire, sous convention.</li>
+        <li>Paiement mobile et SMS, après le choix d’opérateurs agréés.</li>
+      </ul>
+    </div>
+    <div class="sect">
+      <div class="mark">08 · Partenariat recherché</div>
+      <ul class="l" style="font-size:8.3pt">
+        <li>Une convention de partenariat et un comité de pilotage.</li>
+        <li>Un pilote de 18 mois dans un district de santé.</li>
+        <li>Un cadre d’accès CSU autorisé et la validation des indicateurs.</li>
+        <li>La relecture des traductions par des locuteurs natifs.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="inst" style="display:grid;grid-template-columns:1.25fr 1fr;gap:6mm;padding:5mm 7mm;font-size:8.6pt">
+    <div><div class="mark" style="color:#5BB81E">Contact</div><b>ARAILD</b> — Action pour la Recherche et l’Appui aux Initiatives Locales de Développement<br>Yaoundé, Cameroun · +237 676 460 158<br>contact@araild.com · m.araild.com</div>
+    <div><div class="mark" style="color:#5BB81E">Identification du document</div>Réf. MXC-FP-2026-02 · Version 2.0<br>20 novembre 2026 · Document public<br>Remplace la version 1.0 du 12/11/2026</div>
+  </div>
+  <div class="sect refs">
+    <div class="mark n">Références</div>
+    <ol>
+      <li>OMS, Base de données des dépenses de santé mondiales (comptes nationaux de la santé) ; OCDE, financement de la protection sociale au Cameroun.</li>
+      <li>Estimations d’études et de presse (1 à 5 %) ; BIT, diagnostic de la protection sociale.</li>
+      <li>MINSANTE, Plans stratégiques nationaux de santé numérique 2020‑2024 et 2026‑2030 ; Health Data Collaborative ; SND30.</li>
+      <li>MINSANTE, stratégie de développement de la Couverture Santé Universelle ; point du Ministre de la Santé du 29 avril 2026.</li>
+      <li>Nations Unies, Programme de développement durable à l’horizon 2030, objectif 3, cible 3.8.</li>
+      <li>Organisation mondiale de la Santé, Stratégie mondiale pour la santé numérique 2020‑2025.</li>
+      <li>Principles for Digital Development (digitalprinciples.org).</li>
+      <li>Loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel.</li>
+      <li>Loi n° 2019/004 du 25 avril 2019 régissant l’économie sociale au Cameroun.</li>
+    </ol>
+  </div>
+  <div class="spacer"></div>
+  <p class="small" style="max-width:none;font-size:7.2pt;line-height:1.45">Document public. Reproduction et diffusion autorisées avec mention de la source : « ARAILD, MX-CONNECT, fiche de présentation v2.0, novembre 2026 ». Les chiffres sont cités tels que publiés par leurs sources, qui ne mesurent pas toujours la même chose. Les références juridiques sont à confirmer au Journal officiel. MX-CONNECT est un nom de produit d’ARAILD.</p>
+  <div class="foot"><span>MX-CONNECT · ARAILD · Fiche de présentation v2.0</span><b>4 / 4</b></div>
+</section>
+
+</body>
+</html>
