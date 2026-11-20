@@ -62,7 +62,7 @@ final class RightsStatus
 
     public static function label(string $key): string
     {
-        return self::LABELS[$key][0] ?? $key;
+        return isset(self::LABELS[$key][0]) ? __(self::LABELS[$key][0]) : $key;
     }
 
     public static function tone(string $key): string

@@ -39,23 +39,23 @@
 
   @isset($access)
     <section class="mt-8">
-      <h2 class="font-semibold text-navy">Accès aux données de santé et opérations sensibles</h2>
-      <p class="mt-1 text-sm text-ink/60">Qui a ouvert un dossier au détail médical, et quand (50 derniers). Aucune donnée médicale n’est recopiée ici.</p>
+      <h2 class="font-semibold text-navy">{{ __('Accès aux données de santé et opérations sensibles') }}</h2>
+      <p class="mt-1 text-sm text-ink/60">{{ __('Qui a ouvert un dossier au détail médical, et quand (50 derniers). Aucune donnée médicale n’est recopiée ici.') }}</p>
       <div class="relative mt-3 overflow-x-auto rounded-lg border border-ink/10 bg-white">
         <table class="w-full text-sm" style="min-width:520px">
           <thead class="bg-mist text-left text-ink/60"><tr>
-            <th class="px-4 py-2 font-medium">Date</th><th class="px-4 py-2 font-medium">Personne</th><th class="px-4 py-2 font-medium">Accès</th><th class="px-4 py-2 font-medium">Adresse IP</th>
+            <th class="px-4 py-2 font-medium">{{ __('Date') }}</th><th class="px-4 py-2 font-medium">{{ __('Personne') }}</th><th class="px-4 py-2 font-medium">{{ __('Accès') }}</th><th class="px-4 py-2 font-medium">{{ __('Adresse IP') }}</th>
           </tr></thead>
           <tbody class="divide-y divide-ink/5">
             @forelse ($access as $a)
               <tr>
                 <td class="px-4 py-2 text-ink/60">{{ \Illuminate\Support\Carbon::parse($a->occurred_at)->format('d/m/Y H:i') }}</td>
-                <td class="px-4 py-2">{{ $a->who ?? ($a->user_id ? '#' . $a->user_id : 'Administration du réseau') }}</td>
-                <td class="px-4 py-2">@if ($a->action === 'test_data_reset')Réinitialisation de la MUTUELLE TEST @elseif ($a->action === 'identity_updated'){{ __('Identité et langue de la mutuelle modifiées') }} @else{{ \App\Support\HealthAccessLog::LABELS[$a->object_type] ?? $a->object_type }}{{ $a->object_id ? ' #' . $a->object_id : '' }}@endif</td>
+                <td class="px-4 py-2">{{ $a->who ?? ($a->user_id ? '#' . $a->user_id : __('Administration du réseau')) }}</td>
+                <td class="px-4 py-2">@if ($a->action === 'test_data_reset'){{ __('Réinitialisation de la MUTUELLE TEST') }} @elseif ($a->action === 'identity_updated'){{ __('Identité et langue de la mutuelle modifiées') }} @else{{ isset(\App\Support\HealthAccessLog::LABELS[$a->object_type]) ? __(\App\Support\HealthAccessLog::LABELS[$a->object_type]) : $a->object_type }}{{ $a->object_id ? ' #' . $a->object_id : '' }}@endif</td>
                 <td class="px-4 py-2 text-ink/50">{{ $a->ip ?? '—' }}</td>
               </tr>
             @empty
-              <tr><td colspan="4" class="px-4 py-8 text-center text-ink/40">Aucun accès enregistré.</td></tr>
+              <tr><td colspan="4" class="px-4 py-8 text-center text-ink/40">{{ __('Aucun accès enregistré.') }}</td></tr>
             @endforelse
           </tbody>
         </table>

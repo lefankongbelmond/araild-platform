@@ -6,7 +6,7 @@
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">{{ $claim->member->last_name }} {{ $claim->member->first_name }}</h1>
       <p class="mt-1 text-sm text-ink/50">{{ __('mxconnect.claim.opened_on') }} {{ $claim->opened_on?->format('d/m/Y') }}@if ($health && $claim->reason) · {{ $claim->reason }}@endif</p>
-      @unless ($health)<p class="mt-1 text-xs text-ink/45">Vue « montants » : le détail médical (motif, actes) est réservé aux gestionnaires des prestations, au contrôleur et à l’administrateur.</p>@endunless
+      @unless ($health)<p class="mt-1 text-xs text-ink/45">{{ __('Vue « montants » : le détail médical (motif, actes) est réservé aux gestionnaires des prestations, au contrôleur et à l’administrateur.') }}</p>@endunless
     </div>
     <span class="rounded-full border px-3 py-1 text-sm {{ $claim->status === 'open' ? 'border-pine/30 text-pine' : 'border-ink/20 text-ink/50' }}">{{ __('mxconnect.claim.status_'.$claim->status) }}</span>
   </div>
@@ -43,7 +43,7 @@
               @php $pb = ['captured'=>'clay','validated'=>'pine','rejected'=>'ink/40','controlled'=>'sage'][$p->status] ?? 'ink/50'; @endphp
               <tr>
                 <td class="py-2">{{ $health ? $p->actType?->label : 'Prestation n° ' . $p->id }}
-                  @if ($p->source === 'provider')<span class="ml-1 rounded bg-mist px-1 text-[10px] text-ink/60">portail</span>@endif
+                  @if ($p->source === 'provider')<span class="ml-1 rounded bg-mist px-1 text-[10px] text-ink/60">{{ __('portail') }}</span>@endif
                   @if (($alerts[$p->id] ?? collect())->isNotEmpty())
                     <span class="ml-1 rounded bg-clay/10 px-1 text-[10px] text-clay">⚠ {{ $alerts[$p->id]->count() }}</span>
                   @endif
@@ -55,20 +55,20 @@
                 <td class="py-2 text-{{ $pb }}">{{ __('mxconnect.prestation.status_'.$p->status) }}</td>
                 <td class="py-2 text-right">
                   @if ($p->status === 'captured' && $p->isCapturedBy(auth()->user()))
-                    <span class="text-xs text-ink/45" title="Contrôle « 4 yeux »">Votre saisie : à valider par une autre personne</span>
+                    <span class="text-xs text-ink/45" title="{{ __('Contrôle « 4 yeux »') }}">{{ __('Votre saisie : à valider par une autre personne') }}</span>
                   @elseif ($p->status === 'captured' && \App\Support\TenantAccess::can('claims.prestations.validate'))
                     <form method="POST" action="{{ route('claims.prestations.validate', [$claim, $p]) }}" class="inline">@csrf<button class="text-xs text-pine hover:underline">{{ __('mxconnect.prestation.validate') }}</button></form>
                     {{-- Rejet motivé (2026-11-15) : le motif est montré au prestataire, jamais de diagnostic. --}}
                     <details class="ml-2 inline-block text-left align-top">
                       <summary class="cursor-pointer text-xs text-clay hover:underline">{{ __('mxconnect.prestation.reject') }}</summary>
                       <form method="POST" action="{{ route('claims.prestations.reject', [$claim, $p]) }}" class="mt-2 grid gap-2" style="min-width:14rem">@csrf
-                        <label class="text-xs text-ink/60" for="rej-{{ $p->id }}">Motif du rejet (visible par le prestataire, sans diagnostic)</label>
+                        <label class="text-xs text-ink/60" for="rej-{{ $p->id }}">{{ __('Motif du rejet (visible par le prestataire, sans diagnostic)') }}</label>
                         <textarea id="rej-{{ $p->id }}" name="note" required minlength="5" maxlength="500" rows="2" class="w-full rounded-md border border-ink/15 px-2 py-1 text-xs"></textarea>
-                        <button class="rounded-md bg-clay px-3 py-1 text-xs font-semibold text-white">Confirmer le rejet</button>
+                        <button class="rounded-md bg-clay px-3 py-1 text-xs font-semibold text-white">{{ __('Confirmer le rejet') }}</button>
                       </form>
                     </details>
                   @endif
-                  @if ($p->status === 'rejected' && $p->decision_note)<div class="mt-1 text-left text-xs text-ink/55" style="max-width:20rem">Motif : {{ $p->decision_note }}</div>@endif
+                  @if ($p->status === 'rejected' && $p->decision_note)<div class="mt-1 text-left text-xs text-ink/55" style="max-width:20rem">{{ __('Motif : :decision_note', ['decision_note' => $p->decision_note]) }}</div>@endif
                 </td>
               </tr>
             @empty
@@ -98,8 +98,8 @@
             <option value="reimbursement">{{ __('mxconnect.prestation.reimbursement') }}</option>
             <option value="tiers_payant">{{ __('mxconnect.prestation.tiers_payant') }}</option>
           </select>
-          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="emergency" value="1" class="mt-1"> Urgence (stabilisation du patient) : la carence ne s’applique pas aux garanties qui l’exemptent</label>
-          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="accident" value="1" class="mt-1"> Accident : délai de carence « accident » de la garantie, s’il est défini</label>
+          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="emergency" value="1" class="mt-1"> {{ __('Urgence (stabilisation du patient) : la carence ne s’applique pas aux garanties qui l’exemptent') }}</label>
+          <label class="col-span-2 flex items-start gap-2 text-sm"><input type="checkbox" name="accident" value="1" class="mt-1"> {{ __('Accident : délai de carence « accident » de la garantie, s’il est défini') }}</label>
         </div>
         <button class="mt-3 rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('mxconnect.prestation.add') }}</button>
       </form>
@@ -146,15 +146,15 @@
           @foreach ($claim->invoices as $inv)
             <div class="mt-2 rounded-md bg-mist px-3 py-2 text-sm">
               {{ __('mxconnect.settlement.invoice') }} #{{ $inv->id }}: <b>{{ __('mxconnect.settlement.status_'.$inv->status) }}</b> — {{ $currency->format($inv->amount_minor) }}
-              @if ($inv->provider_reference)<div class="text-xs text-ink/55">Réf. du prestataire : {{ $inv->provider_reference }}</div>@endif
+              @if ($inv->provider_reference)<div class="text-xs text-ink/55">{{ __('Réf. du prestataire : :provider_reference', ['provider_reference' => $inv->provider_reference]) }}</div>@endif
               @if ($inv->supporting_doc_path)
-                @if (\App\Support\TenantAccess::can('claims.invoice.document'))<a class="text-xs text-pine underline" href="{{ route('claims.invoice.document', [$claim, $inv]) }}">Facture PDF du prestataire</a>
-                @else<div class="text-xs text-ink/45">Facture PDF reçue (consultable par le gestionnaire des prestations ou le contrôleur)</div>@endif
+                @if (\App\Support\TenantAccess::can('claims.invoice.document'))<a class="text-xs text-pine underline" href="{{ route('claims.invoice.document', [$claim, $inv]) }}">{{ __('Facture PDF du prestataire') }}</a>
+                @else<div class="text-xs text-ink/45">{{ __('Facture PDF reçue (consultable par le gestionnaire des prestations ou le contrôleur)') }}</div>@endif
               @endif
-              @if ($inv->reference)<div class="text-xs text-ink/55">Facture {{ $inv->reference }}</div>@endif
+              @if ($inv->reference)<div class="text-xs text-ink/55">{{ __('Facture :reference', ['reference' => $inv->reference]) }}</div>@endif
               {{-- Phase 5 (2026-11-26) : contrôle des lignes et paiement (avec sa référence) se font dans le registre. --}}
               @if (\App\Support\TenantAccess::can('invoices.show'))
-                <a href="{{ route('invoices.show', $inv) }}" class="mt-1 block w-full rounded-md border border-pine px-3 py-1.5 text-center text-xs font-medium text-pine">{{ $inv->status === 'paid' || $inv->status === 'rejected' ? 'Voir la facture' : 'Contrôler ou payer la facture' }}</a>
+                <a href="{{ route('invoices.show', $inv) }}" class="mt-1 block w-full rounded-md border border-pine px-3 py-1.5 text-center text-xs font-medium text-pine">{{ $inv->status === 'paid' || $inv->status === 'rejected' ? __('Voir la facture') : __('Contrôler ou payer la facture') }}</a>
               @endif
             </div>
           @endforeach

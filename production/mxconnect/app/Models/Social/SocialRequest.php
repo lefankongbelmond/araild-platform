@@ -72,7 +72,9 @@ class SocialRequest extends Model
     }
     public function subtypeLabel(): ?string
     {
-        return (self::ENGAGEMENT_TYPES + self::SUPPORT_TYPES)[$this->subtype] ?? null;
+        $l = (self::ENGAGEMENT_TYPES + self::SUPPORT_TYPES)[$this->subtype] ?? null;
+
+        return $l === null ? null : __($l);
     }
 
     /** Ce sur quoi porte la demande (projet, opportunité ou l'organisation elle-même). */

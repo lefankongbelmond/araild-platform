@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reçu {{ $number }}</title>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ __('Reçu :number', ['number' => $number]) }}</title>
 <style>body{font-family:system-ui,sans-serif;color:#0B1F3A;max-width:640px;margin:2rem auto;padding:0 1rem}
 .head{display:flex;justify-content:space-between;gap:1rem;border-bottom:2px solid #0B2559;padding-bottom:.5rem}
 table{width:100%;border-collapse:collapse;margin-top:1rem}td,th{padding:.45rem 0;border-bottom:1px solid #eee;text-align:left}
@@ -7,23 +7,23 @@ table{width:100%;border-collapse:collapse;margin-top:1rem}td,th{padding:.45rem 0
 @media print{button{display:none}}</style></head>
 <body>
   <div class="head">
-    <div><strong>{{ $mutual }}</strong><br><span class="muted">Mutuelle de santé · MX-CONNECT</span>@if ($mxIdentity = \App\Support\MutualIdentity::line())<br><span class="muted">{{ $mxIdentity }}</span>@endif</div>
-    <div class="r"><strong>Reçu de cotisation</strong><br>{{ $number }}<br>{{ $day->format('d/m/Y') }}</div>
+    <div><strong>{{ $mutual }}</strong><br><span class="muted">{{ __('Mutuelle de santé · MX-CONNECT') }}</span>@if ($mxIdentity = \App\Support\MutualIdentity::line())<br><span class="muted">{{ $mxIdentity }}</span>@endif</div>
+    <div class="r"><strong>{{ __('Reçu de cotisation') }}</strong><br>{{ $number }}<br>{{ $day->format('d/m/Y') }}</div>
   </div>
   <table>
-    <tr><td>Adhérent</td><td class="r">{{ $member->last_name }} {{ $member->first_name }} ({{ $member->member_code }})</td></tr>
-    <tr><td>Mode</td><td class="r">{{ $mode }}@if ($reference) — réf. {{ $reference }}@endif</td></tr>
+    <tr><td>{{ __('Adhérent') }}</td><td class="r">{{ $member->last_name }} {{ $member->first_name }} ({{ $member->member_code }})</td></tr>
+    <tr><td>{{ __('Mode') }}</td><td class="r">{{ $mode }}@if ($reference) — {{ __('réf. :reference', ['reference' => $reference]) }}@endif</td></tr>
   </table>
   <table>
-    <thead><tr><th>Échéance réglée</th><th class="r">Montant</th></tr></thead>
+    <thead><tr><th>{{ __('Échéance réglée') }}</th><th class="r">{{ __('Montant') }}</th></tr></thead>
     <tbody>
       @foreach ($payments as $p)
-        <tr><td>{{ $p->schedule?->label() }}@if ($p->amount_minor < $p->schedule?->due_minor) <span class="muted">(acompte)</span>@endif</td><td class="r">{{ $currency->format($p->amount_minor) }}</td></tr>
+        <tr><td>{{ $p->schedule?->label() }}@if ($p->amount_minor < $p->schedule?->due_minor) <span class="muted">{{ __('(acompte)') }}</span>@endif</td><td class="r">{{ $currency->format($p->amount_minor) }}</td></tr>
       @endforeach
-      <tr class="total"><td>Total reçu</td><td class="r">{{ $currency->format($amount) }}</td></tr>
+      <tr class="total"><td>{{ __('Total reçu') }}</td><td class="r">{{ $currency->format($amount) }}</td></tr>
     </tbody>
   </table>
-  <p class="muted">Reste à payer sur l’échéancier après ce paiement : {{ $currency->format($balance) }}.</p>
-  <p class="muted" style="margin-top:2rem">Reçu généré par MX-CONNECT pour {{ $mutual }}. La plateforme ne détient aucun fonds : la somme a été reçue par la mutuelle.</p>
-  <button onclick="window.print()">Imprimer</button>
+  <p class="muted">{{ __('Reste à payer sur l’échéancier après ce paiement : :amount.', ['amount' => $currency->format($balance)]) }}</p>
+  <p class="muted" style="margin-top:2rem">{{ __('Reçu généré par MX-CONNECT pour :mutual. La plateforme ne détient aucun fonds : la somme a été reçue par la mutuelle.', ['mutual' => $mutual]) }}</p>
+  <button onclick="window.print()">{{ __('Imprimer') }}</button>
 </body></html>

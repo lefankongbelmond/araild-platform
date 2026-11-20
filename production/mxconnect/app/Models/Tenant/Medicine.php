@@ -33,7 +33,7 @@ class Medicine extends Model implements Auditable
 
     public function categoryLabel(): ?string
     {
-        return $this->category ? (self::CATEGORIES[$this->category][0] ?? $this->category) : null;
+        return $this->category ? (isset(self::CATEGORIES[$this->category][0]) ? __(self::CATEGORIES[$this->category][0]) : $this->category) : null;
     }
 
     public function categoryColor(): string

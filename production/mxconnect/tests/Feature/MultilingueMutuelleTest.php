@@ -74,6 +74,45 @@ it('affiche le back-office dans la langue de la mutuelle, sauf choix personnel',
     asAdmin()->get($h . '/parametres')->assertOk()->assertSee('dir="rtl"', false)->assertSee('إعدادات التعاضدية');
 });
 
+it('traduit le reste du back-office (M3b) : écrans métier et vocabulaire', function () {
+    $h = $this->host;
+    $this->mutual->forceFill(['locale_id' => Locale::where('code', 'pt')->value('id')])->save();
+
+    asAdmin()->get($h . '/cotisations')->assertOk()->assertSee('lang="pt"', false)
+        ->assertSee('Atualizar os calendários')->assertSee('Exportar (CSV)')->assertDontSee('Actualiser les échéanciers');
+    asAdmin()->get($h . '/comptabilite/journal')->assertOk()->assertSee('Débito')->assertDontSee('>Pièce<', false);
+    asAdmin()->get($h . '/pharmacie')->assertOk()->assertSee('Dispensas na farmácia');
+    asAdmin()->get($h . '/factures-prestataires')->assertOk()->assertSee('Exportar as linhas (CSV)');
+    asAdmin()->get($h . '/pilotage')->assertOk()->assertSee('Painel de pilotagem');
+});
+
+it('fournit dans chaque langue le vocabulaire (mxconnect.*) employé par le back-office', function () {
+    $keys = [];
+    $files = array_merge(
+        glob(resource_path('views/tenant/**/*.blade.php')) ?: [],
+        glob(resource_path('views/tenant/*/*/*.blade.php')) ?: [],
+        glob(resource_path('views/components/tenant/*.blade.php')) ?: [],
+        [resource_path('views/components/layouts/tenant.blade.php'), app_path('Support/TenantNav.php')],
+    );
+    foreach (array_unique($files) as $f) {
+        preg_match_all("/mxconnect\.([a-z_]+(?:\.[a-z_0-9]+)+)/", file_get_contents($f), $m);
+        $keys = array_merge($keys, $m[1]);
+    }
+    $keys = array_values(array_unique($keys));
+    $fr = require lang_path('fr/mxconnect.php');
+    expect(count($keys))->toBeGreaterThan(100);
+
+    foreach (['en', 'pt', 'es', 'ar', 'sw', 'ha'] as $code) {
+        $tr = require lang_path($code . '/mxconnect.php');
+        foreach ($keys as $k) {
+            if (! is_string(\Illuminate\Support\Arr::get($fr, $k))) {
+                continue;   // clé composée (tableau) ou absente du français : hors sujet
+            }
+            expect(\Illuminate\Support\Arr::get($tr, $k))->toBeString("mxconnect.$k manque en $code");
+        }
+    }
+});
+
 it('écrit aux adhérents sans langue choisie dans la langue de leur mutuelle', function () {
     $this->mutual->forceFill(['locale_id' => Locale::where('code', 'pt')->value('id')])->save();
     $acc = account('Ines');                       // aucun choix de langue sur le compte

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Impression de {{ $members->count() }} carte(s) de membre</title>
+  <title>{{ __('Impression de :count carte(s) de membre', ['count' => $members->count()]) }}</title>
   <link rel="stylesheet" href="{{ rtrim(config('app.url'), '/') }}/css/mx-tenant.css?v={{ config('mxconnect.asset_version') }}">
   <style>
     .mx-card svg[width]{width:100%!important;height:100%!important}
@@ -14,11 +14,11 @@
 </head>
 <body class="bg-paper p-6 font-sans text-ink">
   <div class="no-print mx-auto mb-6 flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-ink/[.05]">
-    <div><b class="text-[#0B1F3A]">{{ $members->count() }} carte(s) prête(s)</b><div class="text-xs text-ink/55">Format carte bancaire, 10 par page A4. Activez « Graphiques d’arrière-plan » dans la fenêtre d’impression.</div></div>
+    <div><b class="text-[#0B1F3A]">{{ __(':count carte(s) prête(s)', ['count' => $members->count()]) }}</b><div class="text-xs text-ink/55">{{ __('Format carte bancaire, 10 par page A4. Activez « Graphiques d’arrière-plan » dans la fenêtre d’impression.') }}</div></div>
     <div class="flex gap-2">
-      <button onclick="window.print()" class="rounded-xl bg-gradient-to-r from-leaf-500 to-leaf-600 px-4 py-2.5 text-sm font-bold text-white">Imprimer</button>
+      <button onclick="window.print()" class="rounded-xl bg-gradient-to-r from-leaf-500 to-leaf-600 px-4 py-2.5 text-sm font-bold text-white">{{ __('Imprimer') }}</button>
       <form method="POST" action="{{ route('cards.printed') }}">@csrf @foreach ($members as $m)<input type="hidden" name="ids[]" value="{{ $m->id }}">@endforeach
-        <button class="rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm font-semibold text-ink/70">Marquer comme imprimées</button></form>
+        <button class="rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm font-semibold text-ink/70">{{ __('Marquer comme imprimées') }}</button></form>
     </div>
   </div>
   <div class="sheet">

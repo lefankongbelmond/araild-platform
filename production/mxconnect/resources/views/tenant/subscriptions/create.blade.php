@@ -21,7 +21,7 @@
       <label class="block text-sm font-medium">{{ __('mxconnect.guarantee.plural') }}</label>
       <select name="guarantee_version_id" required class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm">
         @foreach ($versions as $v)
-          <option value="{{ $v->id }}">{{ $v->guarantee->name }} — V{{ $v->version_no }} ({{ $currency->format($v->base_contribution_minor) }} / {{ $v->periodicity }})</option>
+          <option value="{{ $v->id }}">{{ __(':name — V:version_no (:amount / :periodicity)', ['name' => $v->guarantee->name, 'version_no' => $v->version_no, 'amount' => $currency->format($v->base_contribution_minor), 'periodicity' => $v->periodicity]) }}</option>
         @endforeach
       </select>
       <p class="mt-1 text-xs text-ink/40">{{ __('mxconnect.subscription.amount_note') }}</p>

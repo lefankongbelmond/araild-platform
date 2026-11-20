@@ -1,7 +1,7 @@
-<x-layouts.tenant title="Messagerie">
+<x-layouts.tenant title="{{ __('Messagerie') }}">
   <x-tenant.hero icon="message" kicker="Réseau social" tone="brand">
-    <x-slot:title>Messagerie</x-slot:title>
-    <x-slot:subtitle>Messages privés envoyés par les membres du réseau depuis votre page publique. (Les messages des visiteurs non inscrits sont dans <a class="text-pine underline" href="{{ route('social-presence.messages') }}">Réseau social › Messages</a>.)</x-slot:subtitle>
+    <x-slot:title>{{ __('Messagerie') }}</x-slot:title>
+    <x-slot:subtitle>{{ __('Messages privés envoyés par les membres du réseau depuis votre page publique. (Les messages des visiteurs non inscrits sont dans') }} <a class="text-pine underline" href="{{ route('social-presence.messages') }}">{{ __('Réseau social › Messages') }}</a>.)</x-slot:subtitle>
   </x-tenant.hero>
   <div class="mt-6 flex gap-2 text-sm">
     @foreach ([null => 'Ouvertes', 'non-lus' => 'Non lues', 'clos' => 'Closes'] as $k => $l)
@@ -16,7 +16,7 @@
         <span class="whitespace-nowrap text-xs text-ink/45">{{ $c->last_message_at?->format('d/m/Y H:i') }}</span>
       </a>
     @empty
-      <p class="px-4 py-10 text-center text-sm text-ink/45">Aucune conversation.</p>
+      <p class="px-4 py-10 text-center text-sm text-ink/45">{{ __('Aucune conversation.') }}</p>
     @endforelse
   </div>
   <div class="mt-4">{{ $items->links() }}</div>

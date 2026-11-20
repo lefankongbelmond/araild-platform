@@ -23,7 +23,7 @@
           @php $badge = ['captured'=>'clay','validated'=>'pine','terminated'=>'ink/40'][$s->status->value] ?? 'ink/40'; @endphp
           <tr>
             <td class="px-4 py-3 font-medium">{{ $s->member?->last_name }} {{ $s->member?->first_name }}</td>
-            <td class="px-4 py-3">{{ $s->guaranteeVersion?->guarantee?->name }} <span class="text-xs text-ink/40">V{{ $s->guaranteeVersion?->version_no }}</span></td>
+            <td class="px-4 py-3">{{ $s->guaranteeVersion?->guarantee?->name }} <span class="text-xs text-ink/40">{{ __('V:version_no', ['version_no' => $s->guaranteeVersion?->version_no]) }}</span></td>
             <td class="px-4 py-3">{{ $currency->format($s->contribution_minor) }} <span class="text-xs text-ink/40">/ {{ $s->guaranteeVersion?->periodicity }}</span></td>
             <td class="px-4 py-3"><span class="rounded-full border border-{{ $badge }}/30 px-2 py-0.5 text-xs text-{{ $badge }}">{{ __('mxconnect.subscription.status_'.$s->status->value) }}</span></td>
             <td class="px-4 py-3 text-right"><a href="{{ route('subscriptions.show', $s) }}" class="text-pine hover:underline">{{ __('mxconnect.member.open') }}</a></td>

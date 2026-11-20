@@ -93,7 +93,7 @@
         <label class="block"><span class="sr-only">{{ __('Catégorie') }}</span>
           <select name="categorie" class="h-11 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
             <option value="">{{ __('Toutes les catégories') }}</option>
-            @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected($f['category'] === $k)>{{ $l }}</option> @endforeach
+            @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected($f['category'] === $k)>{{ __($l) }}</option> @endforeach
           </select>
         </label>
         <label class="block"><span class="sr-only">{{ __('Fournisseur') }}</span>
@@ -215,7 +215,7 @@
             <label for="m-cat" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Catégorie') }} <span class="text-clay">*</span></label>
             <select id="m-cat" name="category" required class="{{ $field }} {{ $errors->has('category') ? 'border-clay' : 'border-ink/10' }}">
               <option value="">{{ __('Sélectionner une catégorie') }}</option>
-              @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected(old('category', $e?->category) === $k)>{{ $l }}</option> @endforeach
+              @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected(old('category', $e?->category) === $k)>{{ __($l) }}</option> @endforeach
             </select>
             @error('category')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
           </div>

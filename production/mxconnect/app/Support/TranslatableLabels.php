@@ -43,6 +43,15 @@ class TranslatableLabels
         [\App\Models\Tenant\Complaint::class, 'CATEGORIES'], [\App\Models\Tenant\Complaint::class, 'STATUS_LABELS'],
         [\App\Models\Tenant\MemberChangeRequest::class, 'KINDS'], [\App\Models\Tenant\MemberChangeRequest::class, 'STATUSES'],
         [\App\Services\Tenant\MemberSelfService::class, 'PRESTATION_STATUS'], [\App\Services\Tenant\MemberSelfService::class, 'SCHEDULE_STATUS'],
+        // Back-office de la mutuelle (M3b)
+        [\App\Models\Tenant\AccountingEntry::class, 'KINDS'], [\App\Models\Tenant\AccountingEntry::class, 'STATUSES'],
+        [\App\Models\Tenant\ContributionPayment::class, 'MODES'], [\App\Http\Controllers\Tenant\EngagementController::class, 'TABS'],
+        [\App\Models\Tenant\ProviderInvoice::class, 'STATUSES'], [\App\Models\Tenant\ProviderInvoiceLine::class, 'STATUSES'],
+        [\App\Models\Tenant\InvoiceEvent::class, 'LABELS'], [\App\Models\Tenant\Preauthorization::class, 'STATUSES'],
+        [\App\Support\RightsStatus::class, 'HINTS'],
+        [\App\Services\Tenant\PilotageService::class, 'STATUSES'], [\App\Services\TestDataResetService::class, 'LABELS'],
+        [\App\Support\HealthAccessLog::class, 'LABELS'], [\App\Models\Tenant\DispensationLine::class, 'REASONS'],
+        [\App\Services\Tenant\ProviderBillingService::class, 'MODES'],
     ];
 
     /** Tous les textes (chaînes) de ces listes, à plat et sans doublon. */
@@ -87,6 +96,12 @@ class TranslatableLabels
             foreach ($cards as [$title, $desc]) {
                 $out[] = $title;
                 $out[] = $desc;
+            }
+        }
+        // Listes à deux colonnes [libellé, teinte] : seul le libellé est un texte.
+        foreach ([\App\Support\RightsStatus::LABELS, \App\Models\Tenant\Medicine::CATEGORIES] as $list) {
+            foreach ($list as [$label]) {
+                $out[] = $label;
             }
         }
         foreach (TenantAccess::SUMMARY as $section => $actions) {

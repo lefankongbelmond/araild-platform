@@ -22,7 +22,7 @@ class ContributionSchedule extends Model
     /** Libellé lisible : « Droit d'adhésion » ou la période (« 2026-03 », « 2026-T2 »…). */
     public function label(): string
     {
-        return $this->isFee() ? 'Droit d’adhésion' : (string) $this->period;
+        return $this->isFee() ? __('Droit d’adhésion') : (string) $this->period;
     }
     public function payments()     { return $this->hasMany(ContributionPayment::class, 'schedule_id'); }
 

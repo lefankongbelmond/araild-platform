@@ -6,12 +6,12 @@
 <x-layouts.tenant :title="__('mxconnect.contribution.plural')">
   <x-tenant.hero icon="coins" kicker="Facturation et finances" tone="leaf">
     <x-slot:title>{{ __('mxconnect.contribution.plural') }}</x-slot:title>
-    <x-slot:subtitle>Échéances des adhérents, retards et encaissements. Pour encaisser un montant partiel ou plusieurs échéances, ouvrez le relevé de l’adhérent. Chaque encaissement produit un reçu et un mouvement de trésorerie.</x-slot:subtitle>
+    <x-slot:subtitle>{{ __('Échéances des adhérents, retards et encaissements. Pour encaisser un montant partiel ou plusieurs échéances, ouvrez le relevé de l’adhérent. Chaque encaissement produit un reçu et un mouvement de trésorerie.') }}</x-slot:subtitle>
     <x-slot:actions>
-      @acces('contributions.policy')<a href="{{ route('contributions.policy') }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Règle de suspension</a>@endacces
-      @acces('contributions.export')<a href="{{ route('contributions.export', request()->only('status', 'q')) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Exporter (CSV)</a>@endacces
+      @acces('contributions.policy')<a href="{{ route('contributions.policy') }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">{{ __('Règle de suspension') }}</a>@endacces
+      @acces('contributions.export')<a href="{{ route('contributions.export', request()->only('status', 'q')) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">{{ __('Exporter (CSV)') }}</a>@endacces
       @if ($canRefresh)
-        <form method="POST" action="{{ route('contributions.refresh') }}">@csrf<button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">Actualiser les échéanciers</button></form>
+        <form method="POST" action="{{ route('contributions.refresh') }}">@csrf<button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">{{ __('Actualiser les échéanciers') }}</button></form>
       @endif
     </x-slot:actions>
   </x-tenant.hero>
@@ -19,13 +19,13 @@
 
   @if ($cancellations->count())
     <section class="mt-6 rounded-lg border border-amber-200 bg-white p-4">
-      <h2 class="font-semibold">Annulations d’encaissement à décider ({{ $cancellations->count() }})</h2>
+      <h2 class="font-semibold">{{ __('Annulations d’encaissement à décider (:count)', ['count' => $cancellations->count()]) }}</h2>
       <ul class="mt-2 divide-y divide-ink/5 text-sm">
         @foreach ($cancellations as $x)
           <li class="flex flex-wrap items-center justify-between gap-2 py-2">
             <span class="min-w-0"><span class="font-mono text-xs">{{ $x->collection_ref }}</span> · {{ $x->member?->last_name }} {{ $x->member?->first_name }} · {{ $c->format($x->amount_minor) }}
-              <span class="block text-xs text-ink/55">demandée par {{ $x->requestedBy?->name }} — {{ $x->reason }}</span></span>
-            @if ($x->member)<a href="{{ route('contributions.member', $x->member) }}" class="text-sm text-pine hover:underline">{{ $canDecide ? 'Décider' : 'Voir' }}</a>@endif
+              <span class="block text-xs text-ink/55">{{ __('demandée par :name — :reason', ['name' => $x->requestedBy?->name, 'reason' => $x->reason]) }}</span></span>
+            @if ($x->member)<a href="{{ route('contributions.member', $x->member) }}" class="text-sm text-pine hover:underline">{{ $canDecide ? __('Décider') : __('Voir') }}</a>@endif
           </li>
         @endforeach
       </ul>
@@ -38,16 +38,16 @@
       <a href="{{ route('contributions.index', ['status' => $k] + request()->only('q')) }}" class="rounded-lg border bg-white p-4 {{ $status === $k ? 'border-pine' : 'border-ink/10' }}" @if ($status === $k) aria-current="page" @endif>
         <div class="text-xs font-semibold uppercase tracking-wide text-ink/50">{{ $label }}</div>
         <div class="mt-1 text-xl font-semibold tabular-nums {{ $k === 'overdue' && $t['count'] ? 'text-clay' : '' }}">{{ $c->format($k === 'paid' ? $t['paid'] : max(0, $t['due'] - $t['paid'])) }}</div>
-        <div class="text-xs text-ink/55">{{ $t['count'] }} échéance(s){{ $k !== 'paid' && $t['paid'] ? ' · acomptes déduits' : '' }}</div>
+        <div class="text-xs text-ink/55">{{ __(':count échéance(s)', ['count' => $t['count']]) }}{{ $k !== 'paid' && $t['paid'] ? ' · ' . __('acomptes déduits') : '' }}</div>
       </a>
     @endforeach
   </div>
 
   <form method="GET" class="mt-4 flex flex-wrap items-end gap-2">
     <input type="hidden" name="status" value="{{ $status }}">
-    <label class="min-w-0 text-xs text-ink/60">Adhérent (nom, code, téléphone)<input name="q" value="{{ request('q') }}" class="{{ $f }} mt-1 block" style="max-width:100%"></label>
-    <button class="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white">Rechercher</button>
-    @if (request('q'))<a href="{{ route('contributions.index', ['status' => $status]) }}" class="px-2 py-2 text-sm text-ink/60 hover:underline">Effacer</a>@endif
+    <label class="min-w-0 text-xs text-ink/60">{{ __('Adhérent (nom, code, téléphone)') }}<input name="q" value="{{ request('q') }}" class="{{ $f }} mt-1 block" style="max-width:100%"></label>
+    <button class="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white">{{ __('Rechercher') }}</button>
+    @if (request('q'))<a href="{{ route('contributions.index', ['status' => $status]) }}" class="px-2 py-2 text-sm text-ink/60 hover:underline">{{ __('Effacer') }}</a>@endif
   </form>
 
   <div class="relative mt-4 overflow-x-auto rounded-lg border border-ink/10 bg-white">
@@ -57,8 +57,8 @@
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.contribution.period') }}</th>
         <th class="px-4 py-2 font-medium">{{ __('mxconnect.contribution.due') }}</th>
         <th class="px-4 py-2 font-medium text-right">{{ __('mxconnect.contribution.amount') }}</th>
-        <th class="px-4 py-2 font-medium text-right">{{ $status === 'paid' ? 'Payé' : 'Reste à payer' }}</th>
-        <th class="px-4 py-2"><span class="sr-only">Actions</span></th>
+        <th class="px-4 py-2 font-medium text-right">{{ $status === 'paid' ? __('Payé') : __('Reste à payer') }}</th>
+        <th class="px-4 py-2"><span class="sr-only">{{ __('Actions') }}</span></th>
       </tr></thead>
       <tbody class="divide-y divide-ink/5">
         @forelse ($schedules as $sch)
@@ -72,18 +72,18 @@
             <td class="px-4 py-3 whitespace-nowrap {{ $sch->status === 'overdue' ? 'text-clay' : '' }}">{{ $sch->due_date?->format('d/m/Y') }}</td>
             <td class="px-4 py-3 text-right tabular-nums whitespace-nowrap">{{ $c->format($sch->due_minor) }}</td>
             <td class="px-4 py-3 text-right tabular-nums whitespace-nowrap">{{ $c->format($status === 'paid' ? $paid : $rest) }}
-              @if ($status !== 'paid' && $paid > 0)<div class="text-xs text-ink/50">acompte {{ $c->format($paid) }}</div>@endif</td>
+              @if ($status !== 'paid' && $paid > 0)<div class="text-xs text-ink/50">{{ __('acompte :amount', ['amount' => $c->format($paid)]) }}</div>@endif</td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
               @if ($sch->status !== 'paid' && $canCollect)
                 <form method="POST" action="{{ route('contributions.pay', $sch) }}" class="inline-flex items-center gap-2" onsubmit="return confirm('Encaisser {{ $c->format($rest) }} pour {{ $sch->label() }} ?')">@csrf
-                  <select name="mode" class="rounded-md border border-ink/15 px-2 py-1 text-xs" aria-label="Mode">
+                  <select name="mode" class="rounded-md border border-ink/15 px-2 py-1 text-xs" aria-label="{{ __('Mode') }}">
                     <option value="cash">{{ __('mxconnect.contribution.cash') }}</option>
-                    <option value="group">Versement groupé</option>
+                    <option value="group">{{ __('Versement groupé') }}</option>
                   </select>
-                  <button class="text-pine hover:underline">Solder</button>
+                  <button class="text-pine hover:underline">{{ __('Solder') }}</button>
                 </form>
               @elseif ($m)
-                <a href="{{ route('contributions.member', $m) }}" class="text-xs text-pine hover:underline">Relevé</a>
+                <a href="{{ route('contributions.member', $m) }}" class="text-xs text-pine hover:underline">{{ __('Relevé') }}</a>
               @endif
             </td>
           </tr>

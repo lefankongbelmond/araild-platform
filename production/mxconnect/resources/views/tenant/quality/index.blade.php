@@ -30,7 +30,7 @@
               <td class="px-4 py-2 text-right font-medium {{ $c['total']===0 ? 'text-ink/30' : ($c['rate'] >= 0.8 ? 'text-sage' : 'text-clay') }}">
                 {{ $c['total'] > 0 ? number_format($c['rate']*100,0).'%' : 'n/a' }}
               </td>
-              <td class="px-4 py-2 text-right text-ink/40">×{{ $c['weight'] }}</td>
+              <td class="px-4 py-2 text-right text-ink/40">{{ __('×:weight', ['weight' => $c['weight']]) }}</td>
             </tr>
           @endforeach
         </tbody>

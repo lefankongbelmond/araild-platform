@@ -19,19 +19,19 @@
       </div>
       {{-- Échanges avec l'adhérent (portail adhérent, 2026-11-20) --}}
       <div class="rounded-lg border border-ink/10 bg-white p-4">
-        <h2 class="font-medium">Échanges avec l’adhérent</h2>
-        @if ($complaint->category)<p class="text-xs text-ink/50">{{ \App\Models\Tenant\Complaint::CATEGORIES[$complaint->category] ?? $complaint->category }} · envoyée depuis le portail adhérent</p>@endif
+        <h2 class="font-medium">{{ __('Échanges avec l’adhérent') }}</h2>
+        @if ($complaint->category)<p class="text-xs text-ink/50">{{ __(':category · envoyée depuis le portail adhérent', ['category' => \App\Models\Tenant\Complaint::CATEGORIES[$complaint->category] ?? $complaint->category]) }}</p>@endif
         <div class="mt-2 space-y-2.5">
           @forelse ($complaint->messages as $msg)
-            <div class="rounded-md {{ $msg->author === 'member' ? 'bg-mist' : 'border border-ink/10' }} p-3 text-sm"><p class="whitespace-pre-line">{{ $msg->body }}</p><p class="mt-1 text-xs text-ink/50">{{ $msg->author === 'member' ? 'Adhérent' : 'Mutuelle' }} · {{ $msg->created_at?->format('d/m/Y H:i') }}</p></div>
+            <div class="rounded-md {{ $msg->author === 'member' ? 'bg-mist' : 'border border-ink/10' }} p-3 text-sm"><p class="whitespace-pre-line">{{ $msg->body }}</p><p class="mt-1 text-xs text-ink/50">{{ $msg->author === 'member' ? __('Adhérent') : __('Mutuelle') }} · {{ $msg->created_at?->format('d/m/Y H:i') }}</p></div>
           @empty
-            <p class="text-sm text-ink/50">Aucun échange.</p>
+            <p class="text-sm text-ink/50">{{ __('Aucun échange.') }}</p>
           @endforelse
         </div>
         @if ($complaint->member_id && $complaint->status !== 'closed' && \App\Support\TenantAccess::can('complaints.reply'))
           <form method="POST" action="{{ route('complaints.reply', $complaint) }}" class="mt-3 space-y-2">@csrf
-            <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-md border-ink/20 px-3 py-2 text-sm" placeholder="Réponse à l’adhérent (visible dans son portail, sans donnée médicale)"></textarea>
-            <button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">Répondre</button>
+            <textarea name="body" rows="3" required maxlength="3000" class="w-full rounded-md border-ink/20 px-3 py-2 text-sm" placeholder="{{ __('Réponse à l’adhérent (visible dans son portail, sans donnée médicale)') }}"></textarea>
+            <button class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">{{ __('Répondre') }}</button>
           </form>
         @endif
       </div>

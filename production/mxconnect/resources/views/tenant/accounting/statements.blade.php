@@ -13,14 +13,14 @@
   @include('tenant.accounting._nav')
   <x-tenant.hero icon="book" kicker="Comptabilité SYSCOHADA" tone="violet">
     <x-slot:title>{{ $title }}</x-slot:title>
-    <x-slot:subtitle>{{ tenant('name') }} — {{ $etat === 'sheet' ? 'situation au ' . $to->format('d/m/Y') : 'du ' . $from->format('d/m/Y') . ' au ' . $to->format('d/m/Y') }} (exercice {{ $year }}). Calculé à l’instant depuis le journal : écritures validées seulement ; montants en {{ $c->code }}, jamais convertis.</x-slot:subtitle>
+    <x-slot:subtitle>{{ tenant('name') }} — {{ $etat === 'sheet' ? __('situation au :date', ['date' => $to->format('d/m/Y')]) : __('du :from au :to', ['from' => $from->format('d/m/Y'), 'to' => $to->format('d/m/Y')]) }} {{ __('(exercice :year).', ['year' => $year]) }} {{ __('Calculé à l’instant depuis le journal : écritures validées seulement ; montants en :currency, jamais convertis.', ['currency' => $c->code]) }}</x-slot:subtitle>
     <x-slot:actions>
-      <button type="button" onclick="window.print()" class="print:hidden rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Imprimer</button>
-      <a href="{{ route('accounting.statements.export', ['etat' => $etat] + $periodQuery + ($etat === 'ledger' && ! empty($ledger) ? ['compte' => request('compte', $ledger['account']->number)] : [])) }}" class="print:hidden rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">Exporter (CSV)</a>
+      <button type="button" onclick="window.print()" class="print:hidden rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">{{ __('Imprimer') }}</button>
+      <a href="{{ route('accounting.statements.export', ['etat' => $etat] + $periodQuery + ($etat === 'ledger' && ! empty($ledger) ? ['compte' => request('compte', $ledger['account']->number)] : [])) }}" class="print:hidden rounded-md bg-pine px-4 py-2 text-sm font-medium text-white">{{ __('Exporter (CSV)') }}</a>
     </x-slot:actions>
   </x-tenant.hero>
 
-  <nav class="print:hidden mt-5 flex flex-wrap gap-2" aria-label="États comptables">
+  <nav class="print:hidden mt-5 flex flex-wrap gap-2" aria-label="{{ __('États comptables') }}">
     @foreach ($tabs as $k => [$route, $label])
       <a href="{{ route($route, $periodQuery) }}" @if ($k === $etat) aria-current="page" @endif
          class="rounded-full border px-4 py-1.5 text-sm font-medium {{ $k === $etat ? 'border-pine bg-pine text-white' : 'border-ink/15 bg-white text-ink/70 hover:bg-mist' }}">{{ $label }}</a>
@@ -30,42 +30,42 @@
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
   <form method="GET" class="print:hidden mt-4 flex flex-wrap items-end gap-2">
-    <label class="text-xs text-ink/60">Exercice<select name="exercice" class="{{ $f }} mt-1 block">
+    <label class="text-xs text-ink/60">{{ __('Exercice') }}<select name="exercice" class="{{ $f }} mt-1 block">
       @foreach ($years as $y)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endforeach
     </select></label>
     @if ($etat !== 'sheet')
-      <label class="text-xs text-ink/60">Du (facultatif)<input type="date" name="du" value="{{ request('du') }}" class="{{ $f }} mt-1 block"></label>
+      <label class="text-xs text-ink/60">{{ __('Du (facultatif)') }}<input type="date" name="du" value="{{ request('du') }}" class="{{ $f }} mt-1 block"></label>
     @endif
-    <label class="text-xs text-ink/60">{{ $etat === 'sheet' ? 'Situation au (facultatif)' : 'Au (facultatif)' }}<input type="date" name="au" value="{{ request('au') }}" class="{{ $f }} mt-1 block"></label>
+    <label class="text-xs text-ink/60">{{ $etat === 'sheet' ? __('Situation au (facultatif)') : __('Au (facultatif)') }}<input type="date" name="au" value="{{ request('au') }}" class="{{ $f }} mt-1 block"></label>
     @if ($etat === 'ledger' && count($accounts))
-      <label class="text-xs text-ink/60" style="max-width:100%">Compte<select name="compte" class="{{ $f }} mt-1 block" style="max-width:100%">
+      <label class="text-xs text-ink/60" style="max-width:100%">{{ __('Compte') }}<select name="compte" class="{{ $f }} mt-1 block" style="max-width:100%">
         @foreach ($accounts as $a)<option value="{{ $a->number }}" @selected($ledger && $ledger['account']->id === $a->id)>{{ $a->number }} — {{ $a->label }}</option>@endforeach
       </select></label>
     @endif
-    <button class="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white">Afficher</button>
+    <button class="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white">{{ __('Afficher') }}</button>
   </form>
 
   @if ($closed)
-    <div class="mt-4 rounded-md border border-ink/10 bg-mist px-4 py-3 text-sm text-ink/70">Exercice {{ $year }} clôturé le {{ $closed->closed_at?->format('d/m/Y') }} : les états de {{ $year }} sont présentés avant les écritures de clôture ; à partir de {{ $year + 1 }}, le résultat figure en compte 131 (bénéfice) ou 139 (perte).</div>
+    <div class="mt-4 rounded-md border border-ink/10 bg-mist px-4 py-3 text-sm text-ink/70">{{ __('Exercice :year clôturé le :date : les états de :year2 sont présentés avant les écritures de clôture ; à partir de :value, le résultat figure en compte 131 (bénéfice) ou 139 (perte).', ['year' => $year, 'date' => $closed->closed_at?->format('d/m/Y'), 'year2' => $year, 'value' => $year + 1]) }}</div>
   @endif
   @if ($pending > 0)
-    <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">{{ $pending }} écriture(s) de la période attendent encore leur validation : elles ne sont pas comptées ici.</div>
+    <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">{{ __(':pending écriture(s) de la période attendent encore leur validation : elles ne sont pas comptées ici.', ['pending' => $pending]) }}</div>
   @endif
 
   @if ($etat === 'balance')
     <div class="relative mt-6 overflow-x-auto rounded-lg border border-ink/10 bg-white">
       <table class="w-full text-sm">
         <thead class="bg-mist text-left text-ink/60">
-          <tr><th class="{{ $th }}" rowspan="2">Compte</th><th class="{{ $th }}" rowspan="2">Intitulé</th>
-            <th class="{{ $th }} text-center" colspan="2">Soldes d’ouverture</th><th class="{{ $th }} text-center" colspan="2">Mouvements de la période</th><th class="{{ $th }} text-center" colspan="2">Soldes de clôture</th></tr>
-          <tr>@for ($i = 0; $i < 3; $i++)<th class="{{ $th }} text-right">Débit</th><th class="{{ $th }} text-right">Crédit</th>@endfor</tr>
+          <tr><th class="{{ $th }}" rowspan="2">{{ __('Compte') }}</th><th class="{{ $th }}" rowspan="2">{{ __('Intitulé') }}</th>
+            <th class="{{ $th }} text-center" colspan="2">{{ __('Soldes d’ouverture') }}</th><th class="{{ $th }} text-center" colspan="2">{{ __('Mouvements de la période') }}</th><th class="{{ $th }} text-center" colspan="2">{{ __('Soldes de clôture') }}</th></tr>
+          <tr>@for ($i = 0; $i < 3; $i++)<th class="{{ $th }} text-right">{{ __('Débit') }}</th><th class="{{ $th }} text-right">{{ __('Crédit') }}</th>@endfor</tr>
         </thead>
         <tbody class="divide-y divide-ink/5">
           @php $class = null; @endphp
           @forelse ($balance['rows'] as $r)
             @if ($r['class'] !== $class)
               @php $class = $r['class']; @endphp
-              <tr class="bg-mist/50"><td colspan="8" class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-ink/50">Classe {{ $class }}</td></tr>
+              <tr class="bg-mist/50"><td colspan="8" class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-ink/50">{{ __('Classe :class', ['class' => $class]) }}</td></tr>
             @endif
             <tr>
               <td class="{{ $td }} font-mono">{{ $r['number'] }}</td>
@@ -75,32 +75,32 @@
               <td class="{{ $num }} font-medium">{{ $fmt($r['close_d']) }}</td><td class="{{ $num }} font-medium">{{ $fmt($r['close_c']) }}</td>
             </tr>
           @empty
-            <tr><td colspan="8" class="px-4 py-10 text-center text-ink/45">Aucune écriture validée sur cette période.</td></tr>
+            <tr><td colspan="8" class="px-4 py-10 text-center text-ink/45">{{ __('Aucune écriture validée sur cette période.') }}</td></tr>
           @endforelse
         </tbody>
         @if (count($balance['rows']))
           <tfoot class="border-t border-ink/15 font-semibold"><tr>
-            <td class="{{ $td }}" colspan="2">Totaux</td>
+            <td class="{{ $td }}" colspan="2">{{ __('Totaux') }}</td>
             @foreach (['open_d', 'open_c', 'mov_d', 'mov_c', 'close_d', 'close_c'] as $k)<td class="{{ $num }}">{{ $money($balance['totals'][$k]) }}</td>@endforeach
           </tr></tfoot>
         @endif
       </table>
     </div>
-    <p class="mt-3 text-sm {{ $balance['balanced'] ? 'text-pine' : 'text-clay' }}">{{ $balance['balanced'] ? '✓ Balance équilibrée : total des débits = total des crédits, dans chaque colonne.' : '⚠ Balance déséquilibrée : signalez-le à l’administrateur de la plateforme.' }}</p>
+    <p class="mt-3 text-sm {{ $balance['balanced'] ? 'text-pine' : 'text-clay' }}">{{ $balance['balanced'] ? __('✓ Balance équilibrée : total des débits = total des crédits, dans chaque colonne.') : __('⚠ Balance déséquilibrée : signalez-le à l’administrateur de la plateforme.') }}</p>
 
   @elseif ($etat === 'ledger')
     @if (! $ledger)
-      <div class="mt-6 rounded-lg border border-ink/10 bg-white px-4 py-10 text-center text-sm text-ink/45">Aucune écriture validée dans le journal pour l’instant.</div>
+      <div class="mt-6 rounded-lg border border-ink/10 bg-white px-4 py-10 text-center text-sm text-ink/45">{{ __('Aucune écriture validée dans le journal pour l’instant.') }}</div>
     @else
-      <h2 class="mt-6 font-semibold">{{ $ledger['account']->number }} — {{ $ledger['account']->label }} <span class="text-sm font-normal text-ink/50">(classe {{ $ledger['account']->class }})</span></h2>
+      <h2 class="mt-6 font-semibold">{{ $ledger['account']->number }} — {{ $ledger['account']->label }} <span class="text-sm font-normal text-ink/50">{{ __('(classe :class)', ['class' => $ledger['account']->class]) }}</span></h2>
       <div class="relative mt-2 overflow-x-auto rounded-lg border border-ink/10 bg-white">
         <table class="w-full text-sm">
           <thead class="bg-mist text-left text-ink/60"><tr>
-            <th class="{{ $th }}">Date</th><th class="{{ $th }}">Pièce</th><th class="{{ $th }}">Libellé</th><th class="{{ $th }}">Contrepartie</th>
-            <th class="{{ $th }} text-right">Débit</th><th class="{{ $th }} text-right">Crédit</th><th class="{{ $th }} text-right">Solde</th>
+            <th class="{{ $th }}">{{ __('Date') }}</th><th class="{{ $th }}">{{ __('Pièce') }}</th><th class="{{ $th }}">{{ __('Libellé') }}</th><th class="{{ $th }}">{{ __('Contrepartie') }}</th>
+            <th class="{{ $th }} text-right">{{ __('Débit') }}</th><th class="{{ $th }} text-right">{{ __('Crédit') }}</th><th class="{{ $th }} text-right">{{ __('Solde') }}</th>
           </tr></thead>
           <tbody class="divide-y divide-ink/5">
-            <tr class="text-ink/60"><td class="{{ $td }}" colspan="6">Solde d’ouverture au {{ $from->format('d/m/Y') }}</td><td class="{{ $num }}">{{ $money($ledger['opening']) }}</td></tr>
+            <tr class="text-ink/60"><td class="{{ $td }}" colspan="6">{{ __('Solde d’ouverture au :date', ['date' => $from->format('d/m/Y')]) }}</td><td class="{{ $num }}">{{ $money($ledger['opening']) }}</td></tr>
             @forelse ($ledger['rows'] as $r)
               <tr>
                 <td class="{{ $td }} whitespace-nowrap">{{ $r['date']?->format('d/m/Y') }}</td>
@@ -110,16 +110,16 @@
                 <td class="{{ $num }}">{{ $fmt($r['debit']) }}</td><td class="{{ $num }}">{{ $fmt($r['credit']) }}</td><td class="{{ $num }}">{{ $money($r['balance']) }}</td>
               </tr>
             @empty
-              <tr><td colspan="7" class="px-4 py-6 text-center text-ink/45">Aucun mouvement sur cette période.</td></tr>
+              <tr><td colspan="7" class="px-4 py-6 text-center text-ink/45">{{ __('Aucun mouvement sur cette période.') }}</td></tr>
             @endforelse
           </tbody>
           <tfoot class="border-t border-ink/15 font-semibold"><tr>
-            <td class="{{ $td }}" colspan="4">Totaux et solde de clôture au {{ $to->format('d/m/Y') }}</td>
+            <td class="{{ $td }}" colspan="4">{{ __('Totaux et solde de clôture au :date', ['date' => $to->format('d/m/Y')]) }}</td>
             <td class="{{ $num }}">{{ $money($ledger['debit']) }}</td><td class="{{ $num }}">{{ $money($ledger['credit']) }}</td><td class="{{ $num }}">{{ $money($ledger['closing']) }}</td>
           </tr></tfoot>
         </table>
       </div>
-      <p class="mt-3 text-xs text-ink/50">Solde positif : débiteur ; négatif : créditeur. Comptes de gestion (classes 6 à 8) : le solde repart de zéro au 1er janvier.</p>
+      <p class="mt-3 text-xs text-ink/50">{{ __('Solde positif : débiteur ; négatif : créditeur. Comptes de gestion (classes 6 à 8) : le solde repart de zéro au 1er janvier.') }}</p>
     @endif
 
   @elseif ($etat === 'income')
@@ -149,9 +149,9 @@
     @endif
     <section class="mt-6 rounded-lg border border-ink/10 bg-white p-5">
       <dl class="divide-y divide-ink/5 text-sm">
-        <div class="flex flex-wrap justify-between gap-2 py-2"><dt class="text-ink/60">Résultat des activités ordinaires (produits − charges)</dt><dd class="font-semibold tabular-nums">{{ $money($income['resultat_ordinaire']) }}</dd></div>
-        @if ($income['resultat_hao'] !== 0)<div class="flex flex-wrap justify-between gap-2 py-2"><dt class="text-ink/60">Résultat hors activités ordinaires</dt><dd class="font-semibold tabular-nums">{{ $money($income['resultat_hao']) }}</dd></div>@endif
-        <div class="flex flex-wrap justify-between gap-2 py-3" style="font-size:1rem"><dt class="font-semibold">Résultat net : {{ $res > 0 ? 'excédent' : ($res < 0 ? 'déficit' : 'équilibre') }}</dt><dd class="font-semibold tabular-nums {{ $res < 0 ? 'text-clay' : 'text-pine' }}">{{ $money($res) }}</dd></div>
+        <div class="flex flex-wrap justify-between gap-2 py-2"><dt class="text-ink/60">{{ __('Résultat des activités ordinaires (produits − charges)') }}</dt><dd class="font-semibold tabular-nums">{{ $money($income['resultat_ordinaire']) }}</dd></div>
+        @if ($income['resultat_hao'] !== 0)<div class="flex flex-wrap justify-between gap-2 py-2"><dt class="text-ink/60">{{ __('Résultat hors activités ordinaires') }}</dt><dd class="font-semibold tabular-nums">{{ $money($income['resultat_hao']) }}</dd></div>@endif
+        <div class="flex flex-wrap justify-between gap-2 py-3" style="font-size:1rem"><dt class="font-semibold">{{ __('Résultat net :') }} {{ $res > 0 ? __('excédent') : ($res < 0 ? __('déficit') : __('équilibre')) }}</dt><dd class="font-semibold tabular-nums {{ $res < 0 ? 'text-clay' : 'text-pine' }}">{{ $money($res) }}</dd></div>
       </dl>
     </section>
 
@@ -180,9 +180,9 @@
       {!! $side('actif', 'Actif') !!}
       {!! $side('passif', 'Passif') !!}
     </div>
-    <p class="mt-3 text-sm {{ $sheet['balanced'] ? 'text-pine' : 'text-clay' }}">{{ $sheet['balanced'] ? '✓ Bilan équilibré : total de l’actif = total du passif.' : '⚠ Bilan déséquilibré : signalez-le à l’administrateur de la plateforme.' }}</p>
-    <p class="mt-1 text-xs text-ink/50">Bilan simplifié. Le résultat de l’exercice et le report à nouveau sont calculés depuis les comptes de gestion (aucune écriture de clôture n’est passée par MX-CONNECT). Un compte de tiers ou de trésorerie figure à l’actif ou au passif selon le sens de son solde.</p>
+    <p class="mt-3 text-sm {{ $sheet['balanced'] ? 'text-pine' : 'text-clay' }}">{{ $sheet['balanced'] ? __('✓ Bilan équilibré : total de l’actif = total du passif.') : __('⚠ Bilan déséquilibré : signalez-le à l’administrateur de la plateforme.') }}</p>
+    <p class="mt-1 text-xs text-ink/50">{{ __('Bilan simplifié. Le résultat de l’exercice et le report à nouveau sont calculés depuis les comptes de gestion (aucune écriture de clôture n’est passée par MX-CONNECT). Un compte de tiers ou de trésorerie figure à l’actif ou au passif selon le sens de son solde.') }}</p>
   @endif
 
-  <p class="mt-4 text-xs text-ink/45">Édité le {{ now()->format('d/m/Y à H:i') }} par {{ auth()->user()?->name }} · MX-CONNECT · plan comptable SYSCOHADA de la mutuelle. Aucune conversion de devise.</p>
+  <p class="mt-4 text-xs text-ink/45">{{ __('Édité le :date par :name · MX-CONNECT · plan comptable SYSCOHADA de la mutuelle. Aucune conversion de devise.', ['date' => now()->format('d/m/Y à H:i'), 'name' => auth()->user()?->name]) }}</p>
 </x-layouts.tenant>

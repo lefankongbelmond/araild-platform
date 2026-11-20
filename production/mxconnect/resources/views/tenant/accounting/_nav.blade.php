@@ -10,7 +10,7 @@
   $here = request()->route()?->getName();
   $here = in_array($here, ['accounting.ledger', 'accounting.income', 'accounting.sheet'], true) ? 'accounting.balance' : $here;
 @endphp
-<nav class="print:hidden flex flex-wrap items-center gap-x-4 text-sm" style="row-gap:.25rem" aria-label="Comptabilité">
+<nav class="print:hidden flex flex-wrap items-center gap-x-4 text-sm" style="row-gap:.25rem" aria-label="{{ __('Comptabilité') }}">
   <a href="{{ route('treasury.dashboard') }}" class="text-ink/50 hover:underline">&larr; {{ __('mxconnect.treasury.title') }}</a>
   @foreach ($links as $route => $label)
     @acces($route)

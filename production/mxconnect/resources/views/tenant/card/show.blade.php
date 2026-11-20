@@ -12,7 +12,7 @@
     <p class="mt-4 text-center text-xs text-ink/50">{{ __('mxconnect.card.no_medical') }}</p>
     <div class="no-print mt-4 flex gap-2">
       <button onclick="window.print()" class="rounded-xl bg-gradient-to-r from-leaf-500 to-leaf-600 px-5 py-2.5 text-sm font-bold text-white">{{ __('mxconnect.card.print') }}</button>
-      <a href="{{ route('cards.index') }}" class="rounded-xl border border-ink/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink/70">Cartes de membre</a>
+      <a href="{{ route('cards.index') }}" class="rounded-xl border border-ink/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink/70">{{ __('Cartes de membre') }}</a>
     </div>
   </div>
 </body>

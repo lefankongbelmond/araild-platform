@@ -84,7 +84,8 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 | M2a Réseau social : paramètres du membre + écrans | Faite (VERSION 2026.11.28) | `LISEZMOI-20261128.md` |
 | M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | Faite (VERSION 2026.11.29) | `LISEZMOI-20261129.md` |
 | M3a Mutuelle : page Paramètres en cartes, fiche « Identité et langue », cadre du back-office et écrans de paramétrage | Faite (VERSION 2026.11.30) | `LISEZMOI-20261130.md` |
-| M3b Mutuelle : reste du back-office (adhérents, prestations, cotisations, comptabilité, trésorerie, rapports, pharmacie, portail prestataire), messages du serveur, documents imprimés | À faire | — |
+| M3b Mutuelle : reste du back-office (adhérents, prestations, cotisations, comptabilité, trésorerie, rapports, pharmacie, portail prestataire de la mutuelle) + vocabulaire `mxconnect.php` complet dans les 6 langues | Faite (VERSION 2026.12.01) | `LISEZMOI-20261201.md` |
+| M3c Mutuelle : messages renvoyés par le serveur (contrôleurs et services du back-office, `AccountingRefusal`, `TeamService`…) | À faire | — |
 | M4 Prestataires | À faire | — |
 | M5 Super-admin, accueil | À faire | — |
 | M6 Documents | À faire | — |
@@ -100,7 +101,12 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Adhérents** : une notification à un adhérent qui n'a jamais choisi de langue est écrite dans la langue par défaut de sa mutuelle (`MutualIdentity::locale()` passée en repli à `NotificationService::notify`).
 - **Nouvelle rubrique de paramétrage** : l'ajouter à `App\Support\TenantSettings::SECTIONS` (carte affichée seulement si `TenantAccess::can()` l'autorise).
 - **Libellés de menu, rôles, sections** : traduits à l'affichage avec `__()` ; déclarés via `TranslatableLabels::extra()`.
-- **Vocabulaire `lang/<code>/mxconnect.php`** : complet en anglais ; partiel (63 clés) en pt, es, ar, sw, ha — à compléter en M3b (repli : français).
+- **Vocabulaire `lang/<code>/mxconnect.php`** : complet en anglais ; en pt, es, ar, sw, ha, complet pour toutes les clés employées par le back-office (M3b, 351 clés ; test de couverture dans `MultilingueMutuelleTest`). Les clés propres au super-admin restent à faire en M5 (repli : français).
+
+### Règles ajoutées par M3b
+- **Listes de libellés dans une vue** : les traduire à l'affectation (`$S = array_map('__', Modele::STATUSES)` ou `['clé' => __('Libellé')]`), pas à chaque écho ; déclarer la constante dans `TranslatableLabels::LISTS` (ou `extra()` pour une liste [libellé, teinte]).
+- **Méthodes d'affichage** (`label()`, `categoryLabel()`, `RightsStatus::label()`…) : elles renvoient le texte traduit ; les valeurs stockées restent les clés françaises.
+- **Nouvelle vue du back-office** : passer `devtools/i18n/extraire-blade.py --apply` puis `convertir-variables.py --apply`, relire le diff (classes CSS jamais traduites), puis `catalogue.py sync` + traductions.
 - **Outils (M2a)** : `devtools/i18n/extraire-blade.py` (`--dry-run`, `--apply`, `--list`, `--mixed`) rend traduisibles les textes « purs » d'une vue ; `devtools/i18n/catalogue.py` (`sync`, `missing`, `merge`) tient le catalogue et refuse une traduction aux variables différentes. Relire le `git diff` après extraction (directives aux parenthèses imbriquées, attributs liés `:title`).
 - **Listes de libellés PHP** (constantes `STATUSES`, `TYPES`…) : afficher avec `__($libellé)` et **déclarer la constante dans `App\Support\TranslatableLabels::LISTS`** (test `MultilingueReseauSocialTest`). Les valeurs enregistrées en base restent les clés, jamais le texte traduit.
 - **Mot vérifié par le serveur** (« SUPPRIMER ») : jamais traduit.

@@ -1,20 +1,20 @@
 @php
   $c = $currency;
   $f = 'rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
-  $modes = \App\Models\Tenant\ContributionPayment::MODES;
+  $modes = array_map('__', \App\Models\Tenant\ContributionPayment::MODES);
   $today = now()->startOfDay();
-  $label = ['paid' => 'Payée', 'overdue' => 'En retard', 'to_pay' => 'À venir'];
+  $label = ['paid' => __('Payée'), 'overdue' => __('En retard'), 'to_pay' => __('À venir')];
 @endphp
 <x-layouts.tenant :title="'Cotisations — ' . $member->last_name . ' ' . $member->first_name">
   <div class="print:hidden flex flex-wrap items-center gap-x-4 text-sm" style="row-gap:.25rem">
     <a href="{{ route('contributions.index') }}" class="text-ink/50 hover:underline">&larr; {{ __('mxconnect.contribution.plural') }}</a>
-    @acces('members.show')<a href="{{ route('members.show', $member) }}" class="text-pine hover:underline">Fiche de l’adhérent</a>@endacces
+    @acces('members.show')<a href="{{ route('members.show', $member) }}" class="text-pine hover:underline">{{ __('Fiche de l’adhérent') }}</a>@endacces
   </div>
   <x-tenant.hero icon="coins" kicker="Relevé de cotisations" tone="leaf">
     <x-slot:title>{{ $member->last_name }} {{ $member->first_name }}</x-slot:title>
-    <x-slot:subtitle>{{ $member->member_code }}@if ($member->phone) · {{ $member->phone }}@endif · {{ tenant('name') }} · montants en {{ $c->code }}. Relevé arrêté au {{ $today->format('d/m/Y') }}.</x-slot:subtitle>
+    <x-slot:subtitle>{{ $member->member_code }}@if ($member->phone) · {{ $member->phone }}@endif · {{ tenant('name') }} · {{ __('montants en :currency. Relevé arrêté au :date.', ['currency' => $c->code, 'date' => $today->format('d/m/Y')]) }}</x-slot:subtitle>
     <x-slot:actions>
-      <button type="button" onclick="window.print()" class="print:hidden rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Imprimer le relevé</button>
+      <button type="button" onclick="window.print()" class="print:hidden rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">{{ __('Imprimer le relevé') }}</button>
     </x-slot:actions>
   </x-tenant.hero>
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
@@ -28,34 +28,34 @@
 
   @if ($canCollect)
     <form method="POST" action="{{ route('contributions.collect', $member) }}" class="print:hidden mt-6 rounded-lg border border-ink/10 bg-white p-5">@csrf
-      <h2 class="font-semibold">Encaisser</h2>
-      <p class="mt-1 text-sm text-ink/60">Le montant est réparti sur les échéances impayées, la plus ancienne d’abord ; un acompte est possible. Reste à payer sur l’échéancier : <b>{{ $c->format($open) }}</b>.</p>
+      <h2 class="font-semibold">{{ __('Encaisser') }}</h2>
+      <p class="mt-1 text-sm text-ink/60">{{ __('Le montant est réparti sur les échéances impayées, la plus ancienne d’abord ; un acompte est possible. Reste à payer sur l’échéancier :') }} <b>{{ $c->format($open) }}</b>.</p>
       <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <label class="min-w-0 text-xs text-ink/60">Montant ({{ $c->code }})<input name="amount" value="{{ old('amount', $summary['arrears'] ? number_format($summary['arrears'] / (10 ** $c->minor_unit), $c->minor_unit, ',', '') : '') }}" inputmode="decimal" class="{{ $f }} mt-1 block w-full"></label>
-        <label class="min-w-0 text-xs text-ink/60">Date<input type="date" name="paid_on" value="{{ old('paid_on', $today->toDateString()) }}" max="{{ $today->toDateString() }}" class="{{ $f }} mt-1 block w-full"></label>
-        <label class="min-w-0 text-xs text-ink/60">Mode<select name="mode" class="{{ $f }} mt-1 block w-full">
+        <label class="min-w-0 text-xs text-ink/60">{{ __('Montant (:reference)', ['reference' => $c->code]) }}<input name="amount" value="{{ old('amount', $summary['arrears'] ? number_format($summary['arrears'] / (10 ** $c->minor_unit), $c->minor_unit, ',', '') : '') }}" inputmode="decimal" class="{{ $f }} mt-1 block w-full"></label>
+        <label class="min-w-0 text-xs text-ink/60">{{ __('Date') }}<input type="date" name="paid_on" value="{{ old('paid_on', $today->toDateString()) }}" max="{{ $today->toDateString() }}" class="{{ $f }} mt-1 block w-full"></label>
+        <label class="min-w-0 text-xs text-ink/60">{{ __('Mode') }}<select name="mode" class="{{ $f }} mt-1 block w-full">
           @foreach ($modes as $k => $l)<option value="{{ $k }}" @selected(old('mode', 'cash') === $k)>{{ $l }}</option>@endforeach
         </select></label>
-        <label class="min-w-0 text-xs text-ink/60">Référence (banque, Mobile Money)<input name="reference" value="{{ old('reference') }}" maxlength="60" class="{{ $f }} mt-1 block w-full"></label>
+        <label class="min-w-0 text-xs text-ink/60">{{ __('Référence (banque, Mobile Money)') }}<input name="reference" value="{{ old('reference') }}" maxlength="60" class="{{ $f }} mt-1 block w-full"></label>
       </div>
-      <button class="mt-3 rounded-md bg-pine px-4 py-2 text-sm font-medium text-white" @disabled($open === 0)>Enregistrer l’encaissement</button>
-      @if ($open === 0)<span class="ml-2 text-sm text-ink/55">Aucune échéance à régler.</span>@endif
+      <button class="mt-3 rounded-md bg-pine px-4 py-2 text-sm font-medium text-white" @disabled($open === 0)>{{ __('Enregistrer l’encaissement') }}</button>
+      @if ($open === 0)<span class="ml-2 text-sm text-ink/55">{{ __('Aucune échéance à régler.') }}</span>@endif
     </form>
   @endif
   @if ($feeToCall > 0)
     <form method="POST" action="{{ route('contributions.fee', $member) }}" class="print:hidden mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 bg-white p-4 text-sm">@csrf
-      <span class="min-w-0 flex-1 text-ink/70">La garantie prévoit un droit d’adhésion de <b>{{ $c->format($feeToCall) }}</b>, pas encore appelé pour cet adhérent.</span>
-      <button class="rounded-md border border-ink/15 bg-white px-4 py-2 text-sm font-medium">Appeler le droit d’adhésion</button>
+      <span class="min-w-0 flex-1 text-ink/70">{{ __('La garantie prévoit un droit d’adhésion de') }} <b>{{ $c->format($feeToCall) }}</b>{{ __(', pas encore appelé pour cet adhérent.') }}</span>
+      <button class="rounded-md border border-ink/15 bg-white px-4 py-2 text-sm font-medium">{{ __('Appeler le droit d’adhésion') }}</button>
     </form>
   @endif
 
   <section class="mt-6">
-    <h2 class="font-semibold">Échéancier</h2>
+    <h2 class="font-semibold">{{ __('Échéancier') }}</h2>
     <div class="relative mt-2 overflow-x-auto rounded-lg border border-ink/10 bg-white">
       <table class="w-full text-sm">
         <thead class="bg-mist text-left text-ink/60"><tr>
-          <th class="px-3 py-2 font-medium">Période</th><th class="px-3 py-2 font-medium">Échéance</th><th class="px-3 py-2 font-medium">Garantie</th>
-          <th class="px-3 py-2 text-right font-medium">Montant</th><th class="px-3 py-2 text-right font-medium">Payé</th><th class="px-3 py-2 text-right font-medium">Reste</th><th class="px-3 py-2 font-medium">État</th>
+          <th class="px-3 py-2 font-medium">{{ __('Période') }}</th><th class="px-3 py-2 font-medium">{{ __('Échéance') }}</th><th class="px-3 py-2 font-medium">{{ __('Garantie') }}</th>
+          <th class="px-3 py-2 text-right font-medium">{{ __('Montant') }}</th><th class="px-3 py-2 text-right font-medium">{{ __('Payé') }}</th><th class="px-3 py-2 text-right font-medium">{{ __('Reste') }}</th><th class="px-3 py-2 font-medium">{{ __('État') }}</th>
         </tr></thead>
         <tbody class="divide-y divide-ink/5">
           @forelse ($schedules as $s)
@@ -67,10 +67,10 @@
               <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap">{{ $c->format($s->due_minor) }}</td>
               <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap">{{ $paid ? $c->format($paid) : '—' }}</td>
               <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap">{{ $s->status === 'paid' ? '—' : $c->format(max(0, $s->due_minor - $paid)) }}</td>
-              <td class="px-3 py-2 text-xs whitespace-nowrap"><span class="rounded-full px-2 py-0.5 {{ $s->status === 'paid' ? 'bg-mist text-pine' : ($s->status === 'overdue' ? 'bg-clay/10 text-clay' : 'bg-amber-50 text-amber-700') }}">{{ $label[$s->status] ?? $s->status }}{{ $s->status !== 'paid' && $paid ? ' (acompte)' : '' }}</span></td>
+              <td class="px-3 py-2 text-xs whitespace-nowrap"><span class="rounded-full px-2 py-0.5 {{ $s->status === 'paid' ? 'bg-mist text-pine' : ($s->status === 'overdue' ? 'bg-clay/10 text-clay' : 'bg-amber-50 text-amber-700') }}">{{ $label[$s->status] ?? $s->status }}{{ $s->status !== 'paid' && $paid ? __(' (acompte)') : '' }}</span></td>
             </tr>
           @empty
-            <tr><td colspan="7" class="px-4 py-6 text-center text-ink/45">Aucune échéance : la souscription n’est pas encore validée.</td></tr>
+            <tr><td colspan="7" class="px-4 py-6 text-center text-ink/45">{{ __('Aucune échéance : la souscription n’est pas encore validée.') }}</td></tr>
           @endforelse
         </tbody>
       </table>
@@ -78,7 +78,7 @@
   </section>
 
   <section class="mt-6">
-    <h2 class="font-semibold">Encaissements</h2>
+    <h2 class="font-semibold">{{ __('Encaissements') }}</h2>
     @php $byRef = $cancellations->groupBy('collection_ref'); $me = (int) auth()->id(); @endphp
     <div class="mt-2 space-y-3">
       @forelse ($collections as $ref => $rows)
@@ -94,52 +94,52 @@
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0 text-sm">
               <div class="flex flex-wrap items-center gap-2">
-                @if ($first->receipt_path)<a href="{{ route('contributions.receipt', $first) }}" target="_blank" rel="noopener" class="font-mono text-xs text-pine hover:underline">{{ $first->collection_ref ?: 'Reçu' }}</a>
+                @if ($first->receipt_path)<a href="{{ route('contributions.receipt', $first) }}" target="_blank" rel="noopener" class="font-mono text-xs text-pine hover:underline">{{ $first->collection_ref ?: __('Reçu') }}</a>
                 @else<span class="font-mono text-xs">{{ $first->collection_ref ?: '—' }}</span>@endif
                 <span class="text-ink/60">{{ $first->paid_on?->format('d/m/Y') }} · {{ $modes[$first->mode] ?? $first->mode }}@if ($first->reference) · {{ $first->reference }}@endif</span>
-                @if ($cancelled)<span class="rounded-full bg-clay/10 px-2 py-0.5 text-xs text-clay">Annulé</span>
-                @elseif ($pending)<span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Annulation demandée</span>@endif
+                @if ($cancelled)<span class="rounded-full bg-clay/10 px-2 py-0.5 text-xs text-clay">{{ __('Annulé') }}</span>
+                @elseif ($pending)<span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{{ __('Annulation demandée') }}</span>@endif
               </div>
               <div class="mt-1">{{ $rows->map(fn ($p) => $p->schedule?->label())->filter()->unique()->implode(', ') }}</div>
-              @if ($first->recordedBy)<div class="text-xs text-ink/50">encaissé par {{ $first->recordedBy->name }}</div>@endif
-              @if ($approved)<div class="mt-1 text-xs text-clay">Annulé le {{ $approved->decided_at?->format('d/m/Y') }} (demande de {{ $approved->requestedBy?->name }}, validée par {{ $approved->decidedBy?->name }}) — motif : {{ $approved->reason }}</div>@endif
-              @if ($pending)<div class="mt-1 text-xs text-amber-700">Demandée par {{ $pending->requestedBy?->name }} — motif : {{ $pending->reason }}</div>@endif
-              @if ($refused && ! $cancelled && ! $pending)<div class="mt-1 text-xs text-ink/55">Annulation refusée le {{ $refused->decided_at?->format('d/m/Y') }} : {{ $refused->decision_note }}</div>@endif
+              @if ($first->recordedBy)<div class="text-xs text-ink/50">{{ __('encaissé par :name', ['name' => $first->recordedBy->name]) }}</div>@endif
+              @if ($approved)<div class="mt-1 text-xs text-clay">{{ __('Annulé le :date (demande de :name, validée par :name2) — motif : :reason', ['date' => $approved->decided_at?->format('d/m/Y'), 'name' => $approved->requestedBy?->name, 'name2' => $approved->decidedBy?->name, 'reason' => $approved->reason]) }}</div>@endif
+              @if ($pending)<div class="mt-1 text-xs text-amber-700">{{ __('Demandée par :name — motif : :reason', ['name' => $pending->requestedBy?->name, 'reason' => $pending->reason]) }}</div>@endif
+              @if ($refused && ! $cancelled && ! $pending)<div class="mt-1 text-xs text-ink/55">{{ __('Annulation refusée le :date : :decision_note', ['date' => $refused->decided_at?->format('d/m/Y'), 'decision_note' => $refused->decision_note]) }}</div>@endif
             </div>
             <div class="text-right font-semibold tabular-nums whitespace-nowrap" @if ($cancelled) style="text-decoration:line-through" @endif>{{ $c->format($rows->sum('amount_minor')) }}</div>
           </div>
           @if (! $cancelled && $first->collection_ref)
             @if ($pending && $canDecide)
               @if ((int) $pending->requested_by === $me)
-                <p class="print:hidden mt-3 text-xs text-ink/55">Vous avez demandé cette annulation : une autre personne doit décider.</p>
+                <p class="print:hidden mt-3 text-xs text-ink/55">{{ __('Vous avez demandé cette annulation : une autre personne doit décider.') }}</p>
               @else
                 <div class="print:hidden mt-3 flex flex-wrap items-start gap-2">
-                  <form method="POST" action="{{ route('contributions.cancel.approve', $pending) }}" onsubmit="return confirm('Annuler l’encaissement {{ $first->collection_ref }} ?')">@csrf<button class="rounded-md border border-clay/30 bg-white px-4 py-2 text-sm font-medium text-clay">Valider l’annulation</button></form>
+                  <form method="POST" action="{{ route('contributions.cancel.approve', $pending) }}" onsubmit="return confirm('Annuler l’encaissement {{ $first->collection_ref }} ?')">@csrf<button class="rounded-md border border-clay/30 bg-white px-4 py-2 text-sm font-medium text-clay">{{ __('Valider l’annulation') }}</button></form>
                   <details class="min-w-0">
-                    <summary class="cursor-pointer rounded-md border border-ink/15 px-4 py-2 text-sm">Refuser</summary>
+                    <summary class="cursor-pointer rounded-md border border-ink/15 px-4 py-2 text-sm">{{ __('Refuser') }}</summary>
                     <form method="POST" action="{{ route('contributions.cancel.reject', $pending) }}" class="mt-2 flex flex-wrap items-end gap-2">@csrf
-                      <label class="min-w-0 text-xs text-ink/60">Motif du refus<input name="note" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
-                      <button class="rounded-md border border-ink/15 bg-white px-3 py-2 text-sm font-medium">Confirmer le refus</button>
+                      <label class="min-w-0 text-xs text-ink/60">{{ __('Motif du refus') }}<input name="note" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
+                      <button class="rounded-md border border-ink/15 bg-white px-3 py-2 text-sm font-medium">{{ __('Confirmer le refus') }}</button>
                     </form>
                   </details>
                 </div>
               @endif
             @elseif (! $pending && $canCancel)
               <details class="print:hidden mt-3">
-                <summary class="cursor-pointer text-sm text-clay">Demander l’annulation (erreur de saisie)</summary>
+                <summary class="cursor-pointer text-sm text-clay">{{ __('Demander l’annulation (erreur de saisie)') }}</summary>
                 <form method="POST" action="{{ route('contributions.cancel.request', $first->collection_ref) }}" class="mt-2 flex flex-wrap items-end gap-2">@csrf
-                  <label class="min-w-0 text-xs text-ink/60">Motif<input name="reason" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
-                  <button class="rounded-md border border-clay/30 bg-white px-3 py-2 text-sm font-medium text-clay">Envoyer la demande</button>
+                  <label class="min-w-0 text-xs text-ink/60">{{ __('Motif') }}<input name="reason" maxlength="500" required class="{{ $f }} mt-1 block" style="max-width:100%"></label>
+                  <button class="rounded-md border border-clay/30 bg-white px-3 py-2 text-sm font-medium text-clay">{{ __('Envoyer la demande') }}</button>
                 </form>
-                <p class="mt-1 text-xs text-ink/50">L’administrateur ou le contrôleur décide. Une fois validée, les échéances sont rouvertes et la trésorerie corrigée.</p>
+                <p class="mt-1 text-xs text-ink/50">{{ __('L’administrateur ou le contrôleur décide. Une fois validée, les échéances sont rouvertes et la trésorerie corrigée.') }}</p>
               </details>
             @endif
           @endif
         </article>
       @empty
-        <p class="rounded-lg border border-ink/10 bg-white px-4 py-6 text-center text-sm text-ink/45">Aucun encaissement.</p>
+        <p class="rounded-lg border border-ink/10 bg-white px-4 py-6 text-center text-sm text-ink/45">{{ __('Aucun encaissement.') }}</p>
       @endforelse
     </div>
   </section>
-  <p class="mt-4 text-xs text-ink/45">Édité le {{ now()->format('d/m/Y à H:i') }} par {{ auth()->user()?->name }} · MX-CONNECT. MX-CONNECT ne détient aucun fonds : il enregistre les sommes reçues par la mutuelle.</p>
+  <p class="mt-4 text-xs text-ink/45">{{ __('Édité le :date par :name · MX-CONNECT. MX-CONNECT ne détient aucun fonds : il enregistre les sommes reçues par la mutuelle.', ['date' => now()->format('d/m/Y à H:i'), 'name' => auth()->user()?->name]) }}</p>
 </x-layouts.tenant>

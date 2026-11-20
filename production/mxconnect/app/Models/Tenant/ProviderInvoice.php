@@ -39,6 +39,6 @@ class ProviderInvoice extends Model implements Auditable
     /** Libellé affiché (référence du bordereau, sinon numéro). */
     public function label(): string
     {
-        return $this->reference ?: 'n° ' . $this->id;
+        return $this->reference ?: __('n° :id', ['id' => $this->id]);
     }
 }
