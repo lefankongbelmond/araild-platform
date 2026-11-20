@@ -4,7 +4,7 @@
   <a class="mx-small" href="{{ route('social.member.complaints', $mutual->slug) }}">{{ __('← Mes demandes') }}</a>
   <section class="mx-card mx-card__pad" style="margin-top:8px">
     <div class="mx-between" style="gap:8px;flex-wrap:wrap"><h1 style="font-size:18px;margin:0">{{ $c->subject }}</h1><span class="mx-badge mx-badge--{{ in_array($c->status, ['resolved', 'closed'], true) ? 'green' : 'warn' }}">{{ __($S[$c->status] ?? $c->status) }}</span></div>
-    <p class="mx-xs mx-muted">{{ $c->ref }} · {{ __($C[$c->category] ?? 'Réclamation') }} · envoyée le {{ $c->received_on?->format('d/m/Y') }}@if ($c->due_on) · réponse prévue avant le {{ $c->due_on->format('d/m/Y') }}@endif</p>
+    <p class="mx-xs mx-muted">{{ $c->ref }} · {{ __($C[$c->category] ?? __('Réclamation')) }} · {{ __('envoyée le :date', ['date' => $c->received_on?->format('d/m/Y')]) }}@if ($c->due_on) · {{ __('réponse prévue avant le :date', ['date' => $c->due_on->format('d/m/Y')]) }}@endif</p>
     <div class="mx-thread" style="margin-top:12px">
       <div class="mx-bubble mx-bubble--me">{{ $c->description }}</div>
       @foreach ($c->messages as $msg)

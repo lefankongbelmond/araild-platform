@@ -1,6 +1,6 @@
 <x-layouts.social title="{{ __('Groupes') }}" active="groupes">
   <section class="mx-card">
-    <div class="mx-card__head"><h1 class="mx-card__title" style="font-size:20px">{{ __('Groupes communautaires') }}</h1><span class="mx-small mx-muted">{{ $groups->total() }} groupe(s)</span></div>
+    <div class="mx-card__head"><h1 class="mx-card__title" style="font-size:20px">{{ __('Groupes communautaires') }}</h1><span class="mx-small mx-muted">{{ __(':count groupe(s)', ['count' => $groups->total()]) }}</span></div>
     <p class="mx-small mx-muted" style="padding:0 16px">{{ __('Des espaces d’échange thématiques animés et modérés par les mutuelles. Ne partagez aucune information médicale personnelle.') }}</p>
     <form method="GET" class="mx-row" style="padding:12px 16px 16px">
       <label class="mx-sr" for="g-q">{{ __('Rechercher un groupe') }}</label>
@@ -20,7 +20,7 @@
             <div><a href="{{ route('social.group', $g) }}" style="color:inherit"><b style="font-size:16px">{{ $g->name }}</b></a>
               @if ($g->isPrivate())<span class="mx-badge" title="{{ __('Groupe privé : adhésion sur approbation') }}"><x-mx.icon name="shield" :size="12"/> {{ __('Privé') }}</span>@endif
               @if ($g->is_demo)<span class="mx-demo-ribbon">{{ __('Démo') }}</span>@endif
-              <div class="mx-xs mx-muted">Animé par {{ $g->mutual?->name }} · {{ $g->members_count }} membre(s)</div></div>
+              <div class="mx-xs mx-muted">{{ __('Animé par :name · :count membre(s)', ['name' => $g->mutual?->name, 'count' => $g->members_count]) }}</div></div>
             @if ($g->description)<p class="mx-small">{{ \Illuminate\Support\Str::limit($g->description, 140) }}</p>@endif
             <div class="mx-row mx-between">
               <a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.group', $g) }}">{{ __('Voir') }}</a>

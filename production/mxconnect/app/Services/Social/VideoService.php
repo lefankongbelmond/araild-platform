@@ -40,18 +40,18 @@ class VideoService
     public function start(PublicAccount $account, int $size, string $mime, ?string $name): Upload
     {
         if (\App\Support\SocialLoad::light()) {
-            throw ValidationException::withMessages(['video' => 'Le réseau est très sollicité en ce moment : l’envoi de vidéos est suspendu quelques minutes. Réessayez plus tard.']);
+            throw ValidationException::withMessages(['video' => __('Le réseau est très sollicité en ce moment : l’envoi de vidéos est suspendu quelques minutes. Réessayez plus tard.')]);
         }
         $this->cleanup();
         $mime = strtolower($mime);
         if (! isset(self::MIMES[$mime])) {
-            throw ValidationException::withMessages(['video' => 'Format vidéo non accepté : utilisez une vidéo MP4, MOV ou WebM.']);
+            throw ValidationException::withMessages(['video' => __('Format vidéo non accepté : utilisez une vidéo MP4, MOV ou WebM.')]);
         }
         if ($size < 1 || $size > self::maxBytes()) {
-            throw ValidationException::withMessages(['video' => 'Vidéo trop lourde : ' . config('mxconnect.social.video_max_mb', 100) . ' Mo maximum.']);
+            throw ValidationException::withMessages(['video' => __('Vidéo trop lourde : :size Mo maximum.', ['size' => config('mxconnect.social.video_max_mb', 100)])]);
         }
         if (Upload::where('public_account_id', $account->id)->where('status', 'uploading')->where('created_at', '>', now()->subHour())->count() >= 3) {
-            throw ValidationException::withMessages(['video' => 'Trop d’envois de vidéos en cours. Patientez quelques minutes.']);
+            throw ValidationException::withMessages(['video' => __('Trop d’envois de vidéos en cours. Patientez quelques minutes.')]);
         }
         File::ensureDirectoryExists(storage_path('app/uploads-tmp'));
 
@@ -68,7 +68,7 @@ class VideoService
     public function append(Upload $upload, int $offset, UploadedFile $chunk): int
     {
         if ($upload->status !== 'uploading') {
-            throw ValidationException::withMessages(['video' => 'Cet envoi est terminé.']);
+            throw ValidationException::withMessages(['video' => __('Cet envoi est terminé.')]);
         }
         $path = $upload->tempPath();
         clearstatcache(true, $path);
@@ -79,7 +79,7 @@ class VideoService
         }
         $len = $chunk->getSize();
         if ($len < 1 || $len > self::chunkBytes() + 1024 || $have + $len > $upload->size) {
-            throw ValidationException::withMessages(['video' => 'Morceau de vidéo invalide.']);
+            throw ValidationException::withMessages(['video' => __('Morceau de vidéo invalide.')]);
         }
         $in = fopen($chunk->getRealPath(), 'rb');
         $out = fopen($path, 'ab');
@@ -102,19 +102,19 @@ class VideoService
     {
         $upload = Upload::where('id', $uploadId)->where('public_account_id', $account->id)->first();
         if (! $upload || $upload->status !== 'complete') {
-            throw ValidationException::withMessages(['video' => 'La vidéo n’est pas encore entièrement envoyée.']);
+            throw ValidationException::withMessages(['video' => __('La vidéo n’est pas encore entièrement envoyée.')]);
         }
         $tmp = $upload->tempPath();
         clearstatcache(true, $tmp);
         if (! is_file($tmp) || filesize($tmp) !== (int) $upload->size) {
-            throw ValidationException::withMessages(['video' => 'Vidéo incomplète : renvoyez-la.']);
+            throw ValidationException::withMessages(['video' => __('Vidéo incomplète : renvoyez-la.')]);
         }
 
         $kind = $this->sniff($tmp);
         if (! $kind) {
             @unlink($tmp);
             $upload->update(['status' => 'used']);
-            throw ValidationException::withMessages(['video' => 'Ce fichier n’est pas une vidéo MP4, MOV ou WebM valide.']);
+            throw ValidationException::withMessages(['video' => __('Ce fichier n’est pas une vidéo MP4, MOV ou WebM valide.')]);
         }
         $duration = $kind === 'webm' ? null : $this->mp4Duration($tmp);
         $duration ??= isset($hints['duration']) && is_numeric($hints['duration']) ? (int) round((float) $hints['duration']) : null;
@@ -122,10 +122,10 @@ class VideoService
         $maxReel = (int) config('mxconnect.social.reel_max_seconds', 90);
         $maxVideo = (int) config('mxconnect.social.video_max_seconds', 900);
         if ($reel && $duration && $duration > $maxReel + 1) {
-            throw ValidationException::withMessages(['video' => "Un réel dure au maximum {$maxReel} secondes. Publiez-la plutôt comme vidéo."]);
+            throw ValidationException::withMessages(['video' => __('Un réel dure au maximum :seconds secondes. Publiez-la plutôt comme vidéo.', ['seconds' => $maxReel])]);
         }
         if ($duration && $duration > $maxVideo + 1) {
-            throw ValidationException::withMessages(['video' => 'Vidéo trop longue : ' . intdiv($maxVideo, 60) . ' minutes maximum.']);
+            throw ValidationException::withMessages(['video' => __('Vidéo trop longue : :minutes minutes maximum.', ['minutes' => intdiv($maxVideo, 60)])]);
         }
 
         $base = 'social/videos/' . now()->format('Y/m') . '/' . Str::uuid();
@@ -134,7 +134,7 @@ class VideoService
         File::ensureDirectoryExists(dirname($dest));
         if (! @rename($tmp, $dest)) {
             if (! @copy($tmp, $dest)) {
-                throw ValidationException::withMessages(['video' => 'Enregistrement de la vidéo impossible.']);
+                throw ValidationException::withMessages(['video' => __('Enregistrement de la vidéo impossible.')]);
             }
             @unlink($tmp);
         }

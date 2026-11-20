@@ -5,7 +5,7 @@
   @foreach ($links as $l)
     <a class="mx-card mx-card__pad mx-row" href="{{ route('social.member.dashboard', $l->mutual->slug) }}" style="color:inherit;gap:12px">
       <x-mx.avatar :name="$l->mutual->name" org />
-      <span class="mx-grow"><b>{{ $l->mutual->name }}</b><span class="mx-xs mx-muted" style="display:block">Adhérent n° {{ $l->member_code }}</span></span>
+      <span class="mx-grow"><b>{{ $l->mutual->name }}</b><span class="mx-xs mx-muted" style="display:block">{{ __('Adhérent n° :reference', ['reference' => $l->member_code]) }}</span></span>
       <span class="mx-btn mx-btn--primary mx-btn--sm">{{ __('Ouvrir') }}</span>
     </a>
   @endforeach

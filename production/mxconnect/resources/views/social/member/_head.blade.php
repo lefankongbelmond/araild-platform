@@ -13,7 +13,7 @@
     <x-mx.avatar :name="$mutual->name" org />
     <div class="mx-grow" style="min-width:0">
       <b>{{ $mutual->name }}</b>
-      <span class="mx-xs mx-muted" style="display:block">{{ mb_strtoupper($m->last_name) }} {{ $m->first_name }} · n° {{ $m->member_code }}</span>
+      <span class="mx-xs mx-muted" style="display:block">{{ __(':last_name :name · n° :reference', ['last_name' => mb_strtoupper($m->last_name), 'name' => $m->first_name, 'reference' => $m->member_code]) }}</span>
     </div>
     <a class="mx-btn mx-btn--soft mx-btn--sm" href="{{ route('social.member.card', $mutual->slug) }}">{{ __('Ma carte') }}</a>
   </div>
@@ -22,6 +22,6 @@
   </nav>
 </div>
 @if (($links ?? collect())->count() > 1)
-  <p class="mx-xs mx-muted" style="margin:-6px 0 12px">Autres adhésions : @foreach ($links as $l)@if ($l->mutual->slug !== $mutual->slug)<a href="{{ route('social.member.dashboard', $l->mutual->slug) }}">{{ $l->mutual->name }}</a> @endif @endforeach</p>
+  <p class="mx-xs mx-muted" style="margin:-6px 0 12px">{{ __('Autres adhésions :') }} @foreach ($links as $l)@if ($l->mutual->slug !== $mutual->slug)<a href="{{ route('social.member.dashboard', $l->mutual->slug) }}">{{ $l->mutual->name }}</a> @endif @endforeach</p>
 @endif
 @if ($errors->any())<div class="mx-alert mx-alert--err" role="alert">{{ $errors->first() }}</div>@endif

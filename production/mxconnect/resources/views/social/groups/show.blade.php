@@ -6,7 +6,7 @@
       <div class="mx-row mx-between mx-row--wrap">
         <div>
           <h1 style="font-size:22px">{{ $group->name }} @if($group->is_demo)<span class="mx-demo-ribbon">{{ __('Démo') }}</span>@endif</h1>
-          <p class="mx-small mx-muted">{{ $group->isPrivate() ? __('Groupe privé') : __('Groupe public') }} · {{ $group->members_count }} membre(s) · animé par <a href="{{ route('social.mutual', $group->mutual->slug) }}">{{ $group->mutual->name }}</a></p>
+          <p class="mx-small mx-muted">{{ $group->isPrivate() ? __('Groupe privé') : __('Groupe public') }} · {{ __(':count membre(s)', ['count' => $group->members_count]) }} · {{ __('animé par') }} <a href="{{ route('social.mutual', $group->mutual->slug) }}">{{ $group->mutual->name }}</a></p>
         </div>
         <div class="mx-row">
           @if ($group->status !== 'active')<span class="mx-badge">{{ __('Archivé') }}</span>
@@ -34,10 +34,10 @@
     <section class="mx-card mx-card__pad mx-stack">
       <h2 class="mx-card__title">{{ __('À propos') }}</h2>
       <p>{!! nl2br(e($group->description ?: 'Pas encore de description.')) !!}</p>
-      @if ($group->topic && isset(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$group->topic]))<p class="mx-small">Thème : {{ __(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$group->topic]) }}</p>@endif
+      @if ($group->topic && isset(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$group->topic]))<p class="mx-small">{{ __('Thème : :name', ['name' => __(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$group->topic])]) }}</p>@endif
       <h3 style="font-size:15px">{{ __('Règles du groupe') }}</h3>
       <p class="mx-small">{!! nl2br(e($group->rules ?: 'Respect, bienveillance, aucune information médicale personnelle, pas de publicité.')) !!}</p>
-      <p class="mx-xs mx-muted">Ce groupe est modéré par {{ $group->mutual->name }}. Utilisez « Signaler » sur un contenu problématique.</p>
+      <p class="mx-xs mx-muted">{{ __('Ce groupe est modéré par :name. Utilisez « Signaler » sur un contenu problématique.', ['name' => $group->mutual->name]) }}</p>
     </section>
   @elseif ($tab === 'membres')
     <section class="mx-card">

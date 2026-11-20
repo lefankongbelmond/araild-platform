@@ -14,7 +14,7 @@
 
   <section class="mx-card mx-card__pad mx-stack">
     @if ($o->status !== 'published')
-      <div class="mx-alert mx-alert--warn">{{ $o->status === 'draft' ? 'Brouillon : visible seulement par les gestionnaires de la page.' : __('Cette offre a été masquée par la modération du réseau.') }}</div>
+      <div class="mx-alert mx-alert--warn">{{ $o->status === 'draft' ? __('Brouillon : visible seulement par les gestionnaires de la page.') : __('Cette offre a été masquée par la modération du réseau.') }}</div>
     @endif
     <div class="mx-tags">
       <span class="mx-badge mx-badge--blue">{{ $o->categoryLabel() }}</span>
@@ -42,14 +42,14 @@
       @if ($canManage)
         <a class="mx-btn mx-btn--primary" href="{{ route('social.manage.opportunity.edit', [$page->slug, $o->id]) }}"><x-mx.icon name="edit" :size="16"/> {{ __('Gérer cette offre') }}</a>
       @elseif ($mine && $mine->isOpen())
-        <a class="mx-btn mx-btn--soft" href="{{ route('social.request', $mine->reference) }}"><x-mx.icon name="file" :size="16"/> Ma candidature : {{ mb_strtolower($mine->statusLabel()) }}</a>
+        <a class="mx-btn mx-btn--soft" href="{{ route('social.request', $mine->reference) }}"><x-mx.icon name="file" :size="16"/> {{ __('Ma candidature : :statuslabel', ['statuslabel' => mb_strtolower($mine->statusLabel())]) }}</a>
       @elseif ($isDemo)
         <span class="mx-small mx-muted">{{ __('Offre fictive de démonstration : aucune candidature possible.') }}</span>
       @elseif ($open && $o->isPublic())
         @if ($o->acceptsPlatform())
           <a class="mx-btn mx-btn--primary" href="{{ $viewer ? route('social.request.create', ['type' => 'application', 'offre' => $o->slug]) : route('social.login') }}"><x-mx.icon name="send" :size="16"/> {{ $applyLabel }}</a>
         @else
-          <a class="mx-btn mx-btn--primary" href="{{ $o->apply_url }}" target="_blank" rel="noopener nofollow"><x-mx.icon name="link" :size="16"/> {{ $applyLabel }} sur le site de l’organisation</a>
+          <a class="mx-btn mx-btn--primary" href="{{ $o->apply_url }}" target="_blank" rel="noopener nofollow"><x-mx.icon name="link" :size="16"/> {{ __(':applylabel sur le site de l’organisation', ['applylabel' => $applyLabel]) }}</a>
         @endif
       @else
         <span class="mx-small mx-muted">{{ __('Cette offre n’accepte plus de candidatures.') }}</span>
@@ -58,7 +58,7 @@
         <a class="mx-btn mx-btn--ghost" href="{{ route('social.project', $o->project) }}"><x-mx.icon name="chart" :size="16"/> {{ __('Voir le projet et les résultats') }}</a>
       @endif
     </div>
-    @if ($mine && ! $mine->isOpen())<p class="mx-xs mx-muted">Votre précédente demande ({{ $mine->reference }}) : {{ mb_strtolower($mine->statusLabel()) }}.</p>@endif
+    @if ($mine && ! $mine->isOpen())<p class="mx-xs mx-muted">{{ __('Votre précédente demande (:reference) : :statuslabel.', ['reference' => $mine->reference, 'statuslabel' => mb_strtolower($mine->statusLabel())]) }}</p>@endif
   </section>
 
   <section class="mx-card mx-card__pad mx-stack">
@@ -68,7 +68,7 @@
     @if ($o->apply_instructions)<h3 style="font-size:15px">{{ __('Comment postuler') }}</h3><p class="mx-small" style="white-space:pre-line">{{ $o->apply_instructions }}</p>@endif
   </section>
 
-  <p class="mx-xs mx-muted" style="padding:0 6px">Offre publiée sous la responsabilité de {{ $page->name }}. MX-CONNECT ne demande jamais de paiement pour une candidature.
+  <p class="mx-xs mx-muted" style="padding:0 6px">{{ __('Offre publiée sous la responsabilité de :name. MX-CONNECT ne demande jamais de paiement pour une candidature.', ['name' => $page->name]) }}
     @if ($viewer && ! $canManage)<button type="button" class="mx-btn mx-btn--ghost mx-btn--sm" data-report="{{ route('social.mutual.report', $page->slug) }}"><x-mx.icon name="flag" :size="14"/> {{ __('Signaler') }}</button>@endif</p>
 
   <x-slot:right>

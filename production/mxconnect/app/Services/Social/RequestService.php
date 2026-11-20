@@ -52,17 +52,17 @@ class RequestService
         abort_unless(array_key_exists($kind, SocialRequest::KINDS), 422);
         abort_if($page->status === 'suspended', 404);
         if ($page->profile?->is_demo) {
-            throw ValidationException::withMessages(['message' => 'Organisation de démonstration : aucune demande ne peut lui être envoyée.']);
+            throw ValidationException::withMessages(['message' => __('Organisation de démonstration : aucune demande ne peut lui être envoyée.')]);
         }
         if (PageService::canPublish($account, $page)) {
-            throw ValidationException::withMessages(['message' => 'Vous gérez cette page : vous ne pouvez pas lui adresser une demande.']);
+            throw ValidationException::withMessages(['message' => __('Vous gérez cette page : vous ne pouvez pas lui adresser une demande.')]);
         }
         if ($kind === 'application') {
             if (! $opportunity || ! $opportunity->isPublic() || ! $opportunity->isOpen()) {
-                throw ValidationException::withMessages(['message' => 'Cette offre n’accepte plus de candidatures.']);
+                throw ValidationException::withMessages(['message' => __('Cette offre n’accepte plus de candidatures.')]);
             }
             if (! $opportunity->acceptsPlatform()) {
-                throw ValidationException::withMessages(['message' => 'Pour cette offre, la candidature se fait sur le site indiqué par l’organisation.']);
+                throw ValidationException::withMessages(['message' => __('Pour cette offre, la candidature se fait sur le site indiqué par l’organisation.')]);
             }
         }
 
@@ -70,7 +70,7 @@ class RequestService
             ->where('project_id', $project?->id)->where('opportunity_id', $opportunity?->id)
             ->whereIn('status', SocialRequest::OPEN)->first();
         if ($duplicate) {
-            throw ValidationException::withMessages(['message' => "Vous avez déjà une demande en cours sur ce sujet (référence {$duplicate->reference})."]);
+            throw ValidationException::withMessages(['message' => __('Vous avez déjà une demande en cours sur ce sujet (référence :ref).', ['ref' => $duplicate->reference])]);
         }
 
         $r = DB::connection('central')->transaction(function () use ($kind, $page, $account, $data, $project, $opportunity) {
@@ -108,8 +108,8 @@ class RequestService
         $label = $r->kindLabel();
         $about = $opportunity?->title ?? $project?->title;
         foreach (self::inboxManagerIds($page->id) as $id) {
-            $this->notifications->notify($id, 'demande', "{$label} reçue pour {$page->name}",
-                $about ? "Sujet : {$about}" : null, route('social.manage.request', [$page->slug, $r->reference]));
+            $this->notifications->notify($id, 'demande', \App\Support\Msg::of(':kind reçue pour :name', ['kind' => ['__' => $r->kindKey()], 'name' => $page->name]),
+                $about ? \App\Support\Msg::of('Sujet : :subject', ['subject' => $about]) : null, route('social.manage.request', [$page->slug, $r->reference]));
         }
         if (! $page->isMemberPage()) {
             $this->mail->alertMutual($page, "{$label} reçue sur le réseau",
@@ -122,7 +122,7 @@ class RequestService
     /** Changement de statut par la page (vérifie la transition). */
     public function decide(SocialRequest $r, string $to, ?string $note, string $actorLabel): void
     {
-        abort_unless(in_array($to, self::TRANSITIONS[$r->status] ?? [], true), 422, 'Changement de statut non autorisé.');
+        abort_unless(in_array($to, self::TRANSITIONS[$r->status] ?? [], true), 422, __('Changement de statut non autorisé.'));
 
         DB::connection('central')->transaction(function () use ($r, $to, $note, $actorLabel) {
             $from = $r->status;
@@ -131,9 +131,9 @@ class RequestService
                 'from_status' => $from, 'to_status' => $to, 'note' => $note ? trim($note) : null]);
         });
 
-        $name = $r->mutual?->name ?? 'L’organisation';
+        $name = $r->mutual?->name ?? 'MX-CONNECT';
         $this->notifications->notify($r->public_account_id, 'demande',
-            "{$r->kindLabel()} auprès de {$name} : " . mb_strtolower(SocialRequest::STATUSES[$to]),
+            \App\Support\Msg::of(':kind auprès de :name : :status', ['kind' => ['__' => $r->kindKey()], 'name' => $name, 'status' => ['__' => SocialRequest::STATUSES[$to]]]),
             $note ? Str::limit(trim($note), 200) : null, route('social.request', $r->reference));
     }
 
@@ -169,7 +169,7 @@ class RequestService
     {
         $head = (string) file_get_contents($file->getRealPath(), false, null, 0, 5);
         if ($head !== '%PDF-') {
-            throw ValidationException::withMessages(['cv' => 'Le CV doit être un fichier PDF valide.']);
+            throw ValidationException::withMessages(['cv' => __('Le CV doit être un fichier PDF valide.')]);
         }
         $path = "requests/{$r->mutual_id}/{$r->reference}/" . Str::uuid() . '.pdf';
         Storage::disk('social_private')->put($path, file_get_contents($file->getRealPath()));

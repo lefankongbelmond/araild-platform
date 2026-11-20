@@ -2,9 +2,9 @@
   <section class="mx-card mx-card__pad mx-stack">
     <h1 style="font-size:22px">{{ __('Documents et acceptations') }}</h1>
     <p class="mx-small mx-muted">{{ __('Versions en vigueur des documents de MX-CONNECT et historique de vos acceptations (date, version, canal). Rien n’est effacé de cet historique, sauf si vous supprimez votre compte.') }}</p>
-    @if (count($pending))<a class="mx-btn mx-btn--primary" href="{{ route('social.legal.pending') }}">Valider les documents en attente ({{ count($pending) }})</a>@endif
+    @if (count($pending))<a class="mx-btn mx-btn--primary" href="{{ route('social.legal.pending') }}">{{ __('Valider les documents en attente (:count)', ['count' => count($pending)]) }}</a>@endif
     <ul class="mx-legal__list">
-      @foreach ($documents as $d)<li><a href="{{ $d->url() }}">{{ $d->label() }}</a> — version {{ $d->version }} du {{ $d->published_at?->format('d/m/Y') }}</li>@endforeach
+      @foreach ($documents as $d)<li><a href="{{ $d->url() }}">{{ $d->label() }}</a> {{ __('— version :version du :date', ['version' => $d->version, 'date' => $d->published_at?->format('d/m/Y')]) }}</li>@endforeach
     </ul>
     <h2 style="font-size:17px">{{ __('Historique') }}</h2>
     @forelse ($rows as $r)

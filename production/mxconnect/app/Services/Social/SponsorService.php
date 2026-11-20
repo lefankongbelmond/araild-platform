@@ -50,7 +50,7 @@ class SponsorService
     public static function instructions(): string
     {
         return (string) SocialSetting::get('sponsor_instructions',
-            'Les instructions de paiement n’ont pas encore été publiées par l’administration du réseau. Votre demande est enregistrée : vous serez contacté(e).');
+            __('Les instructions de paiement n’ont pas encore été publiées par l’administration du réseau. Votre demande est enregistrée : vous serez contacté(e).'));
     }
 
     /** Une publication sponsorisée à afficher à ce visiteur, ou null. */

@@ -37,7 +37,7 @@ class AdhesionService
     {
         if (AdhesionRequest::where('mutual_id', $mutual->id)->where('public_account_id', $account->id)
             ->whereIn('status', [...AdhesionRequest::OPEN, 'accepted'])->exists()) {
-            throw ValidationException::withMessages(['first_name' => 'Vous avez déjà une demande en cours (ou acceptée) auprès de cette mutuelle.']);
+            throw ValidationException::withMessages(['first_name' => __('Vous avez déjà une demande en cours (ou acceptée) auprès de cette mutuelle.')]);
         }
 
         $request = DB::connection('central')->transaction(function () use ($mutual, $account, $data) {
@@ -70,7 +70,7 @@ class AdhesionService
     {
         $max = (int) config('mxconnect.social.adhesion_max_docs', 4);
         if ($r->documents()->count() + count($files) > $max) {
-            throw ValidationException::withMessages(['documents' => "Maximum {$max} pièces par dossier."]);
+            throw ValidationException::withMessages(['documents' => __('Maximum :max pièces par dossier.', ['max' => $max])]);
         }
         foreach (array_values($files) as $i => $file) {
             $kind = $kinds[$i] ?? 'autre';
@@ -81,7 +81,7 @@ class AdhesionService
             if ($mime === 'application/pdf') {
                 $head = (string) file_get_contents($file->getRealPath(), false, null, 0, 5);
                 if ($head !== '%PDF-') {
-                    throw ValidationException::withMessages(['documents' => 'PDF invalide : ' . $file->getClientOriginalName()]);
+                    throw ValidationException::withMessages(['documents' => __('PDF invalide : :file', ['file' => $file->getClientOriginalName()])]);
                 }
                 $path = "$dir/" . Str::uuid() . '.pdf';
                 Storage::disk('social_private')->put($path, file_get_contents($file->getRealPath()));
@@ -104,9 +104,9 @@ class AdhesionService
     /** Changement de statut par la mutuelle (vérifie la transition). */
     public function decide(AdhesionRequest $r, string $to, ?string $note, int $userId, string $userLabel): void
     {
-        abort_unless(in_array($to, self::TRANSITIONS[$r->status] ?? [], true), 422, 'Changement de statut non autorisé.');
+        abort_unless(in_array($to, self::TRANSITIONS[$r->status] ?? [], true), 422, __('Changement de statut non autorisé.'));
         if (in_array($to, ['info_requested', 'rejected'], true) && trim((string) $note) === '') {
-            throw ValidationException::withMessages(['note' => 'Expliquez au demandeur ce qui manque ou le motif du refus.']);
+            throw ValidationException::withMessages(['note' => __('Expliquez au demandeur ce qui manque ou le motif du refus.')]);
         }
 
         DB::connection('central')->transaction(function () use ($r, $to, $note, $userId, $userLabel) {
@@ -120,10 +120,10 @@ class AdhesionService
                 'from_status' => $from, 'to_status' => $to, 'note' => $note ? trim($note) : null]);
         });
 
-        $name = $r->mutual?->name ?? 'La mutuelle';
+        $name = $r->mutual?->name ?? 'MX-CONNECT';
         $this->notifications->notify($r->public_account_id, 'adhesion',
-            "Votre demande d’adhésion à {$name} : " . mb_strtolower(AdhesionRequest::STATUSES[$to]),
-            $to === 'info_requested' ? 'La mutuelle demande un complément d’information.' : null,
+            \App\Support\Msg::of('Votre demande d’adhésion à :name : :status', ['name' => $name, 'status' => ['__' => AdhesionRequest::STATUSES[$to]]]),
+            $to === 'info_requested' ? \App\Support\Msg::of('La mutuelle demande un complément d’information.') : null,
             '/compte/adhesions/' . $r->reference);
     }
 

@@ -24,7 +24,7 @@
     </div>
     <div style="display:flex;justify-content:center;margin:12px 0 8px"><x-mx.avatar :src="$me->avatarUrl()" :name="$me->name" size="lg" /></div>
     <b style="font-size:19px;color:var(--mx-heading)">{{ $me->name }}</b>
-    <div class="mx-small mx-muted">Membre depuis {{ $me->created_at?->translatedFormat('F Y') }}</div>
+    <div class="mx-small mx-muted">{{ __('Membre depuis :date', ['date' => $me->created_at?->translatedFormat('F Y')]) }}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px">
       <a href="{{ route('social.user', $me) }}" style="text-decoration:none;color:inherit"><b style="display:block;font-size:18px">{{ $posts }}</b><span class="mx-xs mx-muted">{{ __('Publications') }}</span></a>
       <a href="{{ route('social.connections') }}" style="text-decoration:none;color:inherit"><b style="display:block;font-size:18px">{{ $followers }}</b><span class="mx-xs mx-muted">{{ __('Abonnés') }}</span></a>

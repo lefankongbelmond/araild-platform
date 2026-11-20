@@ -50,8 +50,8 @@ class PageController extends SocialController
         $me = auth('member')->user();
         $link = route('social.register');
         $store = \App\Support\AndroidApp::storeUrl();
-        $text = $me->first_name . ' vous invite à rejoindre MX-CONNECT, le réseau des mutuelles de santé, des organisations et des citoyens engagés. '
-            . 'Inscription gratuite : ' . $link . ($store ? "\nApplication Android : " . $store : '');
+        $text = __(':name vous invite à rejoindre MX-CONNECT, le réseau des mutuelles de santé, des organisations et des citoyens engagés.', ['name' => $me->first_name]) . ' '
+            . __('Inscription gratuite : :url', ['url' => $link]) . ($store ? "\n" . __('Application Android : :url', ['url' => $store]) : '');
 
         return view('social.invite', ['link' => $link, 'text' => $text, 'store' => $store]);
     }
@@ -70,13 +70,13 @@ class PageController extends SocialController
             'screen'   => ['nullable', 'string', 'max:120'],
             'contact'  => ['nullable', 'string', 'max:180'],
             'device'   => ['nullable', 'string', 'max:160'],
-        ], ['message.min' => 'Décrivez votre retour en quelques mots (10 caractères minimum).']);
+        ], ['message.min' => __('Décrivez votre retour en quelques mots (10 caractères minimum).')]);
         \App\Models\Social\BetaFeedback::create($data + [
             'public_account_id' => auth('member')->id(),
             'app_version' => session('app_version') ? 'Android ' . session('app_version') : 'Web',
         ]);
 
-        return back()->with('ok', 'Merci ! Votre retour a été transmis à l’équipe MX-CONNECT.');
+        return back()->with('ok', __('Merci ! Votre retour a été transmis à l’équipe MX-CONNECT.'));
     }
 
     /** Page PUBLIQUE de suppression de compte (exigée par Google Play pour l'application). */

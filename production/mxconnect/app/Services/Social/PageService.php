@@ -73,18 +73,18 @@ class PageService
             ? PublicAccount::where('email', mb_strtolower($login))->first()
             : PublicAccount::whereIn('phone', array_unique(array_filter([\App\Http\Controllers\Social\AuthController::normalizePhone($login), $login])))->first();
         if (! $account) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => 'Aucun compte MX-CONNECT avec ce téléphone ou cet e-mail. La personne doit d’abord créer son compte sur le réseau.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => __('Aucun compte MX-CONNECT avec ce téléphone ou cet e-mail. La personne doit d’abord créer son compte sur le réseau.')]);
         }
         if ($account->isSuspended()) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => 'Ce compte est suspendu.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => __('Ce compte est suspendu.')]);
         }
         if (PageAdmin::where('mutual_id', $mutual->id)->count() >= 20) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => '20 gestionnaires maximum par page.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['manager' => __('20 gestionnaires maximum par page.')]);
         }
         $admin = PageAdmin::updateOrCreate(['mutual_id' => $mutual->id, 'public_account_id' => $account->id],
             ['role' => array_key_exists($role, PageAdmin::ROLES) ? $role : 'editor', 'added_by_account_id' => $by?->id]);
-        app(NotificationService::class)->notify($account->id, 'page', "Vous pouvez maintenant publier au nom de {$mutual->name}",
-            'Choisissez « Publier en tant que » dans la zone de publication.', route('social.mutual', $mutual->slug));
+        app(NotificationService::class)->notify($account->id, 'page', \App\Support\Msg::of('Vous pouvez maintenant publier au nom de :name', ['name' => $mutual->name]),
+            \App\Support\Msg::of('Choisissez « Publier en tant que » dans la zone de publication.'), route('social.mutual', $mutual->slug));
 
         return $admin;
     }

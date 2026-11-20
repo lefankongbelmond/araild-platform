@@ -5,7 +5,7 @@
 <x-layouts.social :title="$pageTitle" active="organisations">
   @include('social.partials.feedtabs', ['current' => in_array($category, ['organisations', 'mutuelle'], true) ? ($category === 'mutuelle' ? 'mutuelles' : 'organisations') : null])
   <section class="mx-card">
-    <div class="mx-card__head"><h1 class="mx-card__title" style="font-size:20px">{{ $pageTitle }}</h1><span class="mx-small mx-muted">{{ $mutuals->total() }} résultat(s)</span></div>
+    <div class="mx-card__head"><h1 class="mx-card__title" style="font-size:20px">{{ $pageTitle }}</h1><span class="mx-small mx-muted">{{ __(':count résultat(s)', ['count' => $mutuals->total()]) }}</span></div>
     <form method="GET" action="{{ route('social.mutuals') }}" class="mx-row mx-row--wrap" style="padding:0 16px 16px">
       <label class="mx-sr" for="m-q">{{ __('Nom ou ville') }}</label>
       <input id="m-q" class="mx-input" name="q" value="{{ $q }}" placeholder="{{ __('Nom ou ville') }}" style="flex:2;min-width:180px">
@@ -45,7 +45,7 @@
               <a href="{{ route('social.mutual', $m->slug) }}" style="color:inherit"><b style="font-size:16px">{{ $m->name }}</b></a>
               @if($m->isVerified())<span class="mx-verified" title="{{ __('Organisation vérifiée par l’administration du réseau') }}"><x-mx.icon name="verified" :size="16"/></span>@endif
               @if($p?->is_demo)<span class="mx-demo-ribbon">{{ __('Démo') }}</span>@endif
-              <div class="mx-row" style="gap:6px;flex-wrap:wrap;margin-top:4px"><span class="mx-orgtype">{{ __(\App\Models\Social\MutualProfile::CATEGORIES[$p->category ?? 'mutuelle'] ?? 'Mutuelle de santé') }}</span><span class="mx-xs mx-muted">{{ collect([$m->city, $m->region, $m->country?->name])->filter()->implode(', ') }}</span></div>
+              <div class="mx-row" style="gap:6px;flex-wrap:wrap;margin-top:4px"><span class="mx-orgtype">{{ __(\App\Models\Social\MutualProfile::CATEGORIES[$p->category ?? 'mutuelle'] ?? __('Mutuelle de santé')) }}</span><span class="mx-xs mx-muted">{{ collect([$m->city, $m->region, $m->country?->name])->filter()->implode(', ') }}</span></div>
             </div>
             @if ($p?->tagline)<p class="mx-small">{{ $p->tagline }}</p>@endif
             <div class="mx-row mx-between">

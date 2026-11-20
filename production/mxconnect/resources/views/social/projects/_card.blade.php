@@ -14,7 +14,7 @@
     <span class="mx-meta">
       <span><x-mx.icon name="building" :size="14"/> {{ $p->mutual?->name }}@if($p->mutual?->isVerified()) <x-mx.icon name="verified" :size="13"/>@endif</span>
       @if ($p->zone || $p->region)<span><x-mx.icon name="pin" :size="14"/> {{ $p->zone ?: $p->region }}</span>@endif
-      @isset($p->indicators_count)<span><x-mx.icon name="chart" :size="14"/> {{ $p->indicators_count }} résultat(s) publié(s)</span>@endisset
+      @isset($p->indicators_count)<span><x-mx.icon name="chart" :size="14"/> {{ __(':count résultat(s) publié(s)', ['count' => $p->indicators_count]) }}</span>@endisset
     </span>
   </span>
 </a>

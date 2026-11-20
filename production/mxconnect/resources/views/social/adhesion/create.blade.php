@@ -9,7 +9,7 @@
     @unless ($mutual->isVerified())<div class="mx-alert mx-alert--warn">{{ __('Cette mutuelle est en cours de vérification par le réseau MX-CONNECT.') }}</div>@endunless
     <p class="mx-small">{{ __('Votre demande est transmise uniquement à') }} <b>{{ $mutual->name }}</b>{{ __(', qui l’étudie et vous répond ici. L’adhésion n’est définitive qu’après acceptation par la mutuelle ; elle vous indiquera alors les modalités de paiement de la cotisation.') }} <b>{{ __('Aucun paiement n’est demandé en ligne.') }}</b></p>
     @if ($offer && $offer->monthly_contribution_min_minor !== null)
-      <p class="mx-small mx-muted">Cotisation mensuelle indicative : {{ $offer->currency ? $offer->currency->format($offer->monthly_contribution_min_minor) : $offer->monthly_contribution_min_minor }}@if ($offer->monthly_contribution_max_minor > $offer->monthly_contribution_min_minor) – {{ $offer->currency ? $offer->currency->format($offer->monthly_contribution_max_minor) : $offer->monthly_contribution_max_minor }}@endif.</p>
+      <p class="mx-small mx-muted">{{ __('Cotisation mensuelle indicative :') }} {{ $offer->currency ? $offer->currency->format($offer->monthly_contribution_min_minor) : $offer->monthly_contribution_min_minor }}@if ($offer->monthly_contribution_max_minor > $offer->monthly_contribution_min_minor) – {{ $offer->currency ? $offer->currency->format($offer->monthly_contribution_max_minor) : $offer->monthly_contribution_max_minor }}@endif.</p>
     @endif
   </section>
 
@@ -64,7 +64,7 @@
       <h2 class="mx-card__title">{{ __('4. Message et accord') }}</h2>
       <div class="mx-field"><label class="mx-label" for="a-msg">{{ __('Message à la mutuelle (facultatif)') }}</label><textarea class="mx-textarea" id="a-msg" name="message" maxlength="2000">{{ old('message') }}</textarea></div>
       <label class="mx-check"><input type="checkbox" name="no_medical" value="1" required @checked(old('no_medical'))> <span>{{ __('Je n’ai indiqué aucune information médicale (maladie, traitement, résultat d’examen). Ces informations ne sont pas demandées ici.') }}</span></label>
-      <label class="mx-check"><input type="checkbox" name="consent" value="1" required @checked(old('consent'))> <span>J’accepte que ces informations soient transmises à {{ $mutual->name }} pour étudier ma demande d’adhésion (<a href="{{ route('social.privacy') }}" target="_blank">{{ __('confidentialité') }}</a>).</span></label>
+      <label class="mx-check"><input type="checkbox" name="consent" value="1" required @checked(old('consent'))> <span>{{ __('J’accepte que ces informations soient transmises à :name pour étudier ma demande d’adhésion (', ['name' => $mutual->name]) }}<a href="{{ route('social.privacy') }}" target="_blank">{{ __('confidentialité') }}</a>).</span></label>
       <div><button class="mx-btn mx-btn--primary mx-btn--lg"><x-mx.icon name="send" :size="16"/> {{ __('Envoyer ma demande') }}</button></div>
     </section>
   </form>

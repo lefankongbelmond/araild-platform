@@ -43,7 +43,7 @@ class AuthController extends Controller
         $app = $request->input('app') === '1';
         $shown = $app ? $legal->current()->whereIn('type', ['terms', 'privacy'])->values() : $legal->current()->whereIn('type', ['community', 'privacy'])->values();
         $docRules = $app ? $shown->mapWithKeys(fn ($d) => ['doc_' . $d->id => ['accepted']])->all() : ['terms' => ['accepted']];
-        $docMessages = $app ? $shown->mapWithKeys(fn ($d) => ['doc_' . $d->id . '.accepted' => 'Cochez « ' . $d->checkboxText() . ' » pour créer votre compte.'])->all() : [];
+        $docMessages = $app ? $shown->mapWithKeys(fn ($d) => ['doc_' . $d->id . '.accepted' => __('Cochez « :text » pour créer votre compte.', ['text' => $d->checkboxText()])])->all() : [];
 
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:120'],
@@ -53,12 +53,12 @@ class AuthController extends Controller
             'email'      => ['nullable', 'required_without:phone', 'email:rfc', 'max:180', Rule::unique('central.public_accounts', 'email')],
             'password'   => ['required', ...($request->has('password_confirmation') ? ['confirmed'] : []), Password::min(8)->letters()->numbers()],
         ] + $docRules, [
-            'phone.regex'    => 'Numéro de téléphone invalide (8 à 15 chiffres, indicatif possible : +225…).',
-            'phone.unique'   => 'Un compte existe déjà avec ce numéro. Connectez-vous.',
-            'phone.required_without' => 'Indiquez un numéro de téléphone ou une adresse e-mail.',
-            'email.required_without' => 'Indiquez une adresse e-mail ou un numéro de téléphone.',
-            'email.unique'   => 'Un compte existe déjà avec cette adresse e-mail.',
-            'terms.accepted' => 'Vous devez accepter les conditions d’utilisation.',
+            'phone.regex'    => __('Numéro de téléphone invalide (8 à 15 chiffres, indicatif possible : +225…).'),
+            'phone.unique'   => __('Un compte existe déjà avec ce numéro. Connectez-vous.'),
+            'phone.required_without' => __('Indiquez un numéro de téléphone ou une adresse e-mail.'),
+            'email.required_without' => __('Indiquez une adresse e-mail ou un numéro de téléphone.'),
+            'email.unique'   => __('Un compte existe déjà avec cette adresse e-mail.'),
+            'terms.accepted' => __('Vous devez accepter les conditions d’utilisation.'),
         ] + $docMessages);
 
         $account = PublicAccount::create([
@@ -84,7 +84,7 @@ class AuthController extends Controller
         }
 
         return redirect()->route('social.mutuals')
-            ->with('ok', 'Bienvenue sur MX Connect, ' . $account->first_name . ' ! Suivez quelques mutuelles pour personnaliser votre fil.');
+            ->with('ok', __('Bienvenue sur MX-CONNECT, :name ! Suivez quelques mutuelles pour personnaliser votre fil.', ['name' => $account->first_name]));
     }
 
     public function showLogin()
@@ -101,7 +101,7 @@ class AuthController extends Controller
 
         $key = 'social-login:' . Str::lower($data['login']) . '|' . $request->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
-            throw ValidationException::withMessages(['login' => 'Trop de tentatives. Réessayez dans ' . RateLimiter::availableIn($key) . ' secondes.']);
+            throw ValidationException::withMessages(['login' => __('Trop de tentatives. Réessayez dans :seconds secondes.', ['seconds' => RateLimiter::availableIn($key)])]);
         }
 
         $login = trim($data['login']);
@@ -111,11 +111,11 @@ class AuthController extends Controller
 
         if (! $account || ! Hash::check($data['password'], $account->password)) {
             RateLimiter::hit($key, 300);
-            throw ValidationException::withMessages(['login' => 'Identifiants incorrects.']);
+            throw ValidationException::withMessages(['login' => __('Identifiants incorrects.')]);
         }
         RateLimiter::clear($key);
         if ($account->isSuspended()) {
-            throw ValidationException::withMessages(['login' => 'Ce compte est suspendu par la modération du réseau.' . ($account->suspension_reason ? ' Motif : ' . $account->suspension_reason : '')]);
+            throw ValidationException::withMessages(['login' => $account->suspension_reason ? __('Ce compte est suspendu par la modération du réseau. Motif : :reason', ['reason' => $account->suspension_reason]) : __('Ce compte est suspendu par la modération du réseau.')]);
         }
 
         Auth::guard('member')->login($account, $request->boolean('remember'));
@@ -134,7 +134,7 @@ class AuthController extends Controller
         Auth::guard('member')->logout();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('ok', 'Vous êtes déconnecté.');
+        return redirect('/')->with('ok', __('Vous êtes déconnecté.'));
     }
 
     /** « +225 07 00 00 00 00 » -> « +2250700000000 » ; « 00225… » -> « +225… ». */

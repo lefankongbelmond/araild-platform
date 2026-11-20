@@ -15,7 +15,7 @@ class FeedController extends SocialController
     public function home(Request $request)
     {
         return $this->feedView($request, 'social.feed', $this->feed->home($this->viewer(), $this->filters($request)), [
-            'tab' => 'fil', 'title' => 'Accueil', 'composer' => true,
+            'tab' => 'fil', 'title' => __('Accueil'), 'composer' => true,
         ]);
     }
 
@@ -40,7 +40,7 @@ class FeedController extends SocialController
     public function all(Request $request)
     {
         return $this->feedView($request, 'social.feed', $this->feed->all($this->viewer(), $this->filters($request)), [
-            'tab' => 'toutes', 'title' => 'Toutes les publications', 'filtersBar' => true, 'places' => $this->feed->places(),
+            'tab' => 'toutes', 'title' => __('Toutes les publications'), 'filtersBar' => true, 'places' => $this->feed->places(),
         ]);
     }
 
@@ -50,7 +50,7 @@ class FeedController extends SocialController
         $viewer = $this->viewer();
 
         return $this->feedView($request, 'social.feed', $this->feed->following($viewer, $this->filters($request)), [
-            'tab' => 'abonnements', 'title' => 'Mes abonnements',
+            'tab' => 'abonnements', 'title' => __('Mes abonnements'),
             'followCount' => $viewer->follows()->count(),
         ]);
     }
@@ -134,7 +134,7 @@ class FeedController extends SocialController
     public function saved(Request $request)
     {
         return $this->feedView($request, 'social.feed', $this->feed->saved($this->viewer()), [
-            'tab' => 'enregistrements', 'title' => 'Enregistrements',
+            'tab' => 'enregistrements', 'title' => __('Enregistrements'),
         ]);
     }
 }

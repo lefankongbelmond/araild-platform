@@ -9,19 +9,19 @@
 
   <section class="mx-card mx-card__pad">
     <div class="mx-between"><b>{{ mb_strtoupper($m->last_name) }} {{ $m->first_name }}</b><span class="mx-badge mx-badge--blue">{{ __('Adhérent principal') }}</span></div>
-    <p class="mx-xs mx-muted">Né(e) le {{ $m->birth_date?->format('d/m/Y') }} · n° {{ $m->member_code }}</p>
+    <p class="mx-xs mx-muted">{{ __('Né(e) le :date · n° :reference', ['date' => $m->birth_date?->format('d/m/Y'), 'reference' => $m->member_code]) }}</p>
   </section>
   @foreach ($x['dependents'] as $dep)
     @php $active = $dep->status === 'active' && ! $dep->trashed(); @endphp
     <section class="mx-card mx-card__pad" style="margin-top:10px">
       <div class="mx-between" style="gap:8px;flex-wrap:wrap"><b>{{ mb_strtoupper($dep->last_name) }} {{ $dep->first_name }}</b>
         <span class="mx-badge mx-badge--{{ $active ? 'green' : 'danger' }}">{{ $active ? __('Couvert(e)') : __('Retiré(e)') }}</span></div>
-      <p class="mx-xs mx-muted">{{ $rel[$dep->relationship] ?? $dep->relationship }}@if ($dep->is_student) · élève @endif · né(e) le {{ $dep->birth_date?->format('d/m/Y') }}
-        @if ($dep->joined_on) · intégré(e) le {{ $dep->joined_on->format('d/m/Y') }}@endif @if ($dep->left_on) · sorti(e) le {{ $dep->left_on->format('d/m/Y') }}@endif</p>
+      <p class="mx-xs mx-muted">{{ $rel[$dep->relationship] ?? $dep->relationship }}@if ($dep->is_student) · {{ __('élève') }} @endif · {{ __('né(e) le :date', ['date' => $dep->birth_date?->format('d/m/Y')]) }}
+        @if ($dep->joined_on) · {{ __('intégré(e) le :date', ['date' => $dep->joined_on->format('d/m/Y')]) }}@endif @if ($dep->left_on) · {{ __('sorti(e) le :date', ['date' => $dep->left_on->format('d/m/Y')]) }}@endif</p>
       @if ($active)
         <p class="mx-small">{{ __('Pris en charge cette année :') }} <b>{{ $fmt(($x['consumed'])($dep)) }}</b></p>
         @foreach (($x['limits'])($dep) as $l)
-          @if ($l['amount'] !== null && str_contains($l['period'], 'bénéficiaire'))<p class="mx-xs mx-muted">{{ $l['label'] }} : reste {{ $fmt($l['remaining']) }} sur {{ $fmt($l['amount']) }}</p>@endif
+          @if ($l['amount'] !== null && str_contains($l['period'], 'bénéficiaire'))<p class="mx-xs mx-muted">{{ __(':label : reste :amount sur :amount2', ['label' => $l['label'], 'amount' => $fmt($l['remaining']), 'amount2' => $fmt($l['amount'])]) }}</p>@endif
         @endforeach
         <details style="margin-top:6px"><summary class="mx-small" style="cursor:pointer">{{ __('Demander une modification ou un retrait') }}</summary>
           <form method="POST" action="{{ route('social.member.dependents.request', $mutual->slug) }}" class="mx-grid-2" style="margin-top:8px">@csrf

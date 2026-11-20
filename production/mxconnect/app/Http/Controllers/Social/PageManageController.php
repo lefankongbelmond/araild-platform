@@ -53,7 +53,7 @@ class PageManageController extends SocialController
         $project = $this->projects->saveProject($page, $data, $request->file('cover'), null, $this->viewer());
 
         return redirect()->route('social.manage.project.edit', [$page->slug, $project->id])
-            ->with('ok', 'Projet enregistré. Ajoutez maintenant ses résultats chiffrés et ses actualités.');
+            ->with('ok', __('Projet enregistré. Ajoutez maintenant ses résultats chiffrés et ses actualités.'));
     }
 
     public function editProject(string $slug, int $project)
@@ -71,7 +71,7 @@ class PageManageController extends SocialController
         $data = $request->validate(ProjectService::projectRules(), ProjectService::projectMessages());
         $this->projects->saveProject($page, $data, $request->file('cover'), $p, $this->viewer());
 
-        return redirect()->route('social.manage.project.edit', [$page->slug, $p->id])->with('ok', 'Projet mis à jour.');
+        return redirect()->route('social.manage.project.edit', [$page->slug, $p->id])->with('ok', __('Projet mis à jour.'));
     }
 
     public function destroyProject(string $slug, int $project)
@@ -79,7 +79,7 @@ class PageManageController extends SocialController
         $page = $this->page($slug);
         $this->projects->deleteProject($this->project($page, $project));
 
-        return redirect()->route('social.manage.projects', $page->slug)->with('ok', 'Projet supprimé.');
+        return redirect()->route('social.manage.projects', $page->slug)->with('ok', __('Projet supprimé.'));
     }
 
     public function storeIndicator(Request $request, string $slug, int $project)
@@ -88,7 +88,7 @@ class PageManageController extends SocialController
         $p = $this->project($page, $project);
         $this->projects->saveIndicator($p, $request->validateWithBag('indicator', ProjectService::indicatorRules()));
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#resultats')->with('ok', 'Résultat ajouté (déclaré par votre organisation).');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#resultats')->with('ok', __('Résultat ajouté (déclaré par votre organisation).'));
     }
 
     public function updateIndicator(Request $request, string $slug, int $project, int $indicator)
@@ -100,7 +100,7 @@ class PageManageController extends SocialController
         $i = $this->projects->saveIndicator($p, $request->validateWithBag('indicator', ProjectService::indicatorRules()), $i);
 
         return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#resultats')
-            ->with('ok', $wasVerified && ! $i->isVerified() ? 'Résultat modifié : il redevient « déclaré » jusqu’à une nouvelle vérification.' : 'Résultat mis à jour.');
+            ->with('ok', $wasVerified && ! $i->isVerified() ? __('Résultat modifié : il redevient « déclaré » jusqu’à une nouvelle vérification.') : __('Résultat mis à jour.'));
     }
 
     public function destroyIndicator(string $slug, int $project, int $indicator)
@@ -109,7 +109,7 @@ class PageManageController extends SocialController
         $p = $this->project($page, $project);
         ProjectIndicator::where('project_id', $p->id)->findOrFail($indicator)->delete();
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#resultats')->with('ok', 'Résultat supprimé.');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#resultats')->with('ok', __('Résultat supprimé.'));
     }
 
     public function storeUpdate(Request $request, string $slug, int $project)
@@ -118,10 +118,10 @@ class PageManageController extends SocialController
         $p = $this->project($page, $project);
         $data = $request->validateWithBag('progress', [
             'update_title' => ['required', 'string', 'max:180'], 'update_body' => ['required', 'string', 'max:5000'], 'announce' => ['nullable', 'boolean'],
-        ], ['update_title.required' => 'Donnez un titre à l’actualité.', 'update_body.required' => 'Écrivez le texte de l’actualité.']);
+        ], ['update_title.required' => __('Donnez un titre à l’actualité.'), 'update_body.required' => __('Écrivez le texte de l’actualité.')]);
         $this->projects->addUpdate($p, $data['update_title'], $data['update_body'], (bool) ($data['announce'] ?? false), $page, $this->viewer());
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#actualites')->with('ok', 'Actualité du projet publiée.');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#actualites')->with('ok', __('Actualité du projet publiée.'));
     }
 
     public function destroyUpdate(string $slug, int $project, int $update)
@@ -130,7 +130,7 @@ class PageManageController extends SocialController
         $p = $this->project($page, $project);
         ProjectUpdate::where('project_id', $p->id)->findOrFail($update)->delete();
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#actualites')->with('ok', 'Actualité supprimée.');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#actualites')->with('ok', __('Actualité supprimée.'));
     }
 
     public function storeDocuments(Request $request, string $slug, int $project)
@@ -138,14 +138,14 @@ class PageManageController extends SocialController
         $page = $this->page($slug);
         $p = $this->project($page, $project);
         $data = $request->validateWithBag('docs', array_merge(\App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_PROJECT), ['documents' => ['required', 'array', 'max:5']]),
-            \App\Services\Social\DocumentService::messages() + ['documents.required' => 'Choisissez au moins un fichier PDF.']);
+            \App\Services\Social\DocumentService::messages() + ['documents.required' => __('Choisissez au moins un fichier PDF.')]);
         \App\Services\Social\DocumentService::requireConsent($request, 'docs');
         if ($p->documents()->count() + count($data['documents']) > \App\Services\Social\DocumentService::MAX_PER_PROJECT) {
-            return back()->withErrors(['documents' => \App\Services\Social\DocumentService::MAX_PER_PROJECT . ' documents maximum par projet.'], 'docs');
+            return back()->withErrors(['documents' => __(':count documents maximum par projet.', ['count' => \App\Services\Social\DocumentService::MAX_PER_PROJECT])], 'docs');
         }
         app(\App\Services\Social\DocumentService::class)->store($page, $data['documents'], $data['document_titles'] ?? [], ['project_id' => $p->id], $this->viewer());
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', 'Document(s) ajouté(s) au projet.');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', __('Document(s) ajouté(s) au projet.'));
     }
 
     public function destroyDocument(string $slug, int $project, int $document)
@@ -154,7 +154,7 @@ class PageManageController extends SocialController
         $p = $this->project($page, $project);
         app(\App\Services\Social\DocumentService::class)->delete(\App\Models\Social\Document::where('project_id', $p->id)->findOrFail($document));
 
-        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', 'Document supprimé.');
+        return redirect()->to(route('social.manage.project.edit', [$page->slug, $p->id]) . '#documents')->with('ok', __('Document supprimé.'));
     }
 
     // --- Opportunités ---
@@ -188,7 +188,7 @@ class PageManageController extends SocialController
         $o = $this->projects->saveOpportunity($page, $data, null, $this->viewer());
 
         return redirect()->route('social.manage.opportunities', $page->slug)
-            ->with('ok', $o->status === 'published' ? 'Opportunité publiée : elle apparaît dans « Emplois et opportunités ».' : 'Brouillon enregistré.');
+            ->with('ok', $o->status === 'published' ? __('Opportunité publiée : elle apparaît dans « Emplois et opportunités ».') : __('Brouillon enregistré.'));
     }
 
     public function editOpportunity(string $slug, int $opportunity)
@@ -205,7 +205,7 @@ class PageManageController extends SocialController
         $data = $request->validate(ProjectService::opportunityRules(), ProjectService::opportunityMessages());
         $this->projects->saveOpportunity($page, $data, $o, $this->viewer());
 
-        return redirect()->route('social.manage.opportunities', $page->slug)->with('ok', 'Opportunité mise à jour.');
+        return redirect()->route('social.manage.opportunities', $page->slug)->with('ok', __('Opportunité mise à jour.'));
     }
 
     public function availability(Request $request, string $slug, int $opportunity)
@@ -215,7 +215,7 @@ class PageManageController extends SocialController
         $data = $request->validate(['availability' => ['required', 'in:' . implode(',', array_keys(Opportunity::AVAILABILITIES))]]);
         $this->projects->setAvailability($o, $data['availability']);
 
-        return back()->with('ok', 'Statut de l’offre : ' . mb_strtolower(Opportunity::AVAILABILITIES[$data['availability']]) . '.');
+        return back()->with('ok', __('Statut de l’offre : :status.', ['status' => mb_strtolower(__(Opportunity::AVAILABILITIES[$data['availability']]))]));
     }
 
     public function destroyOpportunity(string $slug, int $opportunity)
@@ -223,7 +223,7 @@ class PageManageController extends SocialController
         $page = $this->page($slug);
         $this->opportunity($page, $opportunity)->delete();
 
-        return redirect()->route('social.manage.opportunities', $page->slug)->with('ok', 'Opportunité supprimée.');
+        return redirect()->route('social.manage.opportunities', $page->slug)->with('ok', __('Opportunité supprimée.'));
     }
 
     // --- Demandes reçues (propriétaire et administrateurs) ---
@@ -258,7 +258,7 @@ class PageManageController extends SocialController
         $data = $request->validate(['status' => ['required', 'in:in_review,accepted,rejected,closed'], 'note' => ['nullable', 'string', 'max:2000']]);
         $this->requests->decide($r, $data['status'], $data['note'] ?? null, $this->viewer()->name . ' (' . $page->name . ')');
 
-        return back()->with('ok', 'Demande mise à jour : ' . SocialRequest::STATUSES[$data['status']] . '.');
+        return back()->with('ok', __('Demande mise à jour : :status.', ['status' => __(SocialRequest::STATUSES[$data['status']])]));
     }
 
     public function requestCv(string $slug, string $reference)
@@ -274,9 +274,9 @@ class PageManageController extends SocialController
     {
         $page = Mutual::where('slug', $slug)->with(['profile', 'country'])->firstOrFail();
         $viewer = $this->viewer();
-        abort_unless(PageService::canPublish($viewer, $page), 403, 'Vous ne gérez pas cette page.');
+        abort_unless(PageService::canPublish($viewer, $page), 403, __('Vous ne gérez pas cette page.'));
         if ($inbox) {
-            abort_unless(PageService::canAdminister($viewer, $page), 403, 'Seuls le créateur et les administrateurs de la page lisent les demandes reçues.');
+            abort_unless(PageService::canAdminister($viewer, $page), 403, __('Seuls le créateur et les administrateurs de la page lisent les demandes reçues.'));
         }
 
         return $page;

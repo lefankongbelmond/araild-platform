@@ -29,6 +29,6 @@ class NotificationController extends SocialController
     {
         SocialNotification::where('public_account_id', $this->viewer()->id)->whereNull('read_at')->update(['read_at' => now()]);
 
-        return back()->with('ok', 'Toutes les notifications sont marquées comme lues.');
+        return back()->with('ok', __('Toutes les notifications sont marquées comme lues.'));
     }
 }

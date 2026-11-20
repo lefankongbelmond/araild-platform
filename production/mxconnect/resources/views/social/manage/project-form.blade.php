@@ -9,7 +9,7 @@
   <form class="mx-card mx-card__pad mx-stack" method="POST" action="{{ $action }}" enctype="multipart/form-data">
     @csrf
     <div class="mx-row mx-between mx-row--wrap" style="gap:8px">
-      <h1 style="font-size:20px">{{ $editing ? $project->title : 'Nouveau projet' }}</h1>
+      <h1 style="font-size:20px">{{ $editing ? $project->title : __('Nouveau projet') }}</h1>
       @if ($editing)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.project', $project) }}">{{ __('Voir la page du projet') }}</a>@endif
     </div>
     @if ($project->status === 'hidden')<div class="mx-alert mx-alert--warn">{{ __('Ce projet a été masqué par la modération du réseau. Contactez l’administration du réseau pour en savoir plus.') }}</div>@endif
@@ -98,11 +98,11 @@
 
     <section class="mx-card mx-card__pad mx-stack" id="documents">
       <h2 class="mx-card__title">{{ __('Documents du projet') }}</h2>
-      <p class="mx-small mx-muted">{{ __('Rapports d’activité, comptes rendus, affiches… Ils sont') }} <b>{{ __('publics') }}</b> et aident l’administration du réseau à vérifier vos résultats. PDF uniquement, {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun, 10 par projet.</p>
+      <p class="mx-small mx-muted">{{ __('Rapports d’activité, comptes rendus, affiches… Ils sont') }} <b>{{ __('publics') }}</b> {{ __('et aident l’administration du réseau à vérifier vos résultats. PDF uniquement, :size Mo chacun, 10 par projet.', ['size' => round(\App\Services\Social\DocumentService::maxKb() / 1024)]) }}</p>
       @if ($errors->docs->any())<div class="mx-alert mx-alert--err" role="alert">{{ $errors->docs->first() }}</div>@endif
       @foreach ($project->documents as $d)
         <div class="mx-row mx-between" style="gap:10px;border-top:1px solid var(--mx-border);padding-top:8px">
-          <a href="{{ $d->url() }}" style="min-width:0"><x-mx.icon name="file" :size="16"/> {{ $d->title }} <span class="mx-xs mx-muted">({{ $d->sizeLabel() }} · {{ $d->downloads_count }} téléchargement(s))</span></a>
+          <a href="{{ $d->url() }}" style="min-width:0"><x-mx.icon name="file" :size="16"/> {{ $d->title }} <span class="mx-xs mx-muted">{{ __('(:sizelabel · :count téléchargement(s))', ['sizelabel' => $d->sizeLabel(), 'count' => $d->downloads_count]) }}</span></a>
           <form method="POST" action="{{ route('social.manage.document.destroy', [$page->slug, $project->id, $d->id]) }}" data-confirm="{{ __('Supprimer ce document ?') }}">@csrf<button class="mx-iconbtn" aria-label="{{ __('Supprimer le document') }}"><x-mx.icon name="trash" :size="16"/></button></form>
         </div>
       @endforeach

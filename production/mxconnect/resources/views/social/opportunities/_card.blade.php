@@ -15,7 +15,7 @@
       <span><x-mx.icon name="building" :size="14"/> {{ $o->mutual?->name }}@if($o->mutual?->isVerified()) <x-mx.icon name="verified" :size="13"/>@endif</span>
       @if ($o->place())<span><x-mx.icon name="pin" :size="14"/> {{ $o->place() }}</span>@endif
       @if ($o->workplace)<span>{{ __(\App\Models\Social\Opportunity::WORKPLACES[$o->workplace]) }}</span>@endif
-      @if ($o->deadline_on)<span><x-mx.icon name="calendar" :size="14"/> Avant le {{ $o->deadline_on->format('d/m/Y') }}</span>@endif
+      @if ($o->deadline_on)<span><x-mx.icon name="calendar" :size="14"/> {{ __('Avant le :date', ['date' => $o->deadline_on->format('d/m/Y')]) }}</span>@endif
     </span>
   </span>
 </a>

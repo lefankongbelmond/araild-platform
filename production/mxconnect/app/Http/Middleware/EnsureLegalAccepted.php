@@ -28,7 +28,7 @@ class EnsureLegalAccepted
                 return response()->json(['message' => 'Validez d’abord les documents en attente.', 'redirect' => $url], 409);
             }
 
-            return redirect($url)->with('info', 'Avant de continuer, validez les documents mis à jour.');
+            return redirect($url)->with('info', __('Avant de continuer, validez les documents mis à jour.'));
         }
 
         return $next($request);

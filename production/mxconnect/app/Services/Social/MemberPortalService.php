@@ -37,7 +37,7 @@ class MemberPortalService
         $mutual = Mutual::where('slug', $slug)->first();
         $link = $mutual ? MemberLink::where('public_account_id', $a->id)->where('mutual_id', $mutual->id)->first() : null;
         abort_unless($mutual && $link, 404);
-        abort_if(($mutual->status ?? null) === 'suspended', 403, 'Cette mutuelle est momentanément fermée. Contactez-la directement.');
+        abort_if(($mutual->status ?? null) === 'suspended', 403, __('Cette mutuelle est momentanément fermée. Contactez-la directement.'));
 
         return [$mutual, $link];
     }
@@ -61,7 +61,7 @@ class MemberPortalService
     /** Activation par l'adhérent. Refus = AccountingRefusal (message affiché tel quel, sans indice exploitable). */
     public function activate(PublicAccount $a, string $code, string $birthDate): MemberLink
     {
-        $fail = 'Code ou date de naissance incorrects, ou code expiré. Vérifiez, ou demandez un nouveau code à votre mutuelle.';
+        $fail = __('Code ou date de naissance incorrects, ou code expiré. Vérifiez, ou demandez un nouveau code à votre mutuelle.');
 
         return DB::connection('central')->transaction(function () use ($a, $code, $birthDate, $fail) {
             $row = MemberActivationCode::where('code_hash', MemberActivationCode::hash($code))->lockForUpdate()->first();
@@ -79,17 +79,17 @@ class MemberPortalService
             }
             $other = MemberLink::where('mutual_id', $mutual->id)->where('member_id', $member->id)->where('public_account_id', '!=', $a->id)->exists();
             if ($other) {
-                throw new AccountingRefusal('Cette adhésion est déjà reliée à un autre compte MX-CONNECT. Contactez votre mutuelle.');
+                throw new AccountingRefusal(__('Cette adhésion est déjà reliée à un autre compte MX-CONNECT. Contactez votre mutuelle.'));
             }
             $mine = MemberLink::where('public_account_id', $a->id)->where('mutual_id', $mutual->id)->first();
             if ($mine && (int) $mine->member_id !== (int) $member->id) {
-                throw new AccountingRefusal('Votre compte est déjà relié à une autre fiche dans cette mutuelle. Contactez-la.');
+                throw new AccountingRefusal(__('Votre compte est déjà relié à une autre fiche dans cette mutuelle. Contactez-la.'));
             }
             $link = MemberLink::updateOrCreate(['public_account_id' => $a->id, 'mutual_id' => $mutual->id],
                 ['member_id' => $member->id, 'member_code' => $member->member_code]);
             $row->update(['used_at' => now(), 'used_by_account' => $a->id]);
-            $this->notifications->notify($a, 'mutuelle', "Votre adhésion à {$mutual->name} est accessible dans votre compte",
-                'Numéro d’adhérent : ' . $member->member_code, '/compte/mon-adhesion/' . $mutual->slug);
+            $this->notifications->notify($a, 'mutuelle', \App\Support\Msg::of('Votre adhésion à :name est accessible dans votre compte', ['name' => $mutual->name]),
+                \App\Support\Msg::of('Numéro d’adhérent : :code', ['code' => $member->member_code]), '/compte/mon-adhesion/' . $mutual->slug);
 
             return $link;
         });

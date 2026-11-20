@@ -56,7 +56,7 @@ class GroupController extends SocialController
 
     public function join(Group $group)
     {
-        abort_unless($group->status === 'active' && $group->mutual?->status !== 'suspended', 422, 'Ce groupe n’accepte plus de membres.');
+        abort_unless($group->status === 'active' && $group->mutual?->status !== 'suspended', 422, __('Ce groupe n’accepte plus de membres.'));
         $viewer = $this->viewer();
         $m = GroupMember::firstOrCreate(
             ['group_id' => $group->id, 'public_account_id' => $viewer->id],
@@ -69,8 +69,8 @@ class GroupController extends SocialController
         }
 
         return back()->with('ok', $m->status === 'active'
-            ? "Vous avez rejoint « {$group->name} »."
-            : "Demande envoyée : {$group->mutual?->name} doit approuver votre arrivée dans ce groupe privé.");
+            ? __('Vous avez rejoint « :name ».', ['name' => $group->name])
+            : __('Demande envoyée : :name doit approuver votre arrivée dans ce groupe privé.', ['name' => $group->mutual?->name]));
     }
 
     public function leave(Group $group)
@@ -78,12 +78,12 @@ class GroupController extends SocialController
         GroupMember::where('group_id', $group->id)->where('public_account_id', $this->viewer()->id)->delete();
         $group->refreshCounters();
 
-        return redirect()->route('social.group', $group)->with('ok', "Vous avez quitté « {$group->name} ».");
+        return redirect()->route('social.group', $group)->with('ok', __('Vous avez quitté « :name ».', ['name' => $group->name]));
     }
 
     public function post(Request $request, Group $group)
     {
-        abort_unless($group->status === 'active' && $group->isMember($this->viewer()), 403, 'Rejoignez le groupe pour publier.');
+        abort_unless($group->status === 'active' && $group->isMember($this->viewer()), 403, __('Rejoignez le groupe pour publier.'));
         $maxKb = (int) config('mxconnect.social.max_upload_kb', 6144);
         $data = $request->validate([
             'body'     => ['nullable', 'string', 'max:5000'],
@@ -99,11 +99,11 @@ class GroupController extends SocialController
 
         $url = route('social.group', $group) . '#post-' . $post->id;
         if ($request->expectsJson()) {
-            session()->flash('ok', 'Publié dans le groupe.');
+            session()->flash('ok', __('Publié dans le groupe.'));
 
             return response()->json(['ok' => true, 'url' => $url]);
         }
 
-        return redirect()->to($url)->with('ok', 'Publié dans le groupe.');
+        return redirect()->to($url)->with('ok', __('Publié dans le groupe.'));
     }
 }

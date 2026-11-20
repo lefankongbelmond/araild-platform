@@ -116,7 +116,7 @@ class AccountController extends SocialController
             $this->media->delete($oldCover);
         }
 
-        return redirect()->route('social.settings')->with('ok', 'Profil mis à jour.');
+        return redirect()->route('social.settings')->with('ok', __('Profil mis à jour.'));
     }
 
     public function password(Request $request)
@@ -127,12 +127,12 @@ class AccountController extends SocialController
             'password'         => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
         if (! Hash::check($data['current_password'], $account->password)) {
-            return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.']);
+            return back()->withErrors(['current_password' => __('Mot de passe actuel incorrect.')]);
         }
         $account->update(['password' => $data['password']]);
         $request->session()->regenerate();
 
-        return redirect()->route('social.settings')->with('ok', 'Mot de passe modifié.');
+        return redirect()->route('social.settings')->with('ok', __('Mot de passe modifié.'));
     }
 
     /**
@@ -148,9 +148,9 @@ class AccountController extends SocialController
         $data = $request->validate([
             'current_password' => ['required', 'string'],
             'confirm'          => ['required', 'in:SUPPRIMER'],
-        ], ['confirm.in' => 'Tapez SUPPRIMER en majuscules pour confirmer.']);
+        ], ['confirm.in' => __('Tapez SUPPRIMER en majuscules pour confirmer.')]);
         if (! Hash::check($data['current_password'], $account->password)) {
-            return back()->withErrors(['current_password' => 'Mot de passe incorrect.']);
+            return back()->withErrors(['current_password' => __('Mot de passe incorrect.')]);
         }
 
         $id = $account->id;
@@ -186,7 +186,7 @@ class AccountController extends SocialController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('ok', 'Votre compte et vos données du réseau social ont été supprimés.');
+        return redirect('/')->with('ok', __('Votre compte et vos données du réseau social ont été supprimés.'));
     }
 
     /** Mutuelles suivies et masquées. */
@@ -194,18 +194,18 @@ class AccountController extends SocialController
     public function follow(Request $request, PublicAccount $account)
     {
         $viewer = $this->viewer();
-        abort_if($account->id === $viewer->id, 422, 'Vous ne pouvez pas vous suivre vous-même.');
+        abort_if($account->id === $viewer->id, 422, __('Vous ne pouvez pas vous suivre vous-même.'));
         abort_if($account->isSuspended(), 404);
         $existing = \App\Models\Social\UserFollow::where('follower_id', $viewer->id)->where('followed_id', $account->id)->first();
         if ($existing) {
             $existing->delete();
             $following = false;
         } else {
-            abort_if($account->profile_visibility === 'private', 403, 'Ce profil est privé : il ne peut pas être suivi.');
-            abort_if(\App\Models\Social\UserFollow::where('follower_id', $viewer->id)->count() >= 5000, 422, 'Nombre maximal d’abonnements atteint.');
+            abort_if($account->profile_visibility === 'private', 403, __('Ce profil est privé : il ne peut pas être suivi.'));
+            abort_if(\App\Models\Social\UserFollow::where('follower_id', $viewer->id)->count() >= 5000, 422, __('Nombre maximal d’abonnements atteint.'));
             \App\Models\Social\UserFollow::create(['follower_id' => $viewer->id, 'followed_id' => $account->id]);
             $following = true;
-            app(\App\Services\Social\NotificationService::class)->notify($account->id, 'follow', "{$viewer->name} s’est abonné(e) à vos publications", null, route('social.user', $viewer));
+            app(\App\Services\Social\NotificationService::class)->notify($account->id, 'follow', \App\Support\Msg::of(':name s’est abonné(e) à vos publications', ['name' => $viewer->name]), null, route('social.user', $viewer));
         }
         $followers = \App\Models\Social\UserFollow::where('followed_id', $account->id)->count();
 
@@ -213,13 +213,13 @@ class AccountController extends SocialController
             return response()->json(['following' => $following, 'followers' => $followers, 'name' => $account->name]);
         }
 
-        return back()->with('ok', $following ? "Vous suivez maintenant {$account->name}." : "Vous ne suivez plus {$account->name}.");
+        return back()->with('ok', $following ? __('Vous suivez maintenant :name.', ['name' => $account->name]) : __('Vous ne suivez plus :name.', ['name' => $account->name]));
     }
 
     /** Signaler un profil. */
     public function report(Request $request, PublicAccount $account)
     {
-        abort_if($account->id === $this->viewer()->id, 422, 'Vous ne pouvez pas signaler votre propre profil.');
+        abort_if($account->id === $this->viewer()->id, 422, __('Vous ne pouvez pas signaler votre propre profil.'));
         $data = $request->validate([
             'reason'  => ['required', 'in:' . implode(',', array_keys(\App\Models\Social\Report::REASONS))],
             'details' => ['nullable', 'string', 'max:1000'],
@@ -229,7 +229,7 @@ class AccountController extends SocialController
             ['reason' => $data['reason'], 'details' => $data['details'] ?? null],
         );
 
-        return $request->expectsJson() ? response()->json(['ok' => true]) : back()->with('ok', 'Merci, votre signalement a été transmis.');
+        return $request->expectsJson() ? response()->json(['ok' => true]) : back()->with('ok', __('Merci, votre signalement a été transmis.'));
     }
 
     public function connections()

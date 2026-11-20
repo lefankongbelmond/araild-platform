@@ -34,11 +34,11 @@ class PostService
         }
         $max = config('mxconnect.social.max_images', 6);
         if (count($images) > $max) {
-            throw ValidationException::withMessages(['images' => "Maximum {$max} images par publication."]);
+            throw ValidationException::withMessages(['images' => __('Maximum :max images par publication.', ['max' => $max])]);
         }
         $video = $data['video'] ?? null;      // vidéo déjà contrôlée et rangée par VideoService::finalize()
         if (trim((string) ($data['body'] ?? '')) === '' && ! $images && ! $video) {
-            throw ValidationException::withMessages(['body' => 'Écrivez un message ou ajoutez une photo ou une vidéo.']);
+            throw ValidationException::withMessages(['body' => __('Écrivez un message ou ajoutez une photo ou une vidéo.')]);
         }
 
         // Aperçu du premier lien (seulement sans photo ni vidéo, comme sur Facebook).
@@ -169,7 +169,7 @@ class PostService
                             ?int $parentId = null, ?string $label = null, array $mentions = []): Comment
     {
         if ($parentId && ! Comment::whereKey($parentId)->where('post_id', $post->id)->exists()) {
-            throw ValidationException::withMessages(['body' => 'Commentaire parent introuvable.']);
+            throw ValidationException::withMessages(['body' => __('Commentaire parent introuvable.')]);
         }
 
         $comment = DB::connection('central')->transaction(function () use ($post, $body, $account, $mutual, $parentId, $label) {
@@ -188,18 +188,18 @@ class PostService
         $notified = [];
         if ($parentId && ($parent = Comment::find($parentId)) && $parent->public_account_id
             && $parent->public_account_id !== $account?->id) {
-            $this->notifications->notify($parent->public_account_id, 'reply', "{$who} a répondu à votre commentaire", \Illuminate\Support\Str::limit($body, 120), $url);
+            $this->notifications->notify($parent->public_account_id, 'reply', \App\Support\Msg::of(':name a répondu à votre commentaire', ['name' => $who]), \Illuminate\Support\Str::limit($body, 120), $url);
             $notified[] = $parent->public_account_id;
         }
         if ($post->public_account_id && ! $post->mutual_id && $post->public_account_id !== $account?->id
             && ! in_array($post->public_account_id, $notified, true)) {
-            $this->notifications->notify($post->public_account_id, 'comment', "{$who} a commenté votre publication", \Illuminate\Support\Str::limit($body, 120), $url);
+            $this->notifications->notify($post->public_account_id, 'comment', \App\Support\Msg::of(':name a commenté votre publication', ['name' => $who]), \Illuminate\Support\Str::limit($body, 120), $url);
             $notified[] = $post->public_account_id;
         }
         // Publication d'une page créée par un membre : son propriétaire est prévenu.
         foreach ($post->mutual_id ? PageService::managerIds($post->mutual_id) : [] as $manager) {
             if ($manager !== $account?->id && ! in_array($manager, $notified, true)) {
-                $this->notifications->notify($manager, 'comment', "{$who} a commenté une publication de votre page", \Illuminate\Support\Str::limit($body, 120), $url);
+                $this->notifications->notify($manager, 'comment', \App\Support\Msg::of(':name a commenté une publication de votre page', ['name' => $who]), \Illuminate\Support\Str::limit($body, 120), $url);
             }
         }
         if ($mentions) {

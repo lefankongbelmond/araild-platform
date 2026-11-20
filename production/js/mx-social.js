@@ -2,6 +2,17 @@
    Toutes les actions passent par des routes serveur protégées (CSRF + permissions). */
 (function () {
   'use strict';
+
+  /* Multilingue (M2b) : T(clé, variables, nombre) lit les traductions envoyées par
+     la page (<script type="application/json" id="mx-i18n">) ; sans traduction, le français reste. */
+  var I18N = (function () { try { return JSON.parse((document.getElementById('mx-i18n') || {}).textContent || '{}'); } catch (x) { return {}; } })();
+  var FR = (document.documentElement.lang || 'fr').indexOf('fr') === 0;
+  function T(key, vars, n) {
+    var s = I18N[key] || key, parts = s.split('|');
+    if (parts.length > 1) { s = (n === 1 || (n === 0 && FR)) ? parts[0] : parts[parts.length - 1]; }
+    if (vars) { Object.keys(vars).forEach(function (k) { s = s.split(':' + k).join(vars[k]); }); }
+    return s;
+  }
   var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
 
   function toast(msg, isErr) {
@@ -21,7 +32,7 @@
     }).then(function (r) {
       if (r.status === 401) { location.href = '/compte/connexion'; throw new Error('auth'); }
       return r.json().catch(function () { return {}; }).then(function (d) {
-        if (!r.ok) { throw new Error(d.message || (d.errors && Object.values(d.errors)[0][0]) || 'Une erreur est survenue.'); }
+        if (!r.ok) { throw new Error(d.message || (d.errors && Object.values(d.errors)[0][0]) || T('Une erreur est survenue.')); }
         return d;
       });
     });
@@ -42,7 +53,7 @@
         if (main) main.classList.toggle('is-on', !!d.reaction);
         var lab = post.querySelector('[data-react-label]'); if (lab) lab.textContent = d.label;
         var cnt = post.querySelector('[data-react-count]');
-        if (cnt) cnt.textContent = post.classList.contains('mx-reel') ? (d.count || '') : (d.count ? d.count + ' réaction' + (d.count > 1 ? 's' : '') : '');
+        if (cnt) cnt.textContent = post.classList.contains('mx-reel') ? (d.count || '') : (d.count ? T(':count réaction|:count réactions', {count: d.count}, d.count) : '');
         if (document.activeElement) document.activeElement.blur();
       }).catch(function (err) { if (err.message !== 'auth') toast(err.message, true); });
       return;
@@ -55,9 +66,9 @@
         var post = el.closest('[data-post]');
         post.querySelectorAll('[data-save]').forEach(function (b) {
           b.classList.toggle('is-on', d.saved);
-          var s = b.querySelector('span'); if (s && b.closest('.mx-menu__list')) s.textContent = d.saved ? 'Retirer des enregistrements' : 'Enregistrer';
+          var s = b.querySelector('span'); if (s && b.closest('.mx-menu__list')) s.textContent = d.saved ? T('Retirer des enregistrements') : T('Enregistrer');
         });
-        toast(d.saved ? 'Publication enregistrée' : 'Retirée des enregistrements');
+        toast(d.saved ? T('Publication enregistrée') : T('Retirée des enregistrements'));
       }).catch(function (err) { if (err.message !== 'auth') toast(err.message, true); });
       return;
     }
@@ -68,10 +79,10 @@
       send(el.dataset.follow).then(function (d) {
         document.querySelectorAll('[data-follow="' + el.dataset.follow + '"]').forEach(function (b) {
           b.classList.toggle('is-on', d.following);
-          b.textContent = d.following ? 'Suivi' : 'Suivre';
+          b.textContent = d.following ? T('Suivi') : T('Suivre');
         });
         document.querySelectorAll('[data-followers="' + el.dataset.follow + '"]').forEach(function (n) { n.textContent = d.followers; });
-        toast(d.following ? 'Vous suivez maintenant ' + d.name : 'Vous ne suivez plus ' + d.name);
+        toast(d.following ? T('Vous suivez maintenant :name.', {name: d.name}) : T('Vous ne suivez plus :name.', {name: d.name}));
       }).catch(function (err) { if (err.message !== 'auth') toast(err.message, true); })
         .finally(function () { busy(el, false); });
       return;
@@ -80,10 +91,10 @@
     // Partager
     if ((el = e.target.closest('[data-share]'))) {
       e.preventDefault();
-      var note = window.prompt('Ajouter un message à votre partage (facultatif) :', '');
+      var note = window.prompt(T('Ajouter un message à votre partage (facultatif) :'), '');
       if (note === null) return;
       var f = new FormData(); f.append('body', note);
-      send(el.dataset.share, f).then(function () { toast('Publication partagée sur votre profil'); })
+      send(el.dataset.share, f).then(function () { toast(T('Publication partagée sur votre profil')); })
         .catch(function (err) { if (err.message !== 'auth') toast(err.message, true); });
       return;
     }
@@ -92,7 +103,7 @@
     if ((el = e.target.closest('[data-copy]'))) {
       e.preventDefault();
       (navigator.clipboard ? navigator.clipboard.writeText(el.dataset.copy) : Promise.reject())
-        .then(function () { toast('Lien copié'); }, function () { window.prompt('Copiez ce lien :', el.dataset.copy); });
+        .then(function () { toast(T('Lien copié')); }, function () { window.prompt(T('Copiez ce lien :'), el.dataset.copy); });
       el.closest('details') && el.closest('details').removeAttribute('open');
       return;
     }
@@ -129,7 +140,7 @@
           var wrap = el.closest('[data-more-wrap]'), tmp = document.createElement('div');
           tmp.innerHTML = html; while (tmp.firstChild) wrap.parentNode.insertBefore(tmp.firstChild, wrap); wrap.remove();
         })
-        .catch(function () { ghosts.remove(); el.hidden = false; busy(el, false); toast('Chargement impossible. Vérifiez votre connexion.', true); });
+        .catch(function () { ghosts.remove(); el.hidden = false; busy(el, false); toast(T('Chargement impossible. Vérifiez votre connexion.'), true); });
     }
   });
 
@@ -157,7 +168,7 @@
         }
         f.reset();
         var post = f.closest('[data-post]'), c = post && post.querySelector('[data-comment-count]');
-        if (c) c.textContent = d.count + ' commentaire' + (d.count > 1 ? 's' : '');
+        if (c) c.textContent = T(':count commentaire|:count commentaires', {count: d.count}, d.count);
       }).catch(function (err) { if (err.message !== 'auth') toast(err.message, true); })
         .finally(function () { busy(btn, false); });
       return;
@@ -167,7 +178,7 @@
     if (f.hasAttribute('data-report-form')) {
       e.preventDefault();
       send(f.action, new FormData(f)).then(function () {
-        f.closest('dialog').close(); f.reset(); toast('Merci, votre signalement a été transmis.');
+        f.closest('dialog').close(); f.reset(); toast(T('Merci, votre signalement a été transmis.'));
       }).catch(function (err) { if (err.message !== 'auth') toast(err.message, true); });
       return;
     }
@@ -177,7 +188,7 @@
       var pbtn = f.querySelector('button.mx-btn--primary');
       if (!window.FormData || !window.XMLHttpRequest) { busy(pbtn, true); return; }
       e.preventDefault();
-      if (f.dataset.videoBusy) { toast('Patientez : la vidéo est encore en cours d’envoi.', true); return; }
+      if (f.dataset.videoBusy) { toast(T('Patientez : la vidéo est encore en cours d’envoi.'), true); return; }
       busy(pbtn, true); f.dataset.sending = '1';
       var bar = f.querySelector('[data-progress]'), errs = f.querySelector('[data-composer-errors]');
       if (errs) errs.innerHTML = '';
@@ -194,7 +205,7 @@
       var fail = function (msgs) {
         busy(pbtn, false); if (bar) bar.hidden = true; delete f.dataset.sending; draft.save(f);
         msgs.forEach(function (m) { var p = document.createElement('p'); p.className = 'mx-error'; p.textContent = m; errs && errs.appendChild(p); });
-        toast(msgs[0] || 'La publication n’a pas pu être envoyée.', true);
+        toast(msgs[0] || T('La publication n’a pas pu être envoyée.'), true);
       };
       xhr.onload = function () {
         var d = {}; try { d = JSON.parse(xhr.responseText); } catch (x) {}
@@ -208,13 +219,13 @@
         }
         var list = [];
         if (d.errors) Object.keys(d.errors).forEach(function (k) { list = list.concat(d.errors[k]); });
-        else if (xhr.status === 413) list.push('Fichiers trop lourds pour être envoyés ensemble. Réduisez le nombre ou la taille des photos.');
-        else if (xhr.status === 419) list.push('Votre session a expiré. Rechargez la page : votre texte est conservé en brouillon.');
-        else if (xhr.status === 429) list.push('Trop de publications en peu de temps. Réessayez dans une minute.');
-        else list.push(d.message || 'La publication n’a pas pu être envoyée. Votre texte est conservé.');
+        else if (xhr.status === 413) list.push(T('Fichiers trop lourds pour être envoyés ensemble. Réduisez le nombre ou la taille des photos.'));
+        else if (xhr.status === 419) list.push(T('Votre session a expiré. Rechargez la page : votre texte est conservé en brouillon.'));
+        else if (xhr.status === 429) list.push(T('Trop de publications en peu de temps. Réessayez dans une minute.'));
+        else list.push(d.message || T('La publication n’a pas pu être envoyée. Votre texte est conservé.'));
         fail(list);
       };
-      xhr.onerror = function () { fail(['Connexion interrompue. Votre texte est conservé : réessayez.']); };
+      xhr.onerror = function () { fail([T('Connexion interrompue. Votre texte est conservé : réessayez.')]); };
       var payload = new FormData(f);
       if (f._poster) payload.append('poster', f._poster, 'apercu.jpg');   // image d'aperçu de la vidéo (préparée par le navigateur)
       xhr.send(payload);
@@ -269,15 +280,15 @@
     box.innerHTML = '';
     var files = Array.prototype.slice.call(input.files || []);
     var vid = form.querySelector('[data-video-id]');
-    if (files.length && vid && (vid.value || form.dataset.videoBusy)) { toast('Publiez soit des photos, soit une vidéo. Retirez d’abord la vidéo.', true); input.value = ''; return; }
-    if (files.length > 6) { toast('6 images maximum par publication.', true); input.value = ''; return; }
+    if (files.length && vid && (vid.value || form.dataset.videoBusy)) { toast(T('Publiez soit des photos, soit une vidéo. Retirez d’abord la vidéo.'), true); input.value = ''; return; }
+    if (files.length > 6) { toast(T('6 images maximum par publication.'), true); input.value = ''; return; }
     var bad = files.filter(function (file) { return !/^image\/(jpeg|png|webp|gif)$/.test(file.type) || file.size > 6 * 1024 * 1024; });
-    if (bad.length) { toast(bad[0].size > 6 * 1024 * 1024 ? 'Image trop lourde (6 Mo max) : ' + bad[0].name : 'Format non accepté : ' + bad[0].name, true); }
+    if (bad.length) { toast(bad[0].size > 6 * 1024 * 1024 ? T('Image trop lourde (6 Mo max) : :file', {file: bad[0].name}) : T('Format non accepté : :file', {file: bad[0].name}), true); }
     files.forEach(function (file, i) {
       var cell = document.createElement('span'); cell.className = 'mx-preview__item';
-      var img = document.createElement('img'); img.alt = 'Photo ' + (i + 1) + ' sélectionnée'; img.src = URL.createObjectURL(file); cell.appendChild(img);
+      var img = document.createElement('img'); img.alt = T('Photo :number sélectionnée', {number: i + 1}); img.src = URL.createObjectURL(file); cell.appendChild(img);
       if (window.DataTransfer) {
-        var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'mx-preview__rm'; rm.setAttribute('aria-label', 'Retirer la photo ' + (i + 1)); rm.textContent = '×';
+        var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'mx-preview__rm'; rm.setAttribute('aria-label', T('Retirer la photo :number', {number: i + 1})); rm.textContent = '×';
         rm.addEventListener('click', function () {
           var dt = new DataTransfer();
           Array.prototype.forEach.call(input.files, function (f2, j) { if (j !== i) dt.items.add(f2); });

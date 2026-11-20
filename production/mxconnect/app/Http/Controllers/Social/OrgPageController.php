@@ -39,7 +39,7 @@ class OrgPageController extends SocialController
     public function create()
     {
         if ($this->ownedQuery()->count() >= $this->maxPages()) {
-            return redirect()->route('social.pages.mine')->with('error', 'Vous gérez déjà le nombre maximal de pages (' . $this->maxPages() . ').');
+            return redirect()->route('social.pages.mine')->with('error', __('Vous gérez déjà le nombre maximal de pages (:max).', ['max' => $this->maxPages()]));
         }
 
         return view('social.pages.form', ['mutual' => new Mutual(), 'profile' => new MutualProfile(['category' => 'osc']),
@@ -48,7 +48,7 @@ class OrgPageController extends SocialController
 
     public function store(Request $request)
     {
-        abort_if($this->ownedQuery()->count() >= $this->maxPages(), 422, 'Nombre maximal de pages atteint.');
+        abort_if($this->ownedQuery()->count() >= $this->maxPages(), 422, __('Nombre maximal de pages atteint.'));
         $data = $this->validated($request, true);
         $viewer = $this->viewer();
         $country = Country::findOrFail($data['country_id']);
@@ -70,7 +70,7 @@ class OrgPageController extends SocialController
         $this->saveImages($request, $mutual);
         cache()->forget('social:places');
 
-        return redirect()->route('social.mutual', $mutual->slug)->with('ok', 'Votre page « ' . $mutual->name . ' » est créée. Publiez votre première actualité !');
+        return redirect()->route('social.mutual', $mutual->slug)->with('ok', __('Votre page « :name » est créée. Publiez votre première actualité !', ['name' => $mutual->name]));
     }
 
     public function edit(string $slug)
@@ -96,7 +96,7 @@ class OrgPageController extends SocialController
         $this->saveImages($request, $mutual);
         cache()->forget('social:places');
 
-        return redirect()->route('social.mutual', $mutual->slug)->with('ok', 'Page mise à jour.');
+        return redirect()->route('social.mutual', $mutual->slug)->with('ok', __('Page mise à jour.'));
     }
 
     /** Supprime la page, ses publications et leurs fichiers. */
@@ -104,7 +104,7 @@ class OrgPageController extends SocialController
     {
         $mutual = $this->ownedPage($slug);
         $request->validate(['confirm_name' => ['required', Rule::in([$mutual->name])]],
-            ['confirm_name.in' => 'Recopiez exactement le nom de la page pour confirmer.', 'confirm_name.required' => 'Recopiez le nom de la page pour confirmer.']);
+            ['confirm_name.in' => __('Recopiez exactement le nom de la page pour confirmer.'), 'confirm_name.required' => __('Recopiez le nom de la page pour confirmer.')]);
 
         $postIds = \App\Models\Social\Post::withTrashed()->where('mutual_id', $mutual->id)->pluck('id');
         $files = PostMedia::whereIn('post_id', $postIds)->get()->flatMap(fn ($m) => [$m->path, $m->thumb_path])
@@ -119,7 +119,7 @@ class OrgPageController extends SocialController
         \Illuminate\Support\Facades\Storage::disk('social_private')->deleteDirectory("requests/{$mutual->id}");   // CV reçus
         cache()->forget('social:places');
 
-        return redirect()->route('social.pages.mine')->with('ok', "La page « {$name} » a été supprimée.");
+        return redirect()->route('social.pages.mine')->with('ok', __('La page « :name » a été supprimée.', ['name' => $name]));
     }
 
     /** Ajoute un gestionnaire (téléphone ou e-mail de son compte MX-CONNECT). */
@@ -127,20 +127,20 @@ class OrgPageController extends SocialController
     {
         $mutual = $this->ownedPage($slug);
         $data = $request->validate(['manager' => ['required', 'string', 'max:180'], 'role' => ['required', Rule::in(array_keys(\App\Models\Social\PageAdmin::ROLES))]],
-            ['manager.required' => 'Indiquez le téléphone ou l’e-mail du compte à ajouter.']);
+            ['manager.required' => __('Indiquez le téléphone ou l’e-mail du compte à ajouter.')]);
         $admin = \App\Services\Social\PageService::addManager($mutual, $data['manager'], $data['role'], $this->viewer());
 
-        return redirect()->route('social.pages.edit', $mutual->slug)->with('ok', $admin->account->name . ' peut maintenant publier au nom de la page.');
+        return redirect()->route('social.pages.edit', $mutual->slug)->with('ok', __(':name peut maintenant publier au nom de la page.', ['name' => $admin->account->name]));
     }
 
     public function removeManager(string $slug, int $admin)
     {
         $mutual = $this->ownedPage($slug);
         $row = \App\Models\Social\PageAdmin::where('mutual_id', $mutual->id)->findOrFail($admin);
-        abort_if($row->public_account_id === (int) $mutual->profile->owner_account_id, 422, 'Le créateur de la page ne peut pas être retiré.');
+        abort_if($row->public_account_id === (int) $mutual->profile->owner_account_id, 422, __('Le créateur de la page ne peut pas être retiré.'));
         $row->delete();
 
-        return redirect()->route('social.pages.edit', $mutual->slug)->with('ok', 'Gestionnaire retiré.');
+        return redirect()->route('social.pages.edit', $mutual->slug)->with('ok', __('Gestionnaire retiré.'));
     }
 
     // ---
@@ -169,9 +169,9 @@ class OrgPageController extends SocialController
             'domains'     => ['nullable', 'array'],
             'domains.*'   => [Rule::in(array_keys(\App\Support\SocialDomains::ALL))],
         ], [
-            'name.required'   => 'Donnez un nom à votre page.',
-            'accept.accepted' => 'Merci de confirmer que vous êtes autorisé(e) à représenter cette organisation.',
-            'website.url'     => 'Adresse de site web invalide (commencez par https://).',
+            'name.required'   => __('Donnez un nom à votre page.'),
+            'accept.accepted' => __('Merci de confirmer que vous êtes autorisé(e) à représenter cette organisation.'),
+            'website.url'     => __('Adresse de site web invalide (commencez par https://).'),
         ]);
     }
 

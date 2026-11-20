@@ -38,14 +38,14 @@ class MemberPortalController extends Controller
         $d = $request->validate([
             'code'       => ['required', 'string', 'max:20'],
             'birth_date' => ['required', 'date', 'before:today'],
-        ], ['code.required' => 'Saisissez le code remis par votre mutuelle.', 'birth_date.required' => 'Indiquez la date de naissance de l’adhérent.']);
+        ], ['code.required' => __('Saisissez le code remis par votre mutuelle.'), 'birth_date.required' => __('Indiquez la date de naissance de l’adhérent.')]);
         try {
             $link = $this->portal->activate($request->user('member'), $d['code'], \Illuminate\Support\Carbon::parse($d['birth_date'])->toDateString());
         } catch (AccountingRefusal $e) {
             return back()->withInput($request->except('code'))->withErrors(['code' => $e->getMessage()]);
         }
 
-        return redirect()->route('social.member.dashboard', $link->mutual->slug)->with('success', 'Votre adhésion est maintenant accessible dans votre compte.');
+        return redirect()->route('social.member.dashboard', $link->mutual->slug)->with('success', __('Votre adhésion est maintenant accessible dans votre compte.'));
     }
 
     public function dashboard(Request $request, string $mutual)
@@ -67,15 +67,15 @@ class MemberPortalController extends Controller
             'phone'   => ['nullable', 'string', 'max:20', 'regex:/^[0-9 +().-]{6,20}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'note'    => ['nullable', 'string', 'max:500'],
-        ], ['phone.regex' => 'Numéro de téléphone invalide.']);
+        ], ['phone.regex' => __('Numéro de téléphone invalide.')]);
         if (blank($d['phone'] ?? null) && blank($d['address'] ?? null)) {
-            return back()->withErrors(['phone' => 'Indiquez au moins un changement.']);
+            return back()->withErrors(['phone' => __('Indiquez au moins un changement.')]);
         }
 
         return $this->act($request, $mutual, function (Member $m) use ($request, $d) {
             $this->self->requestChange($m, $request->user('member')->id, 'contact', array_filter($d, fn ($v) => filled($v)));
 
-            return 'Demande envoyée : votre mutuelle la vérifiera avant de mettre votre fiche à jour.';
+            return __('Demande envoyée : votre mutuelle la vérifiera avant de mettre votre fiche à jour.');
         });
     }
 
@@ -133,15 +133,15 @@ class MemberPortalController extends Controller
         } else {
             $rules['note'] = ['required', 'string', 'min:5', 'max:500'];
         }
-        $d = $request->validate($rules, ['note.required' => 'Indiquez le motif du retrait.', 'first_name.required' => 'Indiquez le prénom.', 'last_name.required' => 'Indiquez le nom.', 'birth_date.required' => 'Indiquez la date de naissance.']);
+        $d = $request->validate($rules, ['note.required' => __('Indiquez le motif du retrait.'), 'first_name.required' => __('Indiquez le prénom.'), 'last_name.required' => __('Indiquez le nom.'), 'birth_date.required' => __('Indiquez la date de naissance.')]);
         $payload = array_filter(collect($d)->except(['kind', 'dependent_id'])->all(), fn ($v) => $v !== null && $v !== '');
 
         return $this->act($request, $mutual, function (Member $m) use ($request, $kind, $payload, $d) {
             $this->self->requestChange($m, $request->user('member')->id, $kind, $payload, isset($d['dependent_id']) ? (int) $d['dependent_id'] : null);
 
             return $kind === 'dependent_add'
-                ? 'Demande envoyée. Le bénéficiaire ne sera couvert qu’après validation par la mutuelle, à partir de sa date d’intégration.'
-                : 'Demande envoyée : la mutuelle la traitera.';
+                ? __('Demande envoyée. Le bénéficiaire ne sera couvert qu’après validation par la mutuelle, à partir de sa date d’intégration.')
+                : __('Demande envoyée : la mutuelle la traitera.');
         }, 'beneficiaires');
     }
 
@@ -204,7 +204,7 @@ class MemberPortalController extends Controller
             'category'    => ['required', Rule::in(array_keys(Complaint::CATEGORIES))],
             'subject'     => ['required', 'string', 'min:5', 'max:200'],
             'description' => ['required', 'string', 'min:10', 'max:3000'],
-        ], ['subject.required' => 'Indiquez l’objet de votre demande.', 'description.required' => 'Décrivez votre demande.']);
+        ], ['subject.required' => __('Indiquez l’objet de votre demande.'), 'description.required' => __('Décrivez votre demande.')]);
 
         return $this->act($request, $mutual, function (Member $m) use ($request, $d) {
             $sla = (int) config('mxconnect.governance.complaint_sla_days', 15);
@@ -215,7 +215,7 @@ class MemberPortalController extends Controller
                 'status' => 'received', 'received_on' => now()->toDateString(), 'due_on' => now()->addDays($sla)->toDateString(),
             ]);
 
-            return "Demande {$c->ref} envoyée. Vous serez prévenu de la réponse.";
+            return __('Demande :ref envoyée. Vous serez prévenu de la réponse.', ['ref' => $c->ref]);
         }, 'reclamations');
     }
 
@@ -225,13 +225,13 @@ class MemberPortalController extends Controller
 
         return $this->act($request, $mutual, function (Member $m) use ($complaint, $d) {
             $c = Complaint::where('member_id', $m->id)->whereKey($complaint)->firstOrFail();
-            abort_if($c->status === 'closed', 422, 'Cette demande est clôturée.');
+            abort_if($c->status === 'closed', 422, __('Cette demande est clôturée.'));
             ComplaintMessage::create(['complaint_id' => $c->id, 'author' => 'member', 'body' => trim($d['body'])]);
             if ($c->status === 'resolved') {
                 $c->update(['status' => 'in_progress', 'resolved_on' => null]);
             }
 
-            return 'Message envoyé.';
+            return __('Message envoyé.');
         }, 'reclamations/' . $complaint);
     }
 
@@ -245,7 +245,7 @@ class MemberPortalController extends Controller
 
         return $mut->run(function () use ($link, $mut, $view, $data, $links) {
             $m = Member::with('dependents')->find($link->member_id);
-            abort_unless($m, 404, 'Votre fiche adhérent n’existe plus dans cette mutuelle : contactez-la.');
+            abort_unless($m, 404, __('Votre fiche adhérent n’existe plus dans cette mutuelle : contactez-la.'));
 
             return response()->view('social.member.' . $view, ['m' => $m, 'mutual' => $mut, 'links' => $links, 'tab' => $view,
                 'currency' => $this->currency($mut)] + $data($m));

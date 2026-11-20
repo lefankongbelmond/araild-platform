@@ -25,7 +25,7 @@
   @if ($repostOf)
     <div class="mx-repost">
       <x-mx.icon name="repost" :size="14"/>
-      <span>@if($repostOf->authorUrl())<a href="{{ $repostOf->authorUrl() }}">{{ $repostOf->authorName() }}</a>@else<b>{{ $repostOf->authorName() }}</b>@endif a partagé · <span title="{{ $repostOf->published_at?->format('d/m/Y H:i') }}">{{ $repostOf->published_at?->diffForHumans(null, true, true) }}</span></span>
+      <span>@if($repostOf->authorUrl())<a href="{{ $repostOf->authorUrl() }}">{{ $repostOf->authorName() }}</a>@else<b>{{ $repostOf->authorName() }}</b>@endif {{ __('a partagé') }} · <span title="{{ $repostOf->published_at?->format('d/m/Y H:i') }}">{{ $repostOf->published_at?->diffForHumans(null, true, true) }}</span></span>
     </div>
   @endif
   <header class="mx-post__head">
@@ -59,7 +59,7 @@
         @if ($viewer)
           <button type="button" data-save="{{ route('social.post.save', $post) }}"><x-mx.icon name="bookmark" :size="18"/> <span>{{ $saved ? __('Retirer des enregistrements') : __('Enregistrer') }}</span></button>
           @if ($post->mutual_id)
-            <form method="POST" action="{{ route('social.mute', $post->mutual->slug) }}">@csrf<button><x-mx.icon name="eye-off" :size="18"/> Masquer {{ \Illuminate\Support\Str::limit($post->mutual->name, 24) }} de mon fil</button></form>
+            <form method="POST" action="{{ route('social.mute', $post->mutual->slug) }}">@csrf<button><x-mx.icon name="eye-off" :size="18"/> {{ __('Masquer :name de mon fil', ['name' => \Illuminate\Support\Str::limit($post->mutual->name, 24)]) }}</button></form>
           @endif
           @if ($ownRepost)
             <form method="POST" action="{{ route('social.post.destroy', $repostOf) }}" data-confirm="{{ __('Retirer ce partage de votre profil ? La publication d’origine n’est pas supprimée.') }}">@csrf @method('DELETE')<button class="is-danger"><x-mx.icon name="trash" :size="18"/> {{ __('Retirer mon partage') }}</button></form>
@@ -131,7 +131,7 @@
   @if ($post->documents->isNotEmpty())
     <div class="mx-docs">
       @foreach ($post->documents as $doc)
-        <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">PDF · {{ $doc->sizeLabel() }}</span></span><x-mx.icon name="download" :size="18"/></a>
+        <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">{{ __('PDF · :sizelabel', ['sizelabel' => $doc->sizeLabel()]) }}</span></span><x-mx.icon name="download" :size="18"/></a>
       @endforeach
     </div>
   @endif
@@ -170,13 +170,13 @@
   @if ($sponsor)
     <a class="mx-sponsor-cta" href="{{ route('social.sponsor.click', $sponsor->id) }}" rel="nofollow sponsored">
       <span>{{ $post->mutual?->name ?? $post->authorName() }}</span>
-      <b>{{ __(\App\Models\Social\Sponsorship::CTA[$sponsor->cta_label] ?? 'En savoir plus') }}</b>
+      <b>{{ __(\App\Models\Social\Sponsorship::CTA[$sponsor->cta_label] ?? __('En savoir plus')) }}</b>
     </a>
   @endif
 
   <div class="mx-post__stats">
     <span data-react-count>{{ $post->reactions_count ? $post->reactions_count . ' réaction' . ($post->reactions_count > 1 ? 's' : '') : '' }}</span>
-    <span><a class="mx-muted" href="{{ route('social.post', $post) }}#commentaires" data-comment-count>{{ $post->comments_count }} commentaire{{ $post->comments_count > 1 ? 's' : '' }}</a> · {{ $post->shares_count }} partage{{ $post->shares_count > 1 ? 's' : '' }}</span>
+    <span><a class="mx-muted" href="{{ route('social.post', $post) }}#commentaires" data-comment-count>{{ trans_choice(':count commentaire|:count commentaires', $post->comments_count, ['count' => $post->comments_count]) }}</a> · {{ trans_choice(':count partage|:count partages', $post->shares_count, ['count' => $post->shares_count]) }}</span>
   </div>
   <div class="mx-post__actions">
     @if ($viewer)
@@ -208,7 +208,7 @@
     </div>
   @elseif ($linkedOffer)
     <div class="mx-tiles">
-      <a class="mx-tile mx-tile--engage" href="{{ route('social.opportunity', $linkedOffer) }}"><x-mx.icon name="briefcase" :size="20"/><span>{{ $linkedOffer->isOpen() ? ($linkedOffer->isJob() ? 'Voir l’offre et postuler' : 'Voir l’opportunité') : 'Voir l’offre' }}<small>{{ $linkedOffer->categoryLabel() }}@if($linkedOffer->deadline_on) · avant le {{ $linkedOffer->deadline_on->format('d/m/Y') }}@endif</small></span></a>
+      <a class="mx-tile mx-tile--engage" href="{{ route('social.opportunity', $linkedOffer) }}"><x-mx.icon name="briefcase" :size="20"/><span>{{ $linkedOffer->isOpen() ? ($linkedOffer->isJob() ? __('Voir l’offre et postuler') : __('Voir l’opportunité')) : __('Voir l’offre') }}<small>{{ $linkedOffer->categoryLabel() }}@if($linkedOffer->deadline_on) · {{ __('avant le :date', ['date' => $linkedOffer->deadline_on->format('d/m/Y')]) }}@endif</small></span></a>
     </div>
   @elseif ($canAct && $post->type === 'evenement' && ! $post->group_id && ! $post->mutual?->profile?->is_demo)
     <div class="mx-tiles">

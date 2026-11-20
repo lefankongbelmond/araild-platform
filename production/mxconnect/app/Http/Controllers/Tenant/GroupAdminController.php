@@ -99,8 +99,8 @@ class GroupAdminController extends Controller
 
         if ($action === 'approve') {
             $m->update(['status' => 'active']);
-            $this->notifications->notify($m->public_account_id, 'group', "Bienvenue dans le groupe « {$g->name} »",
-                'Votre demande a été acceptée.', '/groupes/' . $g->slug);
+            $this->notifications->notify($m->public_account_id, 'group', \App\Support\Msg::of('Bienvenue dans le groupe « :name »', ['name' => $g->name]),
+                \App\Support\Msg::of('Votre demande a été acceptée.'), '/groupes/' . $g->slug);
         } else {
             $m->delete();
         }

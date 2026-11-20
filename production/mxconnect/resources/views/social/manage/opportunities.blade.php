@@ -13,7 +13,7 @@
         <label class="mx-sr" for="av-{{ $o->id }}">{{ __('Statut de l’offre') }}</label>
         <select class="mx-select" id="av-{{ $o->id }}" name="availability" style="width:auto;height:34px">@foreach ($O::AVAILABILITIES as $k => $v)<option value="{{ $k }}" @selected($o->availability === $k)>{{ __($v) }}</option>@endforeach</select>
         <button class="mx-btn mx-btn--ghost mx-btn--sm">{{ __('Appliquer') }}</button></form>
-      <span class="mx-xs mx-muted">{{ $o->requests_count }} candidature(s) / demande(s)</span>
+      <span class="mx-xs mx-muted">{{ __(':count candidature(s) / demande(s)', ['count' => $o->requests_count]) }}</span>
     </div>
   @empty
     @include('social.partials.empty', ['icon' => 'briefcase', 'title' => 'Aucune offre', 'text' => 'Publiez une offre d’emploi, un stage, une mission de bénévolat ou un appel à partenaires.', 'action' => ['Nouvelle offre', route('social.manage.opportunity.create', $page->slug)]])

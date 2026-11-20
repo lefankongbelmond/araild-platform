@@ -34,7 +34,7 @@ class RequestController extends SocialController
             ->where('project_id', $project?->id)->where('opportunity_id', $opportunity?->id)
             ->whereIn('status', SocialRequest::OPEN)->first();
         if ($open) {
-            return redirect()->route('social.request', $open->reference)->with('info', 'Vous avez déjà une demande en cours sur ce sujet.');
+            return redirect()->route('social.request', $open->reference)->with('info', __('Vous avez déjà une demande en cours sur ce sujet.'));
         }
 
         return view('social.requests.create', compact('kind', 'page', 'project', 'opportunity') + ['account' => $viewer]);
@@ -62,22 +62,22 @@ class RequestController extends SocialController
             'consent'           => ['accepted'],
             'no_medical'        => ['accepted'],
         ], [
-            'subtype.required'               => 'Choisissez une forme d’engagement ou de soutien.',
-            'message.min'                    => 'Présentez votre démarche en quelques phrases (20 caractères minimum).',
-            'contact_phone.regex'            => 'Numéro de téléphone invalide.',
-            'contact_phone.required_without' => 'Indiquez un téléphone ou un e-mail pour être recontacté(e).',
-            'contact_email.required_without' => 'Indiquez un e-mail ou un téléphone pour être recontacté(e).',
-            'cv.mimes'                       => 'Le CV doit être un fichier PDF.',
-            'cv.max'                         => 'Le CV doit faire moins de ' . round(config('mxconnect.social.adhesion_doc_kb', 5120) / 1024) . ' Mo.',
-            'consent.accepted'               => 'Votre accord est nécessaire pour transmettre vos coordonnées à l’organisation.',
-            'no_medical.accepted'            => 'Merci de confirmer que vous n’avez indiqué aucune donnée médicale.',
+            'subtype.required'               => __('Choisissez une forme d’engagement ou de soutien.'),
+            'message.min'                    => __('Présentez votre démarche en quelques phrases (20 caractères minimum).'),
+            'contact_phone.regex'            => __('Numéro de téléphone invalide.'),
+            'contact_phone.required_without' => __('Indiquez un téléphone ou un e-mail pour être recontacté(e).'),
+            'contact_email.required_without' => __('Indiquez un e-mail ou un téléphone pour être recontacté(e).'),
+            'cv.mimes'                       => __('Le CV doit être un fichier PDF.'),
+            'cv.max'                         => __('Le CV doit faire moins de :size Mo.', ['size' => round(config('mxconnect.social.adhesion_doc_kb', 5120) / 1024)]),
+            'consent.accepted'               => __('Votre accord est nécessaire pour transmettre vos coordonnées à l’organisation.'),
+            'no_medical.accepted'            => __('Merci de confirmer que vous n’avez indiqué aucune donnée médicale.'),
         ]);
 
         $cv = $kind === 'application' ? $request->file('cv') : null;
         $r = $this->requests->submit($kind, $page, $this->viewer(), collect($data)->except(['cv', 'consent', 'no_medical'])->all(), $project, $opportunity, $cv);
 
         return redirect()->route('social.request', $r->reference)
-            ->with('ok', "Votre demande a été transmise à {$page->name} (référence {$r->reference}). Vous serez notifié(e) de sa réponse.");
+            ->with('ok', __('Votre demande a été transmise à :name (référence :ref). Vous serez notifié(e) de sa réponse.', ['name' => $page->name, 'ref' => $r->reference]));
     }
 
     public function index(Request $request)
@@ -100,7 +100,7 @@ class RequestController extends SocialController
         $r = $this->own($reference);
         $this->requests->withdraw($r);
 
-        return redirect()->route('social.request', $r->reference)->with('ok', 'Votre demande a été retirée.');
+        return redirect()->route('social.request', $r->reference)->with('ok', __('Votre demande a été retirée.'));
     }
 
     public function cv(string $reference)
@@ -139,9 +139,9 @@ class RequestController extends SocialController
             $page = Mutual::where('slug', (string) $request->input('page'))->with('profile')->firstOrFail();
         }
         abort_if($page->status === 'suspended', 404);
-        abort_if($page->profile?->is_demo, 403, 'Organisation de démonstration : aucune demande ne peut lui être envoyée.');
+        abort_if($page->profile?->is_demo, 403, __('Organisation de démonstration : aucune demande ne peut lui être envoyée.'));
         if (PageService::canPublish($this->viewer(), $page)) {
-            abort(403, 'Vous gérez cette page : vous ne pouvez pas lui adresser une demande.');
+            abort(403, __('Vous gérez cette page : vous ne pouvez pas lui adresser une demande.'));
         }
 
         return [$kind, $page, $project, $opportunity];

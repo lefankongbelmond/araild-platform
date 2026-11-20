@@ -41,7 +41,7 @@ class PollService
             return null;
         }
         if (count($options) < 2) {
-            throw ValidationException::withMessages(['poll_options' => 'Un sondage demande au moins deux choix différents.']);
+            throw ValidationException::withMessages(['poll_options' => __('Un sondage demande au moins deux choix différents.')]);
         }
         $days = (int) ($data['poll_days'] ?? 7) ?: 7;
 
@@ -58,7 +58,7 @@ class PollService
     /** Vote ou change de vote. Retourne le sondage à jour. */
     public function vote(Poll $poll, PublicAccount $account, int $optionId): Poll
     {
-        abort_unless($poll->isOpen(), 422, 'Ce sondage est terminé.');
+        abort_unless($poll->isOpen(), 422, __('Ce sondage est terminé.'));
         $option = PollOption::where('poll_id', $poll->id)->findOrFail($optionId);
 
         DB::connection('central')->transaction(function () use ($poll, $account, $option) {

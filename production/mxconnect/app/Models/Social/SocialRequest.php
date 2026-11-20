@@ -60,13 +60,15 @@ class SocialRequest extends Model
 
     public function isOpen(): bool { return in_array($this->status, self::OPEN, true); }
     public function statusLabel(): string { return __(self::STATUSES[$this->status] ?? $this->status); }
-    public function kindLabel(): string
+    public function kindLabel(): string { return __($this->kindKey()); }
+    /** Libellé français (clé de traduction) du type de demande. */
+    public function kindKey(): string
     {
         if ($this->kind === 'application' && $this->opportunity && ! $this->opportunity->isJob()) {
             return 'Manifestation d’intérêt';
         }
 
-        return __(self::KINDS[$this->kind] ?? $this->kind);
+        return self::KINDS[$this->kind] ?? $this->kind;
     }
     public function subtypeLabel(): ?string
     {

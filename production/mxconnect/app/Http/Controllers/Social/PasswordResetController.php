@@ -24,11 +24,11 @@ class PasswordResetController extends Controller
 
     public function email(Request $request)
     {
-        abort_unless(MailStatus::configured(), 503, 'L’envoi d’e-mails n’est pas encore configuré sur ce site.');
+        abort_unless(MailStatus::configured(), 503, __('L’envoi d’e-mails n’est pas encore configuré sur ce site.'));
         $data = $request->validate(['email' => ['required', 'email:rfc', 'max:180']]);
         Password::broker('public_accounts')->sendResetLink(['email' => Str::lower(trim($data['email']))]);
 
-        return back()->with('ok', 'Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé. Pensez à regarder dans les courriers indésirables.');
+        return back()->with('ok', __('Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé. Pensez à regarder dans les courriers indésirables.'));
     }
 
     public function edit(Request $request, string $token)
@@ -51,9 +51,9 @@ class PasswordResetController extends Controller
 
         if ($status !== Password::PASSWORD_RESET) {
             return back()->withInput(['email' => $data['email']])
-                ->withErrors(['email' => 'Ce lien n’est plus valable (expiré ou déjà utilisé). Refaites une demande.']);
+                ->withErrors(['email' => __('Ce lien n’est plus valable (expiré ou déjà utilisé). Refaites une demande.')]);
         }
 
-        return redirect()->route('social.login')->with('ok', 'Mot de passe modifié. Vous pouvez vous connecter.');
+        return redirect()->route('social.login')->with('ok', __('Mot de passe modifié. Vous pouvez vous connecter.'));
     }
 }

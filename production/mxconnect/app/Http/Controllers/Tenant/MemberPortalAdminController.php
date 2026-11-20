@@ -61,8 +61,8 @@ class MemberPortalAdminController extends Controller
             $memberRequest->update(['status' => $d['decision'], 'decided_by' => $request->user()->id, 'decided_at' => now(), 'decision_note' => $d['note'] ?? null]);
         });
         $label = MemberChangeRequest::KINDS[$memberRequest->kind] ?? 'Demande';
-        MemberNotifier::notify($memberRequest->member_id, $d['decision'] === 'approved' ? "{$label} : acceptée" : "{$label} : refusée",
-            $d['decision'] === 'rejected' ? 'Motif : ' . $d['note'] : null, $memberRequest->kind === 'contact' ? 'profil' : 'beneficiaires');
+        MemberNotifier::notify($memberRequest->member_id, $d['decision'] === 'approved' ? \App\Support\Msg::of(':kind : acceptée', ['kind' => ['__' => $label]]) : \App\Support\Msg::of(':kind : refusée', ['kind' => ['__' => $label]]),
+            $d['decision'] === 'rejected' ? \App\Support\Msg::of('Motif : :note', ['note' => $d['note']]) : null, $memberRequest->kind === 'contact' ? 'profil' : 'beneficiaires');
 
         return back()->with('success', $d['decision'] === 'approved' ? 'Demande acceptée et appliquée.' : 'Demande refusée.');
     }

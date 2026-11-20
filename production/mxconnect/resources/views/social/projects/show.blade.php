@@ -15,7 +15,7 @@
   <a class="mx-small" href="{{ route('social.mutual', [$page->slug, 'onglet' => 'projets']) }}"><x-mx.icon name="arrow-left" :size="14"/> {{ $page->name }}</a>
 
   @if ($project->status !== 'published')
-    <div class="mx-alert mx-alert--warn">{{ $project->status === 'draft' ? 'Brouillon : ce projet n’est visible que par les gestionnaires de la page.' : __('Ce projet a été masqué par la modération du réseau.') }}</div>
+    <div class="mx-alert mx-alert--warn">{{ $project->status === 'draft' ? __('Brouillon : ce projet n’est visible que par les gestionnaires de la page.') : __('Ce projet a été masqué par la modération du réseau.') }}</div>
   @endif
 
   <section class="mx-card" style="overflow:hidden">
@@ -42,9 +42,9 @@
     </div>
     <div class="mx-kpis">
       <div><small>{{ __('Avancement') }}</small>@if ($project->progress !== null)<b style="font-size:20px">{{ $project->progress }} %</b><span class="mx-bar" role="img" aria-label="{{ $project->progress }} % (déclaré)"><i style="width:{{ $project->progress }}%"></i></span>@else<b>{{ $project->phaseLabel() }}</b>@endif</div>
-      <div><small>{{ __('Zone d’intervention') }}</small><b>{{ $place ?: 'Non précisée' }}</b></div>
-      <div><small>{{ __('Calendrier') }}</small><b>@if($project->starts_on){{ $project->starts_on->translatedFormat('M Y') }} → {{ $project->ends_on?->translatedFormat('M Y') ?? '…' }}@else Non précisé @endif</b></div>
-      <div><small>{{ __('Bénéficiaires') }}</small><b>{{ $project->beneficiaries ?: 'Non précisé' }}</b></div>
+      <div><small>{{ __('Zone d’intervention') }}</small><b>{{ $place ?: __('Non précisée') }}</b></div>
+      <div><small>{{ __('Calendrier') }}</small><b>@if($project->starts_on){{ $project->starts_on->translatedFormat('M Y') }} → {{ $project->ends_on?->translatedFormat('M Y') ?? '…' }}@else {{ __('Non précisé') }} @endif</b></div>
+      <div><small>{{ __('Bénéficiaires') }}</small><b>{{ $project->beneficiaries ?: __('Non précisé') }}</b></div>
     </div>
   </section>
   @if ($isDemo)<p class="mx-xs mx-muted">{{ __('Projet fictif de démonstration : aucune demande ne peut être envoyée.') }}</p>@endif
@@ -81,14 +81,14 @@
                 <span class="mx-result__label">{{ $i->label }}</span>
                 @if ($i->target)
                   <span class="mx-bar" role="img" aria-label="{{ $i->percent() }} % de l’objectif"><i style="width:{{ $i->percent() }}%"></i></span>
-                  <span class="mx-xs mx-muted">Objectif : {{ $I::fmt($i->target) }}{{ $i->unit ? ' ' . $i->unit : '' }} ({{ $i->percent() }} %)</span>
+                  <span class="mx-xs mx-muted">{{ __('Objectif : :target (:percent %)', ['target' => $I::fmt($i->target) . ($i->unit ? ' ' . $i->unit : ''), 'percent' => $i->percent()]) }}</span>
                 @endif
                 @if ($i->isVerified())
                   <span><span class="mx-badge mx-badge--verified" title="Contrôlé par l’administration du réseau le {{ $i->verified_at->format('d/m/Y') }}"><x-mx.icon name="check" :size="12"/> {{ __('Vérifié par le réseau') }}</span></span>
                 @else
                   <span><span class="mx-badge mx-badge--declared" title="{{ __('Chiffre publié par l’organisation, non contrôlé par le réseau') }}">{{ __('Déclaré par l’organisation') }}</span></span>
                 @endif
-                @if ($i->period || $i->source_note)<span class="mx-xs mx-muted">@if($i->period){{ $i->period }}@endif @if($i->period && $i->source_note) · @endif @if($i->source_note)Source : {{ $i->source_note }}@endif</span>@endif
+                @if ($i->period || $i->source_note)<span class="mx-xs mx-muted">@if($i->period){{ $i->period }}@endif @if($i->period && $i->source_note) · @endif @if($i->source_note){{ __('Source : :source', ['source' => $i->source_note]) }}@endif</span>@endif
               </div>
             @endforeach
           </div>
@@ -139,7 +139,7 @@
           <div class="mx-card__head"><h2 class="mx-card__title"><x-mx.icon name="file" :size="18"/> {{ __('Documents') }}</h2></div>
           <div class="mx-docs" style="padding-top:12px">
             @foreach ($project->documents as $doc)
-              <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">PDF · {{ $doc->sizeLabel() }}</span></span><x-mx.icon name="download" :size="18"/></a>
+              <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">{{ __('PDF · :sizelabel', ['sizelabel' => $doc->sizeLabel()]) }}</span></span><x-mx.icon name="download" :size="18"/></a>
             @endforeach
           </div>
         </section>

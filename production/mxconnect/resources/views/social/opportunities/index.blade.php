@@ -30,7 +30,7 @@
     </form>
   </section>
 
-  <p class="mx-small mx-muted" style="padding:0 6px">{{ $items->total() }} {{ $items->total() > 1 ? __('opportunités') : __('opportunité') }}{{ $all ? '' : ' ouverte' . ($items->total() > 1 ? 's' : '') }}</p>
+  <p class="mx-small mx-muted" style="padding:0 6px">{{ $all ? trans_choice(':count opportunité|:count opportunités', $items->total(), ['count' => $items->total()]) : trans_choice(':count opportunité ouverte|:count opportunités ouvertes', $items->total(), ['count' => $items->total()]) }}</p>
   @forelse ($items as $o)
     @include('social.opportunities._card', ['o' => $o])
   @empty

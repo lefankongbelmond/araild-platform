@@ -13,7 +13,7 @@
     @foreach ($strip as $m)
       @php $p = $m->profile; @endphp
       <a class="mx-strip__card" href="{{ route('social.mutual', $m->slug) }}" @if($p?->cover_path) style="background-image:url('{{ $p->coverUrl() }}')" @endif
-         aria-label="{{ $m->name }}{{ $m->recent_posts ? ' — ' . $m->recent_posts . ' publication(s) cette semaine' : '' }}">
+         aria-label="{{ $m->recent_posts ? __(':name — :count publication(s) cette semaine', ['name' => $m->name, 'count' => $m->recent_posts]) : $m->name }}">
         <span class="mx-strip__logo">@if($p?->logo_path)<img src="{{ $p->logoUrl() }}" alt="" loading="lazy">@else<span>{{ mb_strtoupper(mb_substr($m->name, 0, 2)) }}</span>@endif</span>
         @if ($m->recent_posts)<span class="mx-strip__count" title="{{ __('Publications des 7 derniers jours') }}">{{ $m->recent_posts > 9 ? '9+' : $m->recent_posts }}</span>@endif
         @if ($p?->is_demo)<span class="mx-strip__demo">{{ __('Démo') }}</span>@endif

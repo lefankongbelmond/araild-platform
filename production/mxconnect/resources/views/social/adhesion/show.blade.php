@@ -4,11 +4,11 @@
   <section class="mx-card mx-card__pad mx-stack">
     <div class="mx-row mx-between mx-row--wrap">
       <div class="mx-row" style="gap:12px"><x-mx.avatar :src="$r->mutual?->profile?->logoUrl()" :name="$r->mutual?->name ?? '?'" org />
-        <div><h1 style="font-size:20px">{{ $r->mutual?->name }}</h1><p class="mx-xs mx-muted">Dossier {{ $r->reference }} · envoyé le {{ $r->created_at->format('d/m/Y à H:i') }}</p></div></div>
+        <div><h1 style="font-size:20px">{{ $r->mutual?->name }}</h1><p class="mx-xs mx-muted">{{ __('Dossier :reference · envoyé le :date', ['reference' => $r->reference, 'date' => $r->created_at->format('d/m/Y à H:i')]) }}</p></div></div>
       <span class="mx-status mx-status--{{ $r->status }}">{{ $r->statusLabel() }}</span>
     </div>
     @if ($r->status === 'accepted')
-      <div class="mx-alert mx-alert--ok">Votre demande a été acceptée. {{ $r->mutual?->name }} vous indiquera les modalités de paiement de la cotisation et la date d’ouverture de vos droits.@if($r->member_code) Votre numéro d’adhérent : <b>{{ $r->member_code }}</b>.@endif</div>
+      <div class="mx-alert mx-alert--ok">{{ __('Votre demande a été acceptée. :name vous indiquera les modalités de paiement de la cotisation et la date d’ouverture de vos droits.', ['name' => $r->mutual?->name]) }}@if($r->member_code) {{ __('Votre numéro d’adhérent :') }} <b>{{ $r->member_code }}</b>.@endif</div>
     @elseif ($r->status === 'info_requested')
       <div class="mx-alert mx-alert--warn">{{ __('La mutuelle demande un complément. Lisez sa demande ci-dessous puis répondez.') }}</div>
     @endif
@@ -40,12 +40,12 @@
   <section class="mx-card mx-card__pad mx-stack">
     <h2 class="mx-card__title">{{ __('Informations transmises') }}</h2>
     <dl class="mx-kv">
-      <dt>{{ __('Demandeur') }}</dt><dd>{{ $r->name }} · {{ $r->sex === 'F' ? __('Féminin') : __('Masculin') }} · né(e) le {{ $r->birth_date->format('d/m/Y') }}</dd>
+      <dt>{{ __('Demandeur') }}</dt><dd>{{ $r->name }} · {{ $r->sex === 'F' ? __('Féminin') : __('Masculin') }} · {{ __('né(e) le :date', ['date' => $r->birth_date->format('d/m/Y')]) }}</dd>
       <dt>{{ __('Contact') }}</dt><dd>{{ $r->phone }}@if($r->email) · {{ $r->email }}@endif</dd>
       <dt>{{ __('Ville') }}</dt><dd>{{ $r->city }}@if($r->address) — {{ $r->address }}@endif</dd>
-      <dt>{{ __('Foyer') }}</dt><dd>{{ $r->household_size }} personne(s)@if($r->formula) · formule : {{ $r->formula }}@endif</dd>
-      @if (! empty($r->beneficiaries))<dt>{{ __('Bénéficiaires') }}</dt><dd>@foreach ($r->beneficiaries as $b){{ $b['name'] }} ({{ __($R::RELATIONS[$b['relation'] ?? 'autre'] ?? 'Autre') }}@if(! empty($b['birth_date'])), {{ \Illuminate\Support\Carbon::parse($b['birth_date'])->format('d/m/Y') }}@endif)@if(! $loop->last)<br>@endif @endforeach</dd>@endif
-      <dt>{{ __('Pièces') }}</dt><dd>@forelse ($r->documents as $d)<a href="{{ route('social.adhesion.document', [$r, $d->id]) }}">{{ $d->kindLabel() }} — {{ $d->original_name }}</a>@if(! $loop->last)<br>@endif @empty Aucune @endforelse</dd>
+      <dt>{{ __('Foyer') }}</dt><dd>{{ __(':count personne(s)', ['count' => $r->household_size]) }}@if($r->formula) · {{ __('formule : :name', ['name' => $r->formula]) }}@endif</dd>
+      @if (! empty($r->beneficiaries))<dt>{{ __('Bénéficiaires') }}</dt><dd>@foreach ($r->beneficiaries as $b){{ $b['name'] }} ({{ __($R::RELATIONS[$b['relation'] ?? 'autre'] ?? __('Autre')) }}@if(! empty($b['birth_date'])), {{ \Illuminate\Support\Carbon::parse($b['birth_date'])->format('d/m/Y') }}@endif)@if(! $loop->last)<br>@endif @endforeach</dd>@endif
+      <dt>{{ __('Pièces') }}</dt><dd>@forelse ($r->documents as $d)<a href="{{ route('social.adhesion.document', [$r, $d->id]) }}">{{ $d->kindLabel() }} — {{ $d->original_name }}</a>@if(! $loop->last)<br>@endif @empty {{ __('Aucune') }} @endforelse</dd>
     </dl>
   </section>
 

@@ -82,7 +82,7 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 |---|---|---|
 | M1 Fondations | Faite (VERSION 2026.11.27) | `LISEZMOI-20261127.md` |
 | M2a Réseau social : paramètres du membre + écrans | Faite (VERSION 2026.11.28) | `LISEZMOI-20261128.md` |
-| M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | À faire | — |
+| M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | Faite (VERSION 2026.11.29) | `LISEZMOI-20261129.md` |
 | M3 Mutuelle | À faire | — |
 | M4 Prestataires | À faire | — |
 | M5 Super-admin, accueil | À faire | — |
@@ -96,4 +96,7 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Outils (M2a)** : `devtools/i18n/extraire-blade.py` (`--dry-run`, `--apply`, `--list`, `--mixed`) rend traduisibles les textes « purs » d'une vue ; `devtools/i18n/catalogue.py` (`sync`, `missing`, `merge`) tient le catalogue et refuse une traduction aux variables différentes. Relire le `git diff` après extraction (directives aux parenthèses imbriquées, attributs liés `:title`).
 - **Listes de libellés PHP** (constantes `STATUSES`, `TYPES`…) : afficher avec `__($libellé)` et **déclarer la constante dans `App\Support\TranslatableLabels::LISTS`** (test `MultilingueReseauSocialTest`). Les valeurs enregistrées en base restent les clés, jamais le texte traduit.
 - **Mot vérifié par le serveur** (« SUPPRIMER ») : jamais traduit.
+- **Phrases avec variables (M2b)** : `__('Projets de :name', ['name' => …])` ; outil `devtools/i18n/convertir-variables.py` pour les vues, `devtools/i18n/messages-php.py` pour les messages du code PHP (relire le diff). Pluriels : `trans_choice(':count x|:count y', $n, ['count' => $n])`.
+- **Notifications (M2b)** : titre et texte sous la forme `Msg::of('Texte :var', [...])`, traduits dans la langue du DESTINATAIRE par `NotificationService` (valeur `['__' => 'Libellé']` = libellé traduit). Un texte saisi par une personne reste une chaîne simple.
+- **JavaScript (M2b)** : `T('Texte :var', {var: …}, n)` dans `js/mx-social*.js` ; chaque clé déclarée dans `App\Support\JsTranslations::SOCIAL` (test), traductions envoyées par le gabarit dans `<script type="application/json" id="mx-i18n">`.
 - **Une langue est « complète »** seulement quand elle figure dans `Locales::COMPLETE` ; sinon le sélecteur affiche « traduction partielle ».

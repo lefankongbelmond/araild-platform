@@ -12,7 +12,7 @@
 <section class="mx-card" aria-labelledby="sb-trends">
   <div class="mx-card__head"><h2 class="mx-card__title" id="sb-trends"><x-mx.icon name="hash" :size="18"/> {{ __('Tendances de la semaine') }}</h2></div>
   <div class="mx-card__pad mx-trends" style="padding-top:4px">
-    @foreach ($trends as $tag => $n)<a href="{{ route('social.search', ['q' => '#' . $tag]) }}">#{{ $tag }} <span>{{ $n }} publication{{ $n > 1 ? 's' : '' }}</span></a>@endforeach
+    @foreach ($trends as $tag => $n)<a href="{{ route('social.search', ['q' => '#' . $tag]) }}">#{{ $tag }} <span>{{ trans_choice(':count publication|:count publications', $n, ['count' => $n]) }}</span></a>@endforeach
   </div>
 </section>
 @endif

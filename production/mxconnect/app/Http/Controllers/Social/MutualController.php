@@ -140,7 +140,7 @@ class MutualController extends SocialController
         if ($following) {
             foreach (\App\Services\Social\PageService::managerIds($mutual->id) as $manager) {
                 if ($manager !== $viewer->id) {
-                    app(\App\Services\Social\NotificationService::class)->notify($manager, 'follow', "{$viewer->name} suit maintenant votre page {$mutual->name}", null, route('social.mutual', $mutual->slug));
+                    app(\App\Services\Social\NotificationService::class)->notify($manager, 'follow', \App\Support\Msg::of(':name suit maintenant votre page :page', ['name' => $viewer->name, 'page' => $mutual->name]), null, route('social.mutual', $mutual->slug));
                 }
             }
         }
@@ -149,7 +149,7 @@ class MutualController extends SocialController
             return response()->json(['following' => $following, 'followers' => $followers, 'name' => $mutual->name]);
         }
 
-        return back()->with('ok', $following ? "Vous suivez maintenant {$mutual->name}." : "Vous ne suivez plus {$mutual->name}.");
+        return back()->with('ok', $following ? __('Vous suivez maintenant :name.', ['name' => $mutual->name]) : __('Vous ne suivez plus :name.', ['name' => $mutual->name]));
     }
 
     /** Masquer / réafficher une mutuelle dans « Accueil ». */
@@ -160,7 +160,7 @@ class MutualController extends SocialController
         $mute = Mute::where('public_account_id', $viewer->id)->where('mutual_id', $mutual->id)->first();
         if ($mute) {
             $mute->delete();
-            $msg = "Les publications de {$mutual->name} réapparaîtront dans votre fil.";
+            $msg = __('Les publications de :name réapparaîtront dans votre fil.', ['name' => $mutual->name]);
         } else {
             Mute::create(['public_account_id' => $viewer->id, 'mutual_id' => $mutual->id]);
             $msg = "{$mutual->name} est masquée de votre fil d'accueil. Vous pouvez annuler depuis « Mes connexions ».";
@@ -178,7 +178,7 @@ class MutualController extends SocialController
     {
         $mutual = $this->findMutual($slug);
         $viewer = $this->viewer();
-        abort_if($mutual->profile?->owner_account_id, 403, 'Utilisez les coordonnées indiquées sur la page.');
+        abort_if($mutual->profile?->owner_account_id, 403, __('Utilisez les coordonnées indiquées sur la page.'));
 
         $data = $request->validate([
             'name'    => [$viewer ? 'nullable' : 'required', 'string', 'max:180'],
@@ -188,9 +188,9 @@ class MutualController extends SocialController
             'message' => ['required', 'string', 'min:10', 'max:2000'],
             'consent' => ['accepted'],
         ], [
-            'email.required_without' => 'Indiquez un e-mail ou un téléphone pour être recontacté.',
-            'phone.required_without' => 'Indiquez un téléphone ou un e-mail pour être recontacté.',
-            'consent.accepted'       => 'Merci d’accepter la transmission de votre message à la mutuelle.',
+            'email.required_without' => __('Indiquez un e-mail ou un téléphone pour être recontacté.'),
+            'phone.required_without' => __('Indiquez un téléphone ou un e-mail pour être recontacté.'),
+            'consent.accepted'       => __('Merci d’accepter la transmission de votre message à la mutuelle.'),
         ]);
 
         ContactRequest::create([
@@ -204,7 +204,7 @@ class MutualController extends SocialController
         ]);
 
         return redirect()->route('social.mutual', [$mutual->slug, 'onglet' => 'contact'])
-            ->with('ok', "Votre message a été transmis à {$mutual->name}. La mutuelle vous répondra directement.");
+            ->with('ok', __('Votre message a été transmis à :name. La mutuelle vous répondra directement.', ['name' => $mutual->name]));
     }
 
     /** Signaler une page ou une organisation. */
@@ -220,7 +220,7 @@ class MutualController extends SocialController
             ['reason' => $data['reason'], 'details' => $data['details'] ?? null],
         );
 
-        return $request->expectsJson() ? response()->json(['ok' => true]) : back()->with('ok', 'Merci, votre signalement a été transmis.');
+        return $request->expectsJson() ? response()->json(['ok' => true]) : back()->with('ok', __('Merci, votre signalement a été transmis.'));
     }
 
     protected function findMutual(string $slug): Mutual

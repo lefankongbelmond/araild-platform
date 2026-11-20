@@ -3,9 +3,9 @@
         data-cpm="{{ $cpm }}" data-minor="{{ $currency->minor_unit }}" data-symbol="{{ $currency->symbol }}">
     @csrf
     <h1 style="font-size:22px">{{ __('Sponsoriser une publication') }}</h1>
-    <div class="mx-alert mx-alert--info">{{ __('Tarif :') }} <b>{{ $currency->format($cpm) }}</b> pour 1 000 affichages · budget minimum {{ $currency->format($minBudget) }}. La publication porte la mention « Sponsorisé » ; une même personne la voit au plus 3 fois par jour.</div>
+    <div class="mx-alert mx-alert--info">{{ __('Tarif :') }} <b>{{ $currency->format($cpm) }}</b> {{ __('pour 1 000 affichages · budget minimum :amount. La publication porte la mention « Sponsorisé » ; une même personne la voit au plus 3 fois par jour.', ['amount' => $currency->format($minBudget)]) }}</div>
     <div class="mx-grid-2">
-      <div class="mx-field"><label class="mx-label" for="sp-budget">Budget total ({{ $currency->code }}) *</label>
+      <div class="mx-field"><label class="mx-label" for="sp-budget">{{ __('Budget total (:currency) *', ['currency' => $currency->code]) }}</label>
         <input class="mx-input" id="sp-budget" name="budget" inputmode="decimal" required value="{{ old('budget', $minBudget / (10 ** $currency->minor_unit)) }}" data-budget>
         <p class="mx-help" data-estimate></p>@error('budget')<p class="mx-error">{{ $message }}</p>@enderror</div>
       <div class="mx-field"><label class="mx-label" for="sp-days">{{ __('Durée (jours) *') }}</label><input class="mx-input" id="sp-days" type="number" name="days" min="1" max="60" required value="{{ old('days', 7) }}">@error('days')<p class="mx-error">{{ $message }}</p>@enderror</div>

@@ -47,14 +47,14 @@ class MessageController extends SocialController
     {
         $mutual = Mutual::where('slug', $slug)->with('profile')->firstOrFail();
         abort_if($mutual->status === 'suspended', 404);
-        abort_if($mutual->profile?->owner_account_id, 403, 'La messagerie privée est réservée aux mutuelles gérées sur MX-CONNECT.');
+        abort_if($mutual->profile?->owner_account_id, 403, __('La messagerie privée est réservée aux mutuelles gérées sur MX-CONNECT.'));
         $data = $request->validate([
             'subject' => ['required', 'string', 'max:180'],
             'body'    => ['required', 'string', 'min:5', 'max:3000'],
         ]);
         $c = $this->messaging->start($mutual, $this->viewer(), $data['subject'], $data['body']);
 
-        return redirect()->route('social.messages.show', $c)->with('ok', "Message envoyé à {$mutual->name}.");
+        return redirect()->route('social.messages.show', $c)->with('ok', __('Message envoyé à :name.', ['name' => $mutual->name]));
     }
 
     private function own(Conversation $c): void

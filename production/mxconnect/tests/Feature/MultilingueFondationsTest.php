@@ -144,7 +144,7 @@ it('déclare dans le catalogue français chaque texte traduisible écrit dans le
             if (! str_ends_with($file->getFilename(), '.php')) {
                 continue;
             }
-            preg_match_all("/(?:__|@lang|trans)\\(\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1/u", file_get_contents($file->getPathname()), $m);
+            preg_match_all("/(?:__|@lang|trans|trans_choice|Msg::of)\\(\\s*(['\"])((?:\\\\.|(?!\\1).)*)\\1/u", file_get_contents($file->getPathname()), $m);
             foreach ($m[2] as $key) {
                 $key = stripslashes($key);
                 if (preg_match('/^[A-Za-z0-9_\-]+(\.[A-Za-z0-9_\-]*)+$/', $key)) {

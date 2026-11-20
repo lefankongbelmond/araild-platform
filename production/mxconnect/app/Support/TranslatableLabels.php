@@ -12,6 +12,7 @@ class TranslatableLabels
 {
     /** Listes du réseau social et du portail adhérent (M2). */
     public const LISTS = [
+        [\App\Support\JsTranslations::class, 'SOCIAL'],   // textes du JavaScript du réseau (M2b)
         [\App\Support\SocialDomains::class, 'ALL'],
         [\App\Models\Social\Post::class, 'TYPES'], [\App\Models\Social\Post::class, 'MEMBER_TYPES'],
         [\App\Models\Social\Post::class, 'ACTIVITY_CATEGORIES'], [\App\Models\Social\Post::class, 'REACTIONS'],

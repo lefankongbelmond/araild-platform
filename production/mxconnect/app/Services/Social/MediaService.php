@@ -35,10 +35,10 @@ class MediaService
     {
         $cfg = config('mxconnect.social');
         if ($file->getSize() > $cfg['max_upload_kb'] * 1024) {
-            throw ValidationException::withMessages(['images' => 'Image trop lourde (maximum ' . round($cfg['max_upload_kb'] / 1024) . ' Mo).']);
+            throw ValidationException::withMessages(['images' => __('Image trop lourde (maximum :size Mo).', ['size' => round($cfg['max_upload_kb'] / 1024)])]);
         }
 
-        $src = $this->decode($file->getRealPath(), 'images', 'Image illisible ou corrompue.');
+        $src = $this->decode($file->getRealPath(), 'images', __('Image illisible ou corrompue.'));
         $base = trim($folder, '/') . '/' . now()->format('Y/m') . '/' . Str::uuid();
 
         return $this->storeGd($src, $base, $maxSide ?? $cfg['image_max_side']);
@@ -76,7 +76,7 @@ class MediaService
      */
     public function privateImage(UploadedFile $file, int $maxSide = 2000): array
     {
-        $src = $this->decode($file->getRealPath(), 'documents', 'Image illisible : ' . $file->getClientOriginalName());
+        $src = $this->decode($file->getRealPath(), 'documents', __('Image illisible : :file', ['file' => $file->getClientOriginalName()]));
         $out = $this->encode($src, $maxSide, 85);
         imagedestroy($src);
 
@@ -84,11 +84,11 @@ class MediaService
     }
 
     /** Décode un fichier image (contrôle du contenu réel, pas de l'extension). */
-    public function decode(string $path, string $field = 'images', string $error = 'Image illisible ou corrompue.'): \GdImage
+    public function decode(string $path, string $field = 'images', ?string $error = null): \GdImage
     {
         $info = @getimagesize($path);
         if (! $info || ! isset(self::ALLOWED[$info[2]])) {
-            throw ValidationException::withMessages([$field => 'Format non accepté : seules les images JPEG, PNG, WebP ou GIF sont autorisées.']);
+            throw ValidationException::withMessages([$field => __('Format non accepté : seules les images JPEG, PNG, WebP ou GIF sont autorisées.')]);
         }
         $src = match ($info[2]) {
             IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
@@ -97,7 +97,7 @@ class MediaService
             IMAGETYPE_GIF  => @imagecreatefromgif($path),
         };
         if (! $src) {
-            throw ValidationException::withMessages([$field => $error]);
+            throw ValidationException::withMessages([$field => $error ?? __('Image illisible ou corrompue.')]);
         }
 
         return $this->orient($src, $path, $info[2]);

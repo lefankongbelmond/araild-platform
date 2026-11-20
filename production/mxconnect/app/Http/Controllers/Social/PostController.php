@@ -57,35 +57,35 @@ class PostController extends SocialController
             'video_width'    => ['nullable', 'integer', 'min:1', 'max:8000'],
             'video_height'   => ['nullable', 'integer', 'min:1', 'max:8000'],
         ] + \App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_POST) + \App\Services\Social\PollService::rules(), \App\Services\Social\DocumentService::messages() + [
-            'body.max'        => 'Le texte ne doit pas dépasser 5 000 caractères.',
-            'type.in'         => 'Type de publication non disponible.',
-            'images.max'      => 'Maximum :max images par publication.',
-            'images.*.mimes'  => 'Seules les images JPEG, PNG, WebP ou GIF sont acceptées.',
-            'images.*.max'    => 'Chaque image doit faire moins de ' . round($maxKb / 1024) . ' Mo.',
+            'body.max'        => __('Le texte ne doit pas dépasser 5 000 caractères.'),
+            'type.in'         => __('Type de publication non disponible.'),
+            'images.max'      => __('Maximum :max images par publication.'),
+            'images.*.mimes'  => __('Seules les images JPEG, PNG, WebP ou GIF sont acceptées.'),
+            'images.*.max'    => __('Chaque image doit faire moins de :size Mo.', ['size' => round($maxKb / 1024)]),
         ]);
 
         // « Publier en tant que » : soi-même ou l'une de SES pages (vérifié côté serveur).
         $page = null;
         if (! empty($data['as']) && $data['as'] !== 'me') {
             $page = \App\Services\Social\PageService::managedBy($viewer)->where('slug', $data['as'])->with('profile')->first();
-            abort_unless($page, 403, 'Vous ne gérez pas cette page.');
+            abort_unless($page, 403, __('Vous ne gérez pas cette page.'));
         }
 
         // Documents PDF publics : réservés aux publications signées par une page (jamais sur un profil personnel).
         $documents = $request->file('documents', []);
         if ($documents && ! $page) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['documents' => 'Les documents PDF se publient au nom d’une page (choisissez « Publier en tant que »).']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['documents' => __('Les documents PDF se publient au nom d’une page (choisissez « Publier en tant que »).')]);
         }
         \App\Services\Social\DocumentService::requireConsent($request);
         if (count(\App\Services\Social\PollService::options($data)) === 1) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['poll_options' => 'Un sondage demande au moins deux choix différents.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['poll_options' => __('Un sondage demande au moins deux choix différents.')]);
         }
 
         $images = $request->file('images', []);
         $video = null;
         if (! empty($data['video_upload'])) {
             if ($images) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['video' => 'Publiez soit des photos, soit une vidéo.']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['video' => __('Publiez soit des photos, soit une vidéo.')]);
             }
             $video = app(\App\Services\Social\VideoService::class)->finalize($data['video_upload'], $viewer, $request->file('poster'), [
                 'duration' => $data['video_duration'] ?? null, 'width' => $data['video_width'] ?? null, 'height' => $data['video_height'] ?? null,
@@ -118,7 +118,7 @@ class PostController extends SocialController
         }
         $url = $type === 'reel' ? route('social.reels', ['r' => $post->id])
             : ($page ? route('social.mutual', $page->slug) : route('social.home')) . '#post-' . $post->id;
-        $msg = $type === 'reel' ? 'Votre réel est en ligne.' : 'Votre publication est en ligne.';
+        $msg = $type === 'reel' ? __('Votre réel est en ligne.') : __('Votre publication est en ligne.');
 
         // Envoi avec barre de progression (JavaScript) : réponse JSON, message affiché après rechargement.
         if ($request->expectsJson()) {
@@ -171,9 +171,9 @@ class PostController extends SocialController
         $this->posts->delete($post);
 
         return match (true) {
-            (bool) $group => redirect()->route('social.group', $group)->with('ok', 'Publication supprimée.'),
-            (bool) $page  => redirect()->route('social.mutual', $page->slug)->with('ok', 'Publication supprimée.'),
-            default       => redirect()->route('social.user', $viewer)->with('ok', 'Publication supprimée.'),
+            (bool) $group => redirect()->route('social.group', $group)->with('ok', __('Publication supprimée.')),
+            (bool) $page  => redirect()->route('social.mutual', $page->slug)->with('ok', __('Publication supprimée.')),
+            default       => redirect()->route('social.user', $viewer)->with('ok', __('Publication supprimée.')),
         };
     }
 
@@ -204,7 +204,7 @@ class PostController extends SocialController
     {
         $post = $this->visiblePost($post);
         abort_unless($post->visibility === 'public' && (! $post->group_id || ! $post->group?->isPrivate()), 403,
-            'Seules les publications publiques peuvent être partagées.');
+            __('Seules les publications publiques peuvent être partagées.'));
         $data = $request->validate(['body' => ['nullable', 'string', 'max:1000']]);
         $shared = $this->posts->share($post, $this->viewer(), $data['body'] ?? null);
 
@@ -212,13 +212,13 @@ class PostController extends SocialController
             return response()->json(['ok' => true, 'url' => route('social.post', $shared)]);
         }
 
-        return redirect()->route('social.post', $shared)->with('ok', 'Publication partagée.');
+        return redirect()->route('social.post', $shared)->with('ok', __('Publication partagée.'));
     }
 
     public function report(Request $request, int $post)
     {
         $post = $this->visiblePost($post);
-        abort_if($post->public_account_id === $this->viewer()->id && ! $post->mutual_id, 422, 'Vous ne pouvez pas signaler votre propre publication.');
+        abort_if($post->public_account_id === $this->viewer()->id && ! $post->mutual_id, 422, __('Vous ne pouvez pas signaler votre propre publication.'));
 
         return $this->storeReport($request, $post->id, null);
     }
@@ -233,7 +233,7 @@ class PostController extends SocialController
             'parent_id'  => ['nullable', 'integer'],
             'mentions'   => ['nullable', 'array', 'max:' . \App\Services\Social\MentionService::MAX],
             'mentions.*' => ['string', 'max:80'],
-        ], ['body.required' => 'Le commentaire est vide.']);
+        ], ['body.required' => __('Le commentaire est vide.')]);
 
         $comment = $this->posts->comment($post, $data['body'], $this->viewer(), null, $data['parent_id'] ?? null, null, $data['mentions'] ?? []);
         $comment->load(['account', 'mutual.profile', 'replies', 'mentions.mutual']);
@@ -255,14 +255,14 @@ class PostController extends SocialController
         $postId = $comment->post_id;
         $this->posts->deleteComment($comment);
 
-        return redirect()->to(route('social.post', $postId) . '#commentaires')->with('ok', 'Commentaire supprimé.');
+        return redirect()->to(route('social.post', $postId) . '#commentaires')->with('ok', __('Commentaire supprimé.'));
     }
 
     public function reportComment(Request $request, int $comment)
     {
         $comment = Comment::where('status', 'visible')->findOrFail($comment);
         $this->visiblePost($comment->post_id);
-        abort_if($comment->public_account_id === $this->viewer()->id, 422, 'Vous ne pouvez pas signaler votre propre commentaire.');
+        abort_if($comment->public_account_id === $this->viewer()->id, 422, __('Vous ne pouvez pas signaler votre propre commentaire.'));
 
         return $this->storeReport($request, null, $comment->id);
     }
@@ -282,7 +282,7 @@ class PostController extends SocialController
             return response()->json(['ok' => true]);
         }
 
-        return back()->with('ok', 'Merci, votre signalement a été transmis.');
+        return back()->with('ok', __('Merci, votre signalement a été transmis.'));
     }
 
     /** Publication visible pour le visiteur, sinon 404 (ne révèle pas son existence). */

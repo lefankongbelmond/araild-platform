@@ -9,8 +9,8 @@
     @php $who = $p->careClaim?->dependent; @endphp
     <a class="mx-card mx-card__pad" href="{{ route('social.member.prestation', [$mutual->slug, $p->id]) }}" style="display:block;color:inherit;margin-bottom:10px">
       <div class="mx-between" style="gap:8px;flex-wrap:wrap"><b>{{ $p->actType?->label }}</b><span class="mx-badge mx-badge--{{ $p->status === 'validated' ? 'green' : ($p->status === 'rejected' ? 'danger' : 'warn') }}">{{ __($S[$p->status] ?? $p->status) }}</span></div>
-      <p class="mx-xs mx-muted">{{ $p->care_date?->format('d/m/Y') }} · {{ $x['providers'][$p->provider_id] ?? 'Établissement' }} · {{ $who ? $who->first_name : 'vous' }} · réf. PC-{{ $p->id }}</p>
-      <p class="mx-small" style="margin:4px 0 0">Total {{ $fmt($p->total_minor) }} · <b>mutuelle {{ $fmt($p->mutual_part_minor) }}</b> · votre part {{ $fmt($p->beneficiary_part_minor) }}</p>
+      <p class="mx-xs mx-muted">{{ $p->care_date?->format('d/m/Y') }} · {{ $x['providers'][$p->provider_id] ?? __('Établissement') }} · {{ $who ? $who->first_name : __('vous') }} · {{ __('réf.') }} PC-{{ $p->id }}</p>
+      <p class="mx-small" style="margin:4px 0 0">{{ __('Total :amount ·', ['amount' => $fmt($p->total_minor)]) }} <b>{{ __('mutuelle :amount', ['amount' => $fmt($p->mutual_part_minor)]) }}</b> {{ __('· votre part :amount', ['amount' => $fmt($p->beneficiary_part_minor)]) }}</p>
     </a>
   @empty
     @include('social.partials.empty', ['icon' => 'file', 'title' => 'Aucune prestation', 'text' => 'Vos soins pris en charge par la mutuelle apparaîtront ici.'])

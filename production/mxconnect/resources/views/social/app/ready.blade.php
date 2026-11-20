@@ -7,7 +7,7 @@
   </div>
   <div class="mx-ready__check"><x-mx.icon name="check" :size="50"/></div>
   <h1 class="mx-as__title mx-as__center">{{ __('Votre compte est prêt !') }}</h1>
-  <p class="mx-as__lead mx-as__center">Bienvenue dans la communauté MX-CONNECT{{ $account ? ', ' . $account->first_name : '' }}.</p>
+  <p class="mx-as__lead mx-as__center">{{ $account ? __('Bienvenue dans la communauté MX-CONNECT, :name.', ['name' => $account->first_name]) : __('Bienvenue dans la communauté MX-CONNECT.') }}</p>
   <div class="mx-rsteps">
     <a class="mx-rstep" href="{{ route('social.settings') }}"><span class="mx-rstep__ic" style="background:var(--mx-sky-soft);color:var(--mx-sky)"><x-mx.icon name="user" :size="20"/></span><span style="flex:1"><b>{{ __('Compléter mon profil') }}</b><span>{{ __('Ajoutez une photo et vos informations') }}</span></span><x-mx.icon name="chevron-right" :size="18"/></a>
     <a class="mx-rstep" href="{{ route('social.discover') }}"><span class="mx-rstep__ic" style="background:var(--mx-green-soft);color:var(--mx-blue)"><x-mx.icon name="building" :size="20"/></span><span style="flex:1"><b>{{ __('Découvrir les organisations') }}</b><span>{{ __('Trouvez des initiatives près de chez vous') }}</span></span><x-mx.icon name="chevron-right" :size="18"/></a>

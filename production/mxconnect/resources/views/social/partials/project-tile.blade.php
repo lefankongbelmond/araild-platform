@@ -10,7 +10,7 @@
     <span class="mx-row" style="gap:8px;margin-top:auto;padding-top:6px"><x-mx.avatar :src="$p->mutual?->profile?->logoUrl()" :name="$p->mutual?->name ?? '?'" org size="sm" /><span class="mx-xs mx-muted mx-truncate">{{ $p->mutual?->name }}</span></span>
     @if ($p->progress !== null)
       <span class="mx-bar" role="img" aria-label="Avancement déclaré : {{ $p->progress }} %"><i style="width:{{ $p->progress }}%"></i></span>
-      <span class="mx-xs mx-muted" style="text-align:right">{{ $p->progress }} % (déclaré)</span>
+      <span class="mx-xs mx-muted" style="text-align:right">{{ __(':progress % (déclaré)', ['progress' => $p->progress]) }}</span>
     @endif
   </span>
 </a>

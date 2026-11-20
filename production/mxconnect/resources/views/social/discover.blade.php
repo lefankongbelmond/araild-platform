@@ -38,7 +38,7 @@
     <aside class="mx-stack">
       {{-- Application (maquette 8) : filtres repliés sous un bouton « Filtres » ; site : toujours ouverts. --}}
       <details class="mx-dfilters" open>
-      <summary class="mx-btn mx-btn--ghost mx-btn--sm"><x-mx.icon name="filter" :size="16"/> Filtres @if ($filtered)<span class="mx-count" style="position:static">•</span>@endif</summary>
+      <summary class="mx-btn mx-btn--ghost mx-btn--sm"><x-mx.icon name="filter" :size="16"/> {{ __('Filtres') }} @if ($filtered)<span class="mx-count" style="position:static">•</span>@endif</summary>
       <form class="mx-card mx-card__pad mx-stack" method="GET" action="{{ route('social.discover') }}" style="gap:10px">
         <b class="mx-row mx-dfilters__title" style="gap:6px"><x-mx.icon name="filter" :size="16"/> {{ __('Filtres') }}</b>
         @if ($tab !== 'organisations')<input type="hidden" name="onglet" value="{{ $tab }}">@endif
@@ -48,7 +48,7 @@
         <div class="mx-field"><label class="mx-label" for="dc-region">{{ __('Région') }}</label>
           <select class="mx-select" id="dc-region" name="region"><option value="">{{ __('Toutes les régions') }}</option>@foreach ($places['regions'] as $r)<option value="{{ $r }}" @selected($f['region'] === $r)>{{ $r }}</option>@endforeach</select></div>
         @if ($types)
-          <div class="mx-field"><label class="mx-label" for="dc-type">{{ $tab === 'projets' ? 'État du projet' : ($tab === 'opportunites' ? 'Type d’opportunité' : 'Type de structure') }}</label>
+          <div class="mx-field"><label class="mx-label" for="dc-type">{{ $tab === 'projets' ? __('État du projet') : ($tab === 'opportunites' ? __('Type d’opportunité') : __('Type de structure')) }}</label>
             <select class="mx-select" id="dc-type" name="type"><option value="">{{ __('Tous') }}</option>@foreach ($types as $k => $v)<option value="{{ $k }}" @selected($f['type'] === $k)>{{ __($v) }}</option>@endforeach</select></div>
         @endif
         <div class="mx-field"><label class="mx-label" for="dc-dom">{{ __('Domaine d’intervention') }}</label>
@@ -78,7 +78,7 @@
     </aside>
 
     <section class="mx-stack mx-dresults" aria-live="polite">
-      <p class="mx-small mx-muted">{{ $items->total() }} résultat(s)@if($f['domaine']) · {{ __($D[$f['domaine']]) }}@endif</p>
+      <p class="mx-small mx-muted">{{ __(':count résultat(s)', ['count' => $items->total()]) }}@if($f['domaine']) · {{ __($D[$f['domaine']]) }}@endif</p>
       @if ($items->isEmpty())
         @include('social.partials.empty', ['icon' => 'compass', 'title' => 'Aucun résultat', 'text' => $filtered ? 'Essayez un autre domaine, une autre région ou d’autres mots-clés.' : 'Rien à afficher dans cette rubrique pour le moment.'])
       @elseif ($tab === 'organisations')

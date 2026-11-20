@@ -39,9 +39,9 @@ class DocumentService
     public static function messages(): array
     {
         return [
-            'documents.max'               => 'Trop de documents à la fois.',
-            'documents.*.mimes'           => 'Seuls les documents PDF sont acceptés.',
-            'documents.*.max'             => 'Chaque document doit faire moins de ' . round(self::maxKb() / 1024) . ' Mo.',
+            'documents.max'               => __('Trop de documents à la fois.'),
+            'documents.*.mimes'           => __('Seuls les documents PDF sont acceptés.'),
+            'documents.*.max'             => __('Chaque document doit faire moins de :size Mo.', ['size' => round(self::maxKb() / 1024)]),
         ];
     }
 
@@ -52,7 +52,7 @@ class DocumentService
             return;
         }
         $rules = ['documents_public' => ['accepted']];
-        $msg = ['documents_public.accepted' => 'Confirmez que les documents sont publics et ne contiennent aucune donnée médicale ou personnelle.'];
+        $msg = ['documents_public.accepted' => __('Confirmez que les documents sont publics et ne contiennent aucune donnée médicale ou personnelle.')];
         $bag ? $request->validateWithBag($bag, $rules, $msg) : $request->validate($rules, $msg);
     }
 
@@ -68,7 +68,7 @@ class DocumentService
             foreach (array_values($files) as $i => $file) {
                 $head = (string) file_get_contents($file->getRealPath(), false, null, 0, 5);
                 if ($head !== '%PDF-') {
-                    throw ValidationException::withMessages(['documents' => 'Ce fichier n’est pas un PDF valide : ' . $file->getClientOriginalName()]);
+                    throw ValidationException::withMessages(['documents' => __('Ce fichier n’est pas un PDF valide : :file', ['file' => $file->getClientOriginalName()])]);
                 }
                 $path = 'social/documents/' . now()->format('Y/m') . '/' . Str::uuid() . '.pdf';
                 Storage::disk('social')->put($path, file_get_contents($file->getRealPath()));

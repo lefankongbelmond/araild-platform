@@ -34,8 +34,8 @@ class AdhesionController extends SocialController
             ->whereIn('status', [...AdhesionRequest::OPEN, 'accepted'])->latest()->first();
         if ($open) {
             return redirect()->route('social.adhesion', $open)->with('info', $open->status === 'accepted'
-                ? 'Votre adhésion à cette mutuelle a déjà été acceptée.'
-                : 'Vous avez déjà une demande en cours auprès de cette mutuelle.');
+                ? __('Votre adhésion à cette mutuelle a déjà été acceptée.')
+                : __('Vous avez déjà une demande en cours auprès de cette mutuelle.'));
         }
 
         return view('social.adhesion.create', [
@@ -75,11 +75,11 @@ class AdhesionController extends SocialController
             'consent'            => ['accepted'],
             'no_medical'         => ['accepted'],
         ], [
-            'phone.regex'         => 'Numéro de téléphone invalide.',
-            'documents.*.mimes'   => 'Pièces acceptées : PDF ou image (JPEG, PNG, WebP).',
-            'documents.*.max'     => 'Chaque pièce doit faire moins de ' . round($docKb / 1024) . ' Mo.',
-            'consent.accepted'    => 'Votre accord est nécessaire pour transmettre le dossier à la mutuelle.',
-            'no_medical.accepted' => 'Merci de confirmer que vous n’avez joint aucune donnée médicale.',
+            'phone.regex'         => __('Numéro de téléphone invalide.'),
+            'documents.*.mimes'   => __('Pièces acceptées : PDF ou image (JPEG, PNG, WebP).'),
+            'documents.*.max'     => __('Chaque pièce doit faire moins de :size Mo.', ['size' => round($docKb / 1024)]),
+            'consent.accepted'    => __('Votre accord est nécessaire pour transmettre le dossier à la mutuelle.'),
+            'no_medical.accepted' => __('Merci de confirmer que vous n’avez joint aucune donnée médicale.'),
         ]);
 
         $beneficiaries = collect($data['beneficiaries'] ?? [])
@@ -93,7 +93,7 @@ class AdhesionController extends SocialController
         $r = $this->adhesions->submit($mutual, $this->viewer(), $fields, $request->file('documents', []), $data['kinds'] ?? []);
 
         return redirect()->route('social.adhesion', $r)
-            ->with('ok', "Votre demande a été transmise à {$mutual->name} (référence {$r->reference}). Vous serez notifié de chaque étape.");
+            ->with('ok', __('Votre demande a été transmise à :name (référence :ref). Vous serez notifié de chaque étape.', ['name' => $mutual->name, 'ref' => $r->reference]));
     }
 
     public function index()
@@ -116,7 +116,7 @@ class AdhesionController extends SocialController
         $this->own($adhesion);
         $this->adhesions->withdraw($adhesion);
 
-        return redirect()->route('social.adhesion', $adhesion)->with('ok', 'Votre demande a été retirée.');
+        return redirect()->route('social.adhesion', $adhesion)->with('ok', __('Votre demande a été retirée.'));
     }
 
     /** Réponse à une demande d'information : note + pièces complémentaires. */
@@ -134,7 +134,7 @@ class AdhesionController extends SocialController
         $this->adhesions->addDocuments($adhesion, $request->file('documents', []), $data['kinds'] ?? []);
         $this->adhesions->resubmit($adhesion, $data['note']);
 
-        return redirect()->route('social.adhesion', $adhesion)->with('ok', 'Complément envoyé à la mutuelle.');
+        return redirect()->route('social.adhesion', $adhesion)->with('ok', __('Complément envoyé à la mutuelle.'));
     }
 
     /** Téléchargement d'une pièce : uniquement par le demandeur. */
@@ -159,7 +159,7 @@ class AdhesionController extends SocialController
                 'Demande d’adhésion ' . $adhesion->reference, $data['body'], $adhesion->id);
         }
 
-        return redirect()->route('social.messages.show', $conv)->with('ok', 'Message envoyé.');
+        return redirect()->route('social.messages.show', $conv)->with('ok', __('Message envoyé.'));
     }
 
     /** Réponse de fichier privé, jamais mise en cache, jamais affichée « en ligne » pour les PDF. */
@@ -187,8 +187,8 @@ class AdhesionController extends SocialController
     {
         $mutual = Mutual::where('slug', $slug)->with('profile')->firstOrFail();
         abort_if($mutual->status === 'suspended', 404);
-        abort_if($mutual->profile?->is_demo, 403, 'Organisation de démonstration : l’adhésion en ligne n’est pas possible.');
-        abort_if($mutual->profile?->owner_account_id, 403, 'Cette page n’est pas une mutuelle gérée sur MX-CONNECT : l’adhésion en ligne n’est pas possible.');
+        abort_if($mutual->profile?->is_demo, 403, __('Organisation de démonstration : l’adhésion en ligne n’est pas possible.'));
+        abort_if($mutual->profile?->owner_account_id, 403, __('Cette page n’est pas une mutuelle gérée sur MX-CONNECT : l’adhésion en ligne n’est pas possible.'));
 
         return $mutual;
     }

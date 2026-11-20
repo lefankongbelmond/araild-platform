@@ -11,10 +11,12 @@ use App\Services\Social\NotificationService;
  * seulement l'événement et un lien vers le portail. Canal : notification de l'application, et e-mail
  * si le membre l'accepte (NotificationService). SMS et WhatsApp : à brancher ici quand un fournisseur
  * sera choisi.
+ * Multilingue (M2b) : titre et texte sous la forme [« Texte :variable », [...]] → traduits dans la
+ * langue du compte de l'adhérent (NotificationService::text).
  */
 final class MemberNotifier
 {
-    public static function notify(int $memberId, string $title, ?string $body = null, string $path = ''): void
+    public static function notify(int $memberId, string|array $title, string|array|null $body = null, string $path = ''): void
     {
         try {
             $mutualId = function_exists('tenant') && tenant() ? (string) tenant('id') : null;

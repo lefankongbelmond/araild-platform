@@ -12,17 +12,17 @@
       <dt>{{ __('Montant total') }}</dt><dd>{{ $fmt($p->total_minor) }}</dd>
       @if ($p->eligible_minor !== null)<dt>{{ __('Montant retenu') }}</dt><dd>{{ $fmt($p->eligible_minor) }}</dd>@endif
       <dt>{{ __('Part de la mutuelle') }}</dt><dd><b>{{ $fmt($p->mutual_part_minor) }}</b></dd>
-      <dt>{{ __('Votre part') }}</dt><dd>{{ $fmt($p->beneficiary_part_minor) }}@if ($p->copay_minor !== null) <span class="mx-xs mx-muted">(dont ticket modérateur {{ $fmt($p->copay_minor) }}@if ($p->non_covered_minor) , non couvert {{ $fmt($p->non_covered_minor) }}@endif)</span>@endif</dd>
-      @if ($x['preauth'])<dt>{{ __('Accord préalable') }}</dt><dd>{{ $x['preauth']->number ?? 'demande n° ' . $x['preauth']->id }}</dd>@endif
+      <dt>{{ __('Votre part') }}</dt><dd>{{ $fmt($p->beneficiary_part_minor) }}@if ($p->copay_minor !== null) <span class="mx-xs mx-muted">({{ __('dont ticket modérateur :amount', ['amount' => $fmt($p->copay_minor)]) }}@if ($p->non_covered_minor), {{ __('non couvert :amount', ['amount' => $fmt($p->non_covered_minor)]) }}@endif)</span>@endif</dd>
+      @if ($x['preauth'])<dt>{{ __('Accord préalable') }}</dt><dd>{{ $x['preauth']->number ?? __('demande n° :number', ['number' => $x['preauth']->id]) }}</dd>@endif
       @if ($p->emergency)<dt>{{ __('Urgence') }}</dt><dd>{{ __('Oui') }}</dd>@endif
     </dl>
-    @if ($p->status === 'rejected' && $p->decision_note)<p class="mx-alert mx-alert--err" style="margin-top:10px">Motif du rejet : {{ $p->decision_note }}</p>@endif
+    @if ($p->status === 'rejected' && $p->decision_note)<p class="mx-alert mx-alert--err" style="margin-top:10px">{{ __('Motif du rejet : :decision_note', ['decision_note' => $p->decision_note]) }}</p>@endif
     @if ($x['dispensation'])
-      <h2 class="mx-card__title" style="font-size:15px;margin-top:14px">Médicaments délivrés (ordonnance {{ $x['dispensation']->prescription?->reference }})</h2>
+      <h2 class="mx-card__title" style="font-size:15px;margin-top:14px">{{ __('Médicaments délivrés (ordonnance :reference)', ['reference' => $x['dispensation']->prescription?->reference]) }}</h2>
       @foreach ($x['dispensation']->lines as $l)
         <p class="mx-small" style="margin:4px 0">{{ $l->medicine?->label }} × {{ $l->quantity_dispensed }} — {{ $fmt($l->amount_minor) }}@if (! $l->eligible) <span style="color:var(--mx-danger)">{{ __('(non pris en charge)') }}</span>@endif</p>
       @endforeach
     @endif
   </section>
-  <p class="mx-xs mx-muted" style="margin-top:10px">{{ __('Une question sur cette prestation ?') }} <a href="{{ route('social.member.complaints', $mutual->slug) }}">{{ __('Écrivez à votre mutuelle') }}</a> en indiquant la référence PC-{{ $p->id }}.</p>
+  <p class="mx-xs mx-muted" style="margin-top:10px">{{ __('Une question sur cette prestation ?') }} <a href="{{ route('social.member.complaints', $mutual->slug) }}">{{ __('Écrivez à votre mutuelle') }}</a> {{ __('en indiquant la référence PC-:id.', ['id' => $p->id]) }}</p>
 </x-layouts.social>

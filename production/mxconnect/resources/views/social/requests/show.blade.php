@@ -5,17 +5,17 @@
     <div class="mx-row mx-between mx-row--wrap" style="gap:10px">
       <div class="mx-row" style="gap:12px;min-width:0"><x-mx.avatar :src="$r->mutual?->profile?->logoUrl()" :name="$r->mutual?->name ?? '?'" org />
         <div style="min-width:0"><h1 style="font-size:20px">{{ $r->kindLabel() }}</h1>
-          <p class="mx-xs mx-muted">{{ $r->mutual?->name }} · {{ $r->reference }} · envoyée le {{ $r->created_at->format('d/m/Y à H:i') }}</p></div></div>
+          <p class="mx-xs mx-muted">{{ __(':name · :reference · envoyée le :date', ['name' => $r->mutual?->name, 'reference' => $r->reference, 'date' => $r->created_at->format('d/m/Y à H:i')]) }}</p></div></div>
       <span class="mx-status mx-status--{{ $r->statusClass() }}">{{ $r->statusLabel() }}</span>
     </div>
     @if ($r->status === 'accepted')
-      <div class="mx-alert mx-alert--ok">{{ $r->mutual?->name }} a accepté votre demande et va vous contacter avec les coordonnées que vous avez indiquées.</div>
+      <div class="mx-alert mx-alert--ok">{{ __(':name a accepté votre demande et va vous contacter avec les coordonnées que vous avez indiquées.', ['name' => $r->mutual?->name]) }}</div>
     @endif
     <dl class="mx-kv">
       <dt>{{ __('Sujet') }}</dt><dd>
         @if ($r->opportunity && ! $r->opportunity->trashed())<a href="{{ route('social.opportunity', $r->opportunity) }}">{{ $r->opportunity->title }}</a>
         @elseif ($r->project && ! $r->project->trashed())<a href="{{ route('social.project', $r->project) }}">{{ $r->project->title }}</a>
-        @elseif ($r->opportunity || $r->project){{ $r->subject() }} (retiré par l’organisation)
+        @elseif ($r->opportunity || $r->project){{ $r->subject() }} {{ __('(retiré par l’organisation)') }}
         @else<a href="{{ route('social.mutual', $r->mutual?->slug) }}">{{ $r->mutual?->name }}</a>@endif</dd>
       @if ($r->subtypeLabel())<dt>{{ __('Type') }}</dt><dd>{{ $r->subtypeLabel() }}</dd>@endif
       @if ($r->organisation_name)<dt>{{ __('Au nom de') }}</dt><dd>{{ $r->organisation_name }}</dd>@endif

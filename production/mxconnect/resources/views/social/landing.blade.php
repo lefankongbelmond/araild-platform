@@ -25,7 +25,7 @@
     <h2 style="font-size:17px">{{ __('Explorer par domaine') }}</h2>
     <div class="mx-domains">
       @foreach (\App\Support\SocialDomains::ALL as $code => $label)
-        <a class="mx-card mx-domain" href="{{ route('social.discover', ['domaine' => $code]) }}"><i><x-mx.icon :name="'d-' . $code" :size="20"/></i>{{ __($label) }}<small>{{ $domains[$code] ?? 0 }} organisation(s)</small></a>
+        <a class="mx-card mx-domain" href="{{ route('social.discover', ['domaine' => $code]) }}"><i><x-mx.icon :name="'d-' . $code" :size="20"/></i>{{ __($label) }}<small>{{ __(':count organisation(s)', ['count' => $domains[$code] ?? 0]) }}</small></a>
       @endforeach
     </div>
   </section>

@@ -30,10 +30,10 @@ class PublicAccount extends Authenticatable implements CanResetPasswordContract
     {
         $url = rtrim((string) config('app.url'), '/') . '/compte/reinitialiser/' . $token . '?email=' . urlencode($this->email);
         app(\App\Services\Social\MailService::class)->send($this->email, new \App\Mail\SocialMail(
-            'Réinitialisation de votre mot de passe MX-CONNECT', 'Réinitialiser votre mot de passe',
-            ["Bonjour {$this->first_name},", 'Vous avez demandé à réinitialiser votre mot de passe. Ce lien est valable 60 minutes.'],
-            'Choisir un nouveau mot de passe', $url,
-            'Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail : votre mot de passe reste inchangé.',
+            __('Réinitialisation de votre mot de passe MX-CONNECT'), __('Réinitialiser votre mot de passe'),
+            [__('Bonjour :name,', ['name' => $this->first_name]), __('Vous avez demandé à réinitialiser votre mot de passe. Ce lien est valable 60 minutes.')],
+            __('Choisir un nouveau mot de passe'), $url,
+            __('Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail : votre mot de passe reste inchangé.'),
         ));
     }
 

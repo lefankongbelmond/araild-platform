@@ -9,7 +9,7 @@
   <form class="mx-card mx-card__pad mx-stack" method="POST" action="{{ $action }}">
     @csrf
     <div class="mx-row mx-between mx-row--wrap" style="gap:8px">
-      <h1 style="font-size:20px">{{ $editing ? $o->title : 'Nouvelle offre ou opportunité' }}</h1>
+      <h1 style="font-size:20px">{{ $editing ? $o->title : __('Nouvelle offre ou opportunité') }}</h1>
       @if ($editing)<a class="mx-btn mx-btn--ghost mx-btn--sm" href="{{ route('social.opportunity', $o) }}">{{ __('Voir l’offre') }}</a>@endif
     </div>
     @if ($o->status === 'hidden')<div class="mx-alert mx-alert--warn">{{ __('Cette offre a été masquée par la modération du réseau.') }}</div>@endif
@@ -50,7 +50,7 @@
     <fieldset class="mx-stack" style="border:1px solid var(--mx-border);border-radius:12px;padding:12px 14px">
       <legend class="mx-label" style="padding:0 6px">{{ __('Candidatures') }}</legend>
       @foreach ($O::APPLY_MODES as $k => $v)
-        <label class="mx-check"><input type="radio" name="apply_mode" value="{{ $k }}" @checked(old('apply_mode', $o->apply_mode) === $k)> <span>{{ __($v) }}@if($k === 'platform') — vous les recevez dans « Demandes reçues » (CV en PDF)@endif</span></label>
+        <label class="mx-check"><input type="radio" name="apply_mode" value="{{ $k }}" @checked(old('apply_mode', $o->apply_mode) === $k)> <span>{{ __($v) }}@if($k === 'platform') {{ __('— vous les recevez dans « Demandes reçues » (CV en PDF)') }}@endif</span></label>
       @endforeach
       <div class="mx-field"><label class="mx-label" for="op-url">{{ __('Adresse du site de candidature') }}</label><input class="mx-input" id="op-url" type="url" name="apply_url" value="{{ old('apply_url', $o->apply_url) }}" maxlength="255" placeholder="https://">@error('apply_url')<p class="mx-error">{{ $message }}</p>@enderror</div>
       <div class="mx-field"><label class="mx-label" for="op-ins">{{ __('Consignes') }}</label><input class="mx-input" id="op-ins" name="apply_instructions" value="{{ old('apply_instructions', $o->apply_instructions) }}" maxlength="500" placeholder="{{ __('Ex. : joindre un CV et une lettre de motivation') }}"></div>

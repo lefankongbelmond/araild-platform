@@ -15,13 +15,13 @@
     @csrf
     <div @class(['mx-composer', 'is-open' => old('body') || $errors->any()]) data-composer-box>
       @if ($composerPage)
-        <span class="mx-composer__me" title="Publication au nom de {{ $composerPage->name }}"><x-mx.avatar :src="$composerPage->profile?->logoUrl()" :name="$composerPage->name" org /></span>
+        <span class="mx-composer__me" title="{{ __('Publication au nom de :name', ['name' => $composerPage->name]) }}"><x-mx.avatar :src="$composerPage->profile?->logoUrl()" :name="$composerPage->name" org /></span>
       @else
         <a href="{{ route('social.user', $viewer) }}" class="mx-composer__me" aria-label="{{ __('Mon profil') }}"><x-mx.avatar :src="$viewer->avatarUrl()" :name="$viewer->name" /></a>
       @endif
       <div class="mx-grow" style="min-width:0">
         <label class="mx-sr" for="composer-body">{{ __('Votre publication') }}</label>
-        <textarea id="composer-body" class="mx-textarea" name="body" maxlength="5000" rows="1" placeholder="{{ $composerPage ? 'Publier au nom de ' . $composerPage->name . '…' : 'Quoi de neuf, ' . $viewer->first_name . ' ?' }}" data-composer-text data-mentions data-emoji>{{ old('body') }}</textarea>
+        <textarea id="composer-body" class="mx-textarea" name="body" maxlength="5000" rows="1" placeholder="{{ $composerPage ? __('Publier au nom de :name…', ['name' => $composerPage->name]) : __('Quoi de neuf, :name ?', ['name' => $viewer->first_name]) }}" data-composer-text data-mentions data-emoji>{{ old('body') }}</textarea>
       </div>
       <label class="mx-composer__photo" title="{{ __('Ajouter des photos (6 maximum)') }}">
         <span class="mx-composer__photoico"><x-mx.icon name="image" :size="22"/></span>
@@ -45,7 +45,7 @@
           <b class="mx-small" data-video-name></b>
           <div class="mx-progress" data-video-progress role="progressbar" aria-label="{{ __('Envoi de la vidéo') }}" aria-valuemin="0" aria-valuemax="100"><span></span></div>
           <span class="mx-xs mx-muted" data-video-status>{{ __('Préparation…') }}</span>
-          <label class="mx-check mx-small"><input type="checkbox" name="reel" value="1" data-reel> <span><b>{{ __('Publier comme réel') }}</b> — vidéo verticale de {{ config('mxconnect.social.reel_max_seconds', 90) }} s maximum, visible dans « Réels »</span></label>
+          <label class="mx-check mx-small"><input type="checkbox" name="reel" value="1" data-reel> <span><b>{{ __('Publier comme réel') }}</b> {{ __('— vidéo verticale de :seconds s maximum, visible dans « Réels »', ['seconds' => config('mxconnect.social.reel_max_seconds', 90)]) }}</span></label>
           <div><button type="button" class="mx-btn mx-btn--ghost mx-btn--sm" data-video-remove><x-mx.icon name="trash" :size="14"/> {{ __('Retirer la vidéo') }}</button></div>
         </div>
         <input type="hidden" name="video_upload" data-video-id>
@@ -69,8 +69,8 @@
             <div class="mx-extra__body">
               <p class="mx-xs mx-muted">{{ __('Votre texte sert de question. 2 à 4 choix ; les résultats sont anonymes.') }}</p>
               @for ($i = 0; $i < 4; $i++)
-                <label class="mx-sr" for="poll-{{ $i }}">Choix {{ $i + 1 }}</label>
-                <input class="mx-input" id="poll-{{ $i }}" name="poll_options[]" maxlength="120" value="{{ old('poll_options.' . $i) }}" placeholder="Choix {{ $i + 1 }}{{ $i < 2 ? '' : ' (facultatif)' }}">
+                <label class="mx-sr" for="poll-{{ $i }}">{{ __('Choix :number', ['number' => $i + 1]) }}</label>
+                <input class="mx-input" id="poll-{{ $i }}" name="poll_options[]" maxlength="120" value="{{ old('poll_options.' . $i) }}" placeholder="{{ $i < 2 ? __('Choix :number', ['number' => $i + 1]) : __('Choix :number (facultatif)', ['number' => $i + 1]) }}">
               @endfor
               <label class="mx-small" for="poll-days">{{ __('Durée') }}</label>
               <select class="mx-select" id="poll-days" name="poll_days">@foreach (\App\Models\Social\Poll::DURATIONS as $d => $l)<option value="{{ $d }}" @selected((int) old('poll_days', 7) === $d)>{{ __($l) }}</option>@endforeach</select>
@@ -80,7 +80,7 @@
             <details class="mx-extra" @if($errors->has('documents') || $errors->has('documents.*') || $errors->has('documents_public')) open @endif>
               <summary class="mx-tool"><x-mx.icon name="file" :size="16"/> {{ __('Document PDF') }}</summary>
               <div class="mx-extra__body">
-                <p class="mx-xs mx-muted">Réservé aux publications d’une page{{ $composerPage ? '' : ' (choisissez « Page : … » dans « Publier en tant que »)' }}. PDF uniquement, 3 maximum, {{ round(\App\Services\Social\DocumentService::maxKb() / 1024) }} Mo chacun.</p>
+                <p class="mx-xs mx-muted">{{ $composerPage ? __('Réservé aux publications d’une page.') : __('Réservé aux publications d’une page (choisissez « Page : … » dans « Publier en tant que »).') }} {{ __('PDF uniquement, 3 maximum, :size Mo chacun.', ['size' => round(\App\Services\Social\DocumentService::maxKb() / 1024)]) }}</p>
                 <input type="file" name="documents[]" accept="application/pdf" multiple aria-label="{{ __('Documents PDF') }}">
                 <label class="mx-check mx-small"><input type="checkbox" name="documents_public" value="1"> <span>{{ __('Ces documents sont publics et ne contiennent aucune donnée médicale ou personnelle.') }}</span></label>
               </div>
@@ -100,7 +100,7 @@
             <label class="mx-sr" for="composer-as">{{ __('Publier en tant que') }}</label>
             <select id="composer-as" name="as" class="mx-tool" title="{{ __('Publier en tant que') }}">
               <option value="me" @selected($asDefault === 'me')>{{ $viewer->name }}</option>
-              @foreach ($myPages as $pg)<option value="{{ $pg->slug }}" @selected($asDefault === $pg->slug)>Page : {{ $pg->name }}</option>@endforeach
+              @foreach ($myPages as $pg)<option value="{{ $pg->slug }}" @selected($asDefault === $pg->slug)>{{ __('Page : :name', ['name' => $pg->name]) }}</option>@endforeach
             </select>
           @endif
           @unless ($inGroupComposer)

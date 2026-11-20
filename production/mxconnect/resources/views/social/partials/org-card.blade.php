@@ -10,12 +10,12 @@
   <span class="mx-ocard__body">
     <span class="mx-ocard__name">{{ $m->name }}@if($m->isVerified()) <span class="mx-verified" title="{{ __('Organisation vérifiée par l’administration du réseau') }}"><x-mx.icon name="verified" :size="16"/></span>@endif
       @if ($pf?->is_demo)<span class="mx-demo-ribbon">{{ __('Démo') }}</span>@endif</span>
-    <span class="mx-xs mx-muted">{{ $cat }}@if($pf?->owner_account_id) · page de membre @endif</span>
+    <span class="mx-xs mx-muted">{{ $cat }}@if($pf?->owner_account_id) · {{ __('page de membre') }} @endif</span>
     @if ($pf?->tagline)<span class="mx-small">{{ \Illuminate\Support\Str::limit($pf->tagline, 90) }}</span>@endif
     <span class="mx-meta">
       @if ($place)<span><x-mx.icon name="pin" :size="13"/> {{ $place }}</span>@endif
-      <span><x-mx.icon name="users" :size="13"/> {{ number_format((int) $pf?->followers_count, 0, ',', ' ') }} abonné(s)</span>
-      @isset($m->projects_count)@if($m->projects_count)<span><x-mx.icon name="folder" :size="13"/> {{ $m->projects_count }} projet(s)</span>@endif @endisset
+      <span><x-mx.icon name="users" :size="13"/> {{ __(':count abonné(s)', ['count' => \App\Support\Locales::number((int) $pf?->followers_count)]) }}</span>
+      @isset($m->projects_count)@if($m->projects_count)<span><x-mx.icon name="folder" :size="13"/> {{ __(':count projet(s)', ['count' => $m->projects_count]) }}</span>@endif @endisset
     </span>
     @if (! empty($pf?->domains))<span class="mx-dtags">@foreach ($pf->domains as $d)@if(\App\Support\SocialDomains::label($d))<span class="mx-dtag">{{ __(\App\Support\SocialDomains::label($d)) }}</span>@endif @endforeach</span>@endif
   </span>

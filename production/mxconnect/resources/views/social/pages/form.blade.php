@@ -3,7 +3,7 @@
         action="{{ $editing ? route('social.pages.update', $mutual->slug) : route('social.pages.store') }}">
     @csrf
     <div>
-      <h1 style="font-size:22px">{{ $editing ? 'Modifier « ' . $mutual->name . ' »' : 'Créer une page' }}</h1>
+      <h1 style="font-size:22px">{{ $editing ? __('Modifier « :name »', ['name' => $mutual->name]) : __('Créer une page') }}</h1>
       <p class="mx-small mx-muted">{{ __('La page présente votre organisation au public. Vous pourrez publier en son nom depuis le fil (« Publier en tant que »).') }}</p>
     </div>
     @if ($errors->any())<div class="mx-alert mx-alert--err" role="alert">{{ __('Vérifiez les champs signalés.') }}</div>@endif
@@ -62,7 +62,7 @@
         @foreach ($managers as $mg)
           <div class="mx-mini__item">
             <x-mx.avatar :src="$mg->account?->avatarUrl()" :name="$mg->account?->name ?? '?'" size="sm" />
-            <span class="mx-grow"><b>{{ $mg->account?->name }}</b><span class="mx-xs mx-muted">{{ __(\App\Models\Social\PageAdmin::ROLES[$mg->role] ?? $mg->role) }}@if($mg->public_account_id === (int) $profile->owner_account_id) · créateur de la page @endif</span></span>
+            <span class="mx-grow"><b>{{ $mg->account?->name }}</b><span class="mx-xs mx-muted">{{ __(\App\Models\Social\PageAdmin::ROLES[$mg->role] ?? $mg->role) }}@if($mg->public_account_id === (int) $profile->owner_account_id) · {{ __('créateur de la page') }} @endif</span></span>
             @if ($mg->public_account_id !== (int) $profile->owner_account_id)
               <form method="POST" action="{{ route('social.pages.managers.remove', [$mutual->slug, $mg->id]) }}" data-confirm="{{ __('Retirer ce gestionnaire ?') }}">@csrf @method('DELETE')<button class="mx-btn mx-btn--ghost mx-btn--sm">{{ __('Retirer') }}</button></form>
             @endif

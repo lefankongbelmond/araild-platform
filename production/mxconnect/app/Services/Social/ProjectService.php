@@ -61,9 +61,9 @@ class ProjectService
     public static function projectMessages(): array
     {
         return [
-            'volunteer_needs.required_if' => 'Décrivez ce que les bénévoles pourront faire.',
-            'partner_needs.required_if'   => 'Décrivez le soutien recherché (technique, matériel, expertise…).',
-            'ends_on.after_or_equal'      => 'La date de fin doit suivre la date de début.',
+            'volunteer_needs.required_if' => __('Décrivez ce que les bénévoles pourront faire.'),
+            'partner_needs.required_if'   => __('Décrivez le soutien recherché (technique, matériel, expertise…).'),
+            'ends_on.after_or_equal'      => __('La date de fin doit suivre la date de début.'),
         ];
     }
 
@@ -105,7 +105,7 @@ class ProjectService
 
     public static function opportunityMessages(): array
     {
-        return ['apply_url.required_if' => 'Indiquez l’adresse du site où postuler.'];
+        return ['apply_url.required_if' => __('Indiquez l’adresse du site où postuler.')];
     }
 
     // --- Projets ---
@@ -189,7 +189,7 @@ class ProjectService
         $fields = collect($data)->only(['label', 'value', 'target', 'unit', 'period', 'source_note'])->all();
         if (! $indicator) {
             if ($project->indicators()->count() >= 20) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['label' => '20 résultats maximum par projet.']);
+                throw \Illuminate\Validation\ValidationException::withMessages(['label' => __('20 résultats maximum par projet.')]);
             }
 
             return ProjectIndicator::create($fields + ['project_id' => $project->id, 'position' => (int) $project->indicators()->max('position') + 1]);
@@ -225,8 +225,8 @@ class ProjectService
         $indicator->forceFill(['verified_at' => now(), 'verified_by' => $by->id, 'verification_note' => $note ? trim($note) : null])->save();
         $project = $indicator->project;
         foreach (PageService::managerIds($project->mutual_id) as $id) {
-            $this->notifications->notify($id, 'resultat', "Résultat vérifié : {$indicator->label}",
-                "L’administration du réseau a vérifié ce résultat du projet {$project->title}.", route('social.project', $project));
+            $this->notifications->notify($id, 'resultat', \App\Support\Msg::of('Résultat vérifié : :label', ['label' => $indicator->label]),
+                \App\Support\Msg::of('L’administration du réseau a vérifié ce résultat du projet :title.', ['title' => $project->title]), route('social.project', $project));
         }
     }
 

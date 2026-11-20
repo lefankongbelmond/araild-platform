@@ -62,7 +62,7 @@ class SocialAdminController extends Controller
         $owner = $s->advertiser?->public_account_id;
         if ($owner && in_array($new, ['active', 'rejected'], true)) {
             app(\App\Services\Social\NotificationService::class)->notify($owner, 'sponsor',
-                $new === 'active' ? "Votre campagne SP-{$s->id} est active" : "Votre campagne SP-{$s->id} a été refusée",
+                $new === 'active' ? \App\Support\Msg::of('Votre campagne :ref est active', ['ref' => 'SP-' . $s->id]) : \App\Support\Msg::of('Votre campagne :ref a été refusée', ['ref' => 'SP-' . $s->id]),
                 $data['note'] ?? null, '/annonceur');
         }
 

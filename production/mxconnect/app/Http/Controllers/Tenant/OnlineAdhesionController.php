@@ -111,7 +111,7 @@ class OnlineAdhesionController extends Controller
         );
         $r->update(['member_id' => $member->id, 'member_code' => $member->member_code]);
         $this->notifications->notify($r->public_account_id, 'adhesion',
-            "Votre compte est relié à votre fiche adhérent chez {$mutual->name}", 'Numéro d’adhérent : ' . $member->member_code,
+            \App\Support\Msg::of('Votre compte est relié à votre fiche adhérent chez :name', ['name' => $mutual->name]), \App\Support\Msg::of('Numéro d’adhérent : :code', ['code' => $member->member_code]),
             '/compte/adhesions/' . $r->reference);
 
         return back()->with('success', "Compte relié à la fiche {$member->member_code}.");

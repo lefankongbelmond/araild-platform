@@ -15,7 +15,7 @@
   @forelse ($items as $c)
     <a class="mx-card mx-card__pad" href="{{ route('social.member.complaint', [$mutual->slug, $c->id]) }}" style="display:block;color:inherit;margin-bottom:8px">
       <div class="mx-between" style="gap:8px;flex-wrap:wrap"><b>{{ $c->subject }}</b><span class="mx-badge mx-badge--{{ in_array($c->status, ['resolved', 'closed'], true) ? 'green' : 'warn' }}">{{ __($S[$c->status] ?? $c->status) }}</span></div>
-      <p class="mx-xs mx-muted">{{ $c->ref }} · {{ __($C[$c->category] ?? 'Réclamation') }} · {{ $c->received_on?->format('d/m/Y') }}</p>
+      <p class="mx-xs mx-muted">{{ $c->ref }} · {{ __($C[$c->category] ?? __('Réclamation')) }} · {{ $c->received_on?->format('d/m/Y') }}</p>
     </a>
   @empty
     <p class="mx-small mx-muted">{{ __('Aucune demande.') }}</p>

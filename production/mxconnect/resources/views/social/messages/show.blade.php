@@ -2,10 +2,10 @@
   <a class="mx-small" href="{{ route('social.messages') }}"><x-mx.icon name="arrow-left" :size="14"/> {{ __('Messages') }}</a>
   <section class="mx-card">
     <div class="mx-card__head"><div class="mx-row" style="gap:10px"><x-mx.avatar :src="$c->mutual?->profile?->logoUrl()" :name="$c->mutual?->name ?? '?'" org size="sm" />
-      <div><b>{{ $c->mutual?->name }}</b><div class="mx-xs mx-muted">{{ $c->subject }}@if($c->adhesion) · <a href="{{ route('social.adhesion', $c->adhesion) }}">dossier {{ $c->adhesion->reference }}</a>@endif</div></div></div></div>
+      <div><b>{{ $c->mutual?->name }}</b><div class="mx-xs mx-muted">{{ $c->subject }}@if($c->adhesion) · <a href="{{ route('social.adhesion', $c->adhesion) }}">{{ __('dossier :reference', ['reference' => $c->adhesion->reference]) }}</a>@endif</div></div></div></div>
     <div class="mx-thread">
       @foreach ($c->messages as $m)
-        <div class="mx-bubble {{ $m->sender === 'account' ? 'mx-bubble--me' : 'mx-bubble--them' }}">{{ $m->body }}<small>{{ $m->sender === 'account' ? 'Vous' : $c->mutual?->name }} · {{ $m->created_at->format('d/m/Y H:i') }}</small></div>
+        <div class="mx-bubble {{ $m->sender === 'account' ? 'mx-bubble--me' : 'mx-bubble--them' }}">{{ $m->body }}<small>{{ $m->sender === 'account' ? __('Vous') : $c->mutual?->name }} · {{ $m->created_at->format('d/m/Y H:i') }}</small></div>
       @endforeach
       <span id="fin"></span>
     </div>

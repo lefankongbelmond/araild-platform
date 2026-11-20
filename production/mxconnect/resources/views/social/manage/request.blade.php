@@ -5,7 +5,7 @@
   <section class="mx-card mx-card__pad mx-stack">
     <div class="mx-row mx-between mx-row--wrap" style="gap:10px">
       <div style="min-width:0"><h1 style="font-size:20px">{{ $r->kindLabel() }} — {{ $r->contact_name }}</h1>
-        <p class="mx-xs mx-muted">{{ $r->reference }} · reçue le {{ $r->created_at->format('d/m/Y à H:i') }}</p></div>
+        <p class="mx-xs mx-muted">{{ __(':reference · reçue le :date', ['reference' => $r->reference, 'date' => $r->created_at->format('d/m/Y à H:i')]) }}</p></div>
       <span class="mx-status mx-status--{{ $r->statusClass() }}">{{ $r->statusLabel() }}</span>
     </div>
     <dl class="mx-kv">

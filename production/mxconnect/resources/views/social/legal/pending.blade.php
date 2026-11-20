@@ -11,7 +11,7 @@
     @foreach ($documents as $d)
       <a class="mx-ldoc" href="{{ $d->url() }}" target="_blank" rel="noopener">
         <span class="mx-ldoc__ic {{ $icons[$d->type][1] ?? '' }}"><x-mx.icon :name="$icons[$d->type][0] ?? 'document'" :size="22"/></span>
-        <span class="mx-ldoc__t"><b>{{ $d->label() }}</b><span>Version {{ $d->version }} • {{ $d->published_at?->translatedFormat('j M Y') }}</span></span>
+        <span class="mx-ldoc__t"><b>{{ $d->label() }}</b><span>{{ __('Version :version • :date', ['version' => $d->version, 'date' => $d->published_at?->translatedFormat('j M Y')]) }}</span></span>
         <x-mx.icon name="chevron-right" :size="20" />
       </a>
     @endforeach
@@ -25,7 +25,7 @@
         <label class="mx-acheck"><input type="checkbox" name="doc_{{ $d->id }}" value="1" data-lg>
           <span>{{ \Illuminate\Support\Str::before($d->checkboxText(), $d->label()) }}<a href="{{ $d->url() }}" target="_blank" rel="noopener">{{ $d->label() }}</a></span></label>
       @elseif (isset($accepted[$d->id]))
-        <p class="mx-ldoc__ok"><x-mx.icon name="check" :size="16"/> {{ $d->label() }} : {{ $d->action === 'acknowledge' ? __('pris connaissance') : __('accepté') }} le {{ \Illuminate\Support\Carbon::parse($accepted[$d->id]->created_at)->format('d/m/Y') }}</p>
+        <p class="mx-ldoc__ok"><x-mx.icon name="check" :size="16"/> {{ $d->label() }} : {{ $d->action === 'acknowledge' ? __('pris connaissance le :date', ['date' => \Illuminate\Support\Carbon::parse($accepted[$d->id]->created_at)->format('d/m/Y')]) : __('accepté le :date', ['date' => \Illuminate\Support\Carbon::parse($accepted[$d->id]->created_at)->format('d/m/Y')]) }}</p>
       @endif
     @endforeach
     <div class="mx-as__grow"></div>

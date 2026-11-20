@@ -7,7 +7,7 @@
       <div class="mx-reels__empty">
         <x-mx.icon name="reel" :size="44"/>
         <h1>{{ __('Aucun réel pour le moment') }}</h1>
-        <p>Les réels sont de courtes vidéos verticales ({{ config('mxconnect.social.reel_max_seconds', 90) }} secondes maximum).</p>
+        <p>{{ __('Les réels sont de courtes vidéos verticales (:seconds secondes maximum).', ['seconds' => config('mxconnect.social.reel_max_seconds', 90)]) }}</p>
         @auth('member')<a class="mx-btn mx-btn--primary" href="{{ route('social.home') }}#composer"><x-mx.icon name="video" :size="16"/> {{ __('Publier le premier réel') }}</a>@endauth
       </div>
     @else

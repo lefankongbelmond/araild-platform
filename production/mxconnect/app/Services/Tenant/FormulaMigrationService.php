@@ -185,8 +185,8 @@ class FormulaMigrationService
         $mig->update(['result' => ['migrated' => $migrated, 'skipped' => array_values($skipped), 'target_version_id' => $c['version']?->id]]);
 
         foreach ($migrated as $row) {
-            MemberNotifier::notify($row['member_id'], 'Changement de formule',
-                'Votre mutuelle vous fait passer à la formule « ' . ($mig->target?->name ?? '') . ' » à partir du ' . $mig->effective_date->format('d/m/Y') . '.', 'garanties');
+            MemberNotifier::notify($row['member_id'], \App\Support\Msg::of('Changement de formule'),
+                \App\Support\Msg::of('Votre mutuelle vous fait passer à la formule « :name » à partir du :date.', ['name' => $mig->target?->name ?? '', 'date' => $mig->effective_date->format('d/m/Y')]), 'garanties');
         }
 
         return $mig->fresh();

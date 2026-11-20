@@ -19,7 +19,7 @@ import json, os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 APP = os.path.join(ROOT, 'production', 'mxconnect')
 LANG = os.path.join(APP, 'lang')
-CALL = re.compile(r"""(?:__|@lang|trans)\(\s*(['"])((?:\\.|(?!\1).)*)\1""", re.S)
+CALL = re.compile(r"""(?:__|@lang|trans|trans_choice|Msg::of)\(\s*(['"])((?:\\.|(?!\1).)*)\1""", re.S)
 GROUP_KEY = re.compile(r'^[A-Za-z0-9_\-]+(\.[A-Za-z0-9_\-]*)+$')
 VARS = re.compile(r':([A-Za-z_]+)')
 

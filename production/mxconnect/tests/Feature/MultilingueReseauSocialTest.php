@@ -65,3 +65,74 @@ it('affiche le réseau social dans la langue choisie, y compris en arabe de droi
     // Le français reste intact.
     $this->withUnencryptedCookie(Locales::COOKIE, 'fr')->get($this->c . '/a-propos')->assertSee('À propos de MX-CONNECT')->assertSee('Règles de la communauté');
 });
+
+/*
+ * Multilingue M2b (2026-11-29) : phrases avec variables, messages du serveur, notifications et
+ * e-mails dans la langue du destinataire, textes du JavaScript.
+ */
+
+it('envoie la notification dans la langue du destinataire, pas dans celle de son auteur', function () {
+    $fr = account('Moussa');
+    $en = account('Grace');
+    $en->forceFill(['locale' => 'en'])->saveQuietly();
+
+    // L'auteur navigue en français ; la destinataire a choisi l'anglais.
+    $this->actingAs($fr, 'member')->post($this->c . '/u/' . $en->id . '/suivre')->assertRedirect();
+    $n = \App\Models\Social\SocialNotification::where('public_account_id', $en->id)->latest('id')->first();
+    expect($n)->not->toBeNull()->and($n->title)->toBe('Moussa Test followed your posts');
+
+    // Et l'inverse : l'anglophone suit le francophone → notification en français.
+    $this->actingAs($en->fresh(), 'member')->post($this->c . '/u/' . $fr->id . '/suivre')->assertRedirect();
+    $n2 = \App\Models\Social\SocialNotification::where('public_account_id', $fr->id)->latest('id')->first();
+    expect($n2->title)->toBe('Grace Test s’est abonné(e) à vos publications');
+
+    // Variables traduites elles aussi (statut d'une demande) et texte libre laissé tel quel.
+    expect(\App\Services\Social\NotificationService::text(\App\Support\Msg::of(':kind : acceptée', ['kind' => ['__' => 'Candidature']]), 'en'))
+        ->toBe('Application: accepted')
+        ->and(\App\Services\Social\NotificationService::text('Texte saisi par la mutuelle', 'ar'))->toBe('Texte saisi par la mutuelle');
+});
+
+it('traduit les messages du serveur et les phrases avec variables', function () {
+    $a = account('Kofi');
+    $a->forceFill(['locale' => 'en'])->saveQuietly();
+    $this->actingAs($a->fresh(), 'member')->post($this->c . '/compte/parametres', [
+        'first_name' => 'Kofi', 'last_name' => 'Test', 'email' => $a->email, 'profile_visibility' => 'public', 'email_notifications' => '1',
+    ])->assertSessionHasNoErrors()->assertSessionHas('ok', 'Profile updated.');
+
+    $this->actingAs($a->fresh(), 'member')->post($this->c . '/compte/mot-de-passe', [
+        'current_password' => 'faux', 'password' => 'nouveau-mot-2026', 'password_confirmation' => 'nouveau-mot-2026',
+    ])->assertSessionHasErrors(['current_password' => 'Current password incorrect.']);
+
+    // Phrase avec variable dans une vue : zone de publication du fil.
+    $this->actingAs($a->fresh(), 'member')->get($this->c . '/fil')->assertOk()->assertSee('What&#039;s new, Kofi?', false);
+
+    // Pluriels.
+    app()->setLocale('en');
+    expect(trans_choice(':count comment|:count comments', 1, ['count' => 1]))->toBe('1 comment')
+        ->and(trans_choice(':count commentaire|:count commentaires', 3, ['count' => 3]))->toBe('3 comments');
+    app()->setLocale('fr');
+    expect(trans_choice(':count commentaire|:count commentaires', 0, ['count' => 0]))->toBe('0 commentaire');
+});
+
+it('déclare chaque texte du JavaScript et l’envoie traduit à la page', function () {
+    $root = dirname(base_path());
+    foreach (['js/mx-social.js', 'js/mx-social-plus.js'] as $js) {
+        preg_match_all("/\\bT\\('((?:[^'\\\\]|\\\\.)*)'/u", file_get_contents($root . '/' . $js), $m);
+        expect($m[1])->not->toBeEmpty();
+        foreach (array_unique($m[1]) as $key) {
+            expect(in_array($key, \App\Support\JsTranslations::SOCIAL, true))->toBeTrue("$js : T('$key') absent de JsTranslations::SOCIAL");
+        }
+    }
+
+    $a = account('Lina');
+    $a->forceFill(['locale' => 'pt'])->saveQuietly();
+    $html = $this->actingAs($a->fresh(), 'member')->get($this->c . '/fil')->assertOk()->getContent();
+    expect($html)->toContain('id="mx-i18n"');
+    preg_match('#<script type="application/json" id="mx-i18n">(.*?)</script>#s', $html, $mm);
+    $dict = json_decode($mm[1], true);
+    expect($dict['Suivre'] ?? null)->toBe(__('Suivre', [], 'pt'))->and($dict['Lien copié'] ?? null)->toBe('Ligação copiada');
+
+    // En français, rien n'est envoyé : le script garde ses textes.
+    $fr = account('Paul');
+    $this->actingAs($fr, 'member')->get($this->c . '/fil')->assertOk()->assertDontSee('id="mx-i18n"', false);
+});

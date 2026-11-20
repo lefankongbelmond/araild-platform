@@ -36,7 +36,7 @@
       </form>
     @endif
   @endif
-  <p class="mx-xs mx-muted" style="margin-top:8px">{{ $poll->votes_count }} vote{{ $poll->votes_count > 1 ? 's' : '' }} ·
-    @if ($open) se termine {{ $poll->closes_at?->diffForHumans() }} @else sondage terminé @endif
-    @unless ($viewer) · <a href="{{ route('social.login') }}">{{ __('connectez-vous pour voter') }}</a>@endunless · résultats anonymes</p>
+  <p class="mx-xs mx-muted" style="margin-top:8px">{{ trans_choice(':count vote|:count votes', $poll->votes_count, ['count' => $poll->votes_count]) }} ·
+    @if ($open) {{ __('se termine :date', ['date' => $poll->closes_at?->diffForHumans()]) }} @else {{ __('sondage terminé') }} @endif
+    @unless ($viewer) · <a href="{{ route('social.login') }}">{{ __('connectez-vous pour voter') }}</a>@endunless · {{ __('résultats anonymes') }}</p>
 </div>

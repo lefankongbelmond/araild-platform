@@ -57,7 +57,7 @@
     @if ($kind === 'application')
       <div class="mx-field"><label class="mx-label" for="rq-cv">{{ __('CV (PDF, facultatif)') }}</label>
         <input id="rq-cv" type="file" name="cv" accept="application/pdf">
-        <p class="mx-help">Visible seulement par vous et par les responsables de {{ $page->name }}. {{ round(config('mxconnect.social.adhesion_doc_kb', 5120) / 1024) }} Mo maximum.</p>
+        <p class="mx-help">{{ __('Visible seulement par vous et par les responsables de :name. :size Mo maximum.', ['name' => $page->name, 'size' => round(config('mxconnect.social.adhesion_doc_kb', 5120) / 1024)]) }}</p>
         @error('cv')<p class="mx-error">{{ $message }}</p>@enderror</div>
     @endif
 
@@ -68,7 +68,7 @@
       <div class="mx-field"><label class="mx-label" for="rq-email">{{ __('E-mail') }}</label><input class="mx-input" id="rq-email" type="email" name="contact_email" value="{{ old('contact_email', $account->email) }}" maxlength="180">@error('contact_email')<p class="mx-error">{{ $message }}</p>@enderror</div>
     </div>
 
-    <label class="mx-check"><input type="checkbox" name="consent" value="1" required @checked(old('consent'))> <span>J’accepte que ma demande et mes coordonnées soient transmises à {{ $page->name }} pour qu’elle me réponde.</span></label>
+    <label class="mx-check"><input type="checkbox" name="consent" value="1" required @checked(old('consent'))> <span>{{ __('J’accepte que ma demande et mes coordonnées soient transmises à :name pour qu’elle me réponde.', ['name' => $page->name]) }}</span></label>
     @error('consent')<p class="mx-error">{{ $message }}</p>@enderror
     <label class="mx-check"><input type="checkbox" name="no_medical" value="1" required @checked(old('no_medical'))> <span>{{ __('Je confirme n’avoir indiqué aucune donnée médicale.') }}</span></label>
     @error('no_medical')<p class="mx-error">{{ $message }}</p>@enderror

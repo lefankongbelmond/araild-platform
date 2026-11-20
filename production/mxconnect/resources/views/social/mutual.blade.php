@@ -54,7 +54,7 @@
           @if ($mutual->isVerified())<span class="mx-verified-pill" title="{{ __('Organisation vérifiée par l’administration du réseau MX-CONNECT') }}"><x-mx.icon name="verified" :size="14"/> {{ __('Organisation vérifiée') }}</span>@endif
           @if ($profile->is_demo)<span class="mx-demo-ribbon" title="{{ __('Organisation fictive de démonstration') }}">{{ __('Démo') }}</span>@endif
         </h1>
-        <p class="mx-small mx-muted">{{ $catLabel }}@if($isPage) · Page créée par un membre @endif @if($place) · <x-mx.icon name="pin" :size="14"/> {{ $place }}@endif</p>
+        <p class="mx-small mx-muted">{{ $catLabel }}@if($isPage) · {{ __('Page créée par un membre') }} @endif @if($place) · <x-mx.icon name="pin" :size="14"/> {{ $place }}@endif</p>
         @if ($profile->tagline)<p style="margin-top:8px">{{ $profile->tagline }}</p>@endif
         @if (! empty($profile->domains))<div class="mx-dtags" style="margin-top:8px">@foreach ($profile->domains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['domaine' => $d]) }}">{{ __(\App\Support\SocialDomains::label($d)) }}</a>@endif @endforeach</div>@endif
       </div>
@@ -63,7 +63,7 @@
         <div><b>{{ number_format($stats['posts'], 0, ',', ' ') }}</b><span>{{ __('Publications') }}</span></div>
         <a href="{{ route('social.mutual', [$mutual->slug, 'onglet' => 'projets']) }}" style="color:inherit"><div><b>{{ $stats['projects'] }}</b><span>{{ __('Projets') }}</span></div></a>
       </div>
-      <p class="mx-xs mx-muted"><x-mx.icon name="shield" :size="13"/> @if($isPage) S’abonner à cette page permet de voir ses actualités dans votre fil. @else Suivre une mutuelle permet de voir ses actualités. Ce n'est pas une adhésion. @endif</p>
+      <p class="mx-xs mx-muted"><x-mx.icon name="shield" :size="13"/> @if($isPage) {{ __('S’abonner à cette page permet de voir ses actualités dans votre fil.') }} @else {{ __('Suivre une mutuelle permet de voir ses actualités. Ce n\'est pas une adhésion.') }} @endif</p>
     </div>
     <nav class="mx-tabs" aria-label="{{ __('Sections de la page') }}">
       @foreach ($tabs as $k => $v)
@@ -86,7 +86,7 @@
           <dt>{{ __('Catégorie') }}</dt><dd>{{ $catLabel }}</dd>
           @if ($place)<dt>{{ __('Localisation') }}</dt><dd>{{ $place }}</dd>@endif
           @if ($profile->coverage_zone)<dt>{{ __('Zone couverte') }}</dt><dd>{{ $profile->coverage_zone }}</dd>@endif
-          <dt>{{ __('Statut réseau') }}</dt><dd>{{ $isPage ? 'Page créée par un membre (non vérifiée)' : ($mutual->isVerified() ? 'Agréée sur MX-CONNECT' : 'En cours de vérification') }}</dd>
+          <dt>{{ __('Statut réseau') }}</dt><dd>{{ $isPage ? __('Page créée par un membre (non vérifiée)') : ($mutual->isVerified() ? __('Agréée sur MX-CONNECT') : __('En cours de vérification')) }}</dd>
           @if ($mutual->approved_at)<dt>{{ __('Membre depuis') }}</dt><dd>{{ $mutual->approved_at->translatedFormat('F Y') }}</dd>@endif
         </dl>
       </section>
@@ -106,7 +106,7 @@
             <dt>{{ __('Garanties') }}</dt><dd>{{ $offer->guarantees_count }}</dd>
           </dl>
           @if ($offer->highlights)<ul class="mx-small" style="padding-left:18px">@foreach ((array) $offer->highlights as $h)<li>{{ is_array($h) ? implode(' — ', $h) : $h }}</li>@endforeach</ul>@endif
-          <p class="mx-xs mx-muted">Informations publiées par la mutuelle{{ $offer->synced_at ? ', mises à jour le ' . $offer->synced_at->format('d/m/Y') : '' }}. Le détail des garanties et les conditions sont à confirmer auprès de la mutuelle.</p>
+          <p class="mx-xs mx-muted">{{ $offer->synced_at ? __('Informations publiées par la mutuelle, mises à jour le :date.', ['date' => $offer->synced_at->format('d/m/Y')]) : __('Informations publiées par la mutuelle.') }} {{ __('Le détail des garanties et les conditions sont à confirmer auprès de la mutuelle.') }}</p>
           <div class="mx-row mx-row--wrap">
             @if (! $profile->is_demo)<a class="mx-btn mx-btn--primary" href="{{ route('social.adhesion.create', $mutual->slug) }}">{{ __('Demander l’adhésion') }}</a>@endif
             <a class="mx-btn mx-btn--ghost" href="{{ route('comparator') }}">{{ __('Comparer les offres') }}</a>
@@ -122,7 +122,7 @@
   @elseif ($tab === 'projets')
       <section class="mx-stack">
         <div class="mx-row mx-between mx-row--wrap" style="gap:8px;padding:0 4px">
-          <h2 class="mx-card__title">Projets de {{ $mutual->name }}</h2>
+          <h2 class="mx-card__title">{{ __('Projets de :name', ['name' => $mutual->name]) }}</h2>
           @if ($canPublish ?? false)<a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.manage.project.create', $mutual->slug) }}"><x-mx.icon name="plus" :size="16"/> {{ __('Nouveau projet') }}</a>@endif
         </div>
         @forelse ($projects as $p)
@@ -147,7 +147,7 @@
       </section>
   @elseif ($tab === 'photos')
       <section class="mx-card mx-card__pad mx-stack">
-        <h2 class="mx-card__title">Photos de {{ $mutual->name }}</h2>
+        <h2 class="mx-card__title">{{ __('Photos de :name', ['name' => $mutual->name]) }}</h2>
         @if ($photos->isEmpty())
           <p class="mx-small mx-muted">{{ __('Aucune photo publiée pour le moment.') }}</p>
         @else
@@ -161,7 +161,7 @@
       </section>
   @elseif ($tab === 'contact')
       <section class="mx-card mx-card__pad mx-stack">
-        <h2 class="mx-card__title">Contacter {{ $mutual->name }}</h2>
+        <h2 class="mx-card__title">{{ __('Contacter :name', ['name' => $mutual->name]) }}</h2>
         @if ($profile->phone || $profile->email || $profile->website || $profile->address)
           <dl class="mx-kv">
             @if ($profile->phone)<dt>{{ __('Téléphone') }}</dt><dd><a href="tel:{{ preg_replace('/\s+/', '', $profile->phone) }}">{{ $profile->phone }}</a></dd>@endif
@@ -176,7 +176,7 @@
         @elseif ($viewer)
         <form method="POST" action="{{ route('social.messages.start', $mutual->slug) }}" class="mx-stack">
           @csrf
-          <p class="mx-small mx-muted">Votre message est privé : seule {{ $mutual->name }} le lit, et sa réponse arrive dans vos <a href="{{ route('social.messages') }}">{{ __('Messages') }}</a>.</p>
+          <p class="mx-small mx-muted">{{ __('Votre message est privé : seule :name le lit, et sa réponse arrive dans vos', ['name' => $mutual->name]) }} <a href="{{ route('social.messages') }}">{{ __('Messages') }}</a>.</p>
           <div class="mx-field"><label class="mx-label" for="pm-subject">{{ __('Objet') }}</label><input class="mx-input" id="pm-subject" name="subject" required maxlength="180" value="{{ old('subject') }}" placeholder="{{ __('Ex. : Question sur les garanties') }}"></div>
           <div class="mx-field"><label class="mx-label" for="pm-body">{{ __('Message') }}</label><textarea class="mx-textarea" id="pm-body" name="body" required minlength="5" maxlength="3000">{{ old('body') }}</textarea>
             <p class="mx-help">{{ __('N\'indiquez aucune information médicale.') }}</p>@error('body')<p class="mx-error">{{ $message }}</p>@enderror</div>
@@ -201,7 +201,7 @@
             <textarea class="mx-textarea" id="ct-msg" name="message" required minlength="10" maxlength="2000">{{ old('message') }}</textarea>
             <p class="mx-help">{{ __('N\'indiquez aucune information médicale (maladie, traitement, résultats d\'examens).') }}</p>
             @error('message')<p class="mx-error">{{ $message }}</p>@enderror</div>
-          <label class="mx-check"><input type="checkbox" name="consent" value="1" required> <span>J'accepte que mes coordonnées soient transmises à {{ $mutual->name }} pour qu'elle me réponde.</span></label>
+          <label class="mx-check"><input type="checkbox" name="consent" value="1" required> <span>{{ __('J\'accepte que mes coordonnées soient transmises à :name pour qu\'elle me réponde.', ['name' => $mutual->name]) }}</span></label>
           @error('consent')<p class="mx-error">{{ $message }}</p>@enderror
           <div><button class="mx-btn mx-btn--primary"><x-mx.icon name="send" :size="16"/> {{ __('Envoyer') }}</button></div>
           <p class="mx-xs mx-muted"><a href="{{ route('social.login') }}">{{ __('Connectez-vous') }}</a> {{ __('pour échanger par messagerie privée ou demander l’adhésion en ligne.') }}</p>
@@ -230,7 +230,7 @@
   <x-slot:right>
     <section class="mx-card mx-card__pad mx-stack" style="gap:8px">
       <h2 class="mx-card__title">{{ __('En bref') }}</h2>
-      <p class="mx-small">{{ \Illuminate\Support\Str::limit($profile->description ?: ($profile->tagline ?: 'Présentation à venir.'), 220) }}</p>
+      <p class="mx-small">{{ \Illuminate\Support\Str::limit($profile->description ?: ($profile->tagline ?: __('Présentation à venir.')), 220) }}</p>
       @if ($profile->coverage_zone)<p class="mx-small"><x-mx.icon name="pin" :size="14"/> {{ $profile->coverage_zone }}</p>@endif
       @if ($profile->phone)<p class="mx-small"><x-mx.icon name="phone" :size="14"/> {{ $profile->phone }}</p>@endif
       @if ($profile->website)<p class="mx-small"><x-mx.icon name="globe" :size="14"/> <a href="{{ $profile->website }}" target="_blank" rel="noopener nofollow">{{ preg_replace('#^https?://#', '', $profile->website) }}</a></p>@endif
@@ -239,7 +239,7 @@
     @if ($mGroups->isNotEmpty())
       <section class="mx-card">
         <div class="mx-card__head"><h2 class="mx-card__title">{{ __('Groupes animés') }}</h2></div>
-        <div class="mx-mini">@foreach ($mGroups as $g)<a class="mx-mini__item" href="{{ route('social.group', $g) }}" style="color:inherit"><span class="mx-avatar mx-avatar--sm" style="background:var(--mx-blue-soft);color:var(--mx-blue)"><x-mx.icon name="users" :size="16"/></span><span class="mx-grow"><b class="mx-truncate">{{ $g->name }}</b><span class="mx-xs mx-muted">{{ $g->isPrivate() ? __('Privé') : __('Public') }} · {{ $g->members_count }} membre(s)</span></span></a>@endforeach</div>
+        <div class="mx-mini">@foreach ($mGroups as $g)<a class="mx-mini__item" href="{{ route('social.group', $g) }}" style="color:inherit"><span class="mx-avatar mx-avatar--sm" style="background:var(--mx-blue-soft);color:var(--mx-blue)"><x-mx.icon name="users" :size="16"/></span><span class="mx-grow"><b class="mx-truncate">{{ $g->name }}</b><span class="mx-xs mx-muted">{{ $g->isPrivate() ? __('Privé') : __('Public') }} · {{ __(':count membre(s)', ['count' => $g->members_count]) }}</span></span></a>@endforeach</div>
       </section>
     @endif
     @include('social.partials.sidebar')

@@ -32,7 +32,7 @@
           @forelse ($members as $a)
             <a class="mx-mini__item" href="{{ route('social.user', $a) }}" style="color:inherit">
               <x-mx.avatar :src="$a->avatarUrl()" :name="$a->name" />
-              <span class="mx-grow"><b>{{ $a->name }}</b><span class="mx-xs mx-muted">{{ $a->city ?: 'Membre MX-CONNECT' }}</span></span>
+              <span class="mx-grow"><b>{{ $a->name }}</b><span class="mx-xs mx-muted">{{ $a->city ?: __('Membre MX-CONNECT') }}</span></span>
             </a>
           @empty <p class="mx-mini__item mx-small mx-muted">{{ __('Aucun membre trouvé (seuls les profils publics apparaissent).') }}</p> @endforelse
         </div>
@@ -41,7 +41,7 @@
     @if (in_array($tab, ['tout', 'publications']) && $posts)
       <h2 style="font-size:18px">{{ __('Publications') }}</h2>
       @if ($posts->isEmpty())
-        <p class="mx-card mx-card__pad mx-small mx-muted">Aucune publication ne contient « {{ $q }} ».</p>
+        <p class="mx-card mx-card__pad mx-small mx-muted">{{ __('Aucune publication ne contient « :q ».', ['q' => $q]) }}</p>
       @else
         <div class="mx-stack">@include('social.partials.feed', ['posts' => $posts, 'state' => $state])</div>
       @endif

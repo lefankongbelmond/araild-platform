@@ -12,9 +12,9 @@ class PollController extends SocialController
     public function vote(Request $request, Post $post, PollService $polls)
     {
         abort_unless($post->poll && Post::query()->visibleTo($this->viewer())->whereKey($post->id)->exists(), 404);
-        $data = $request->validate(['option' => ['required', 'integer']], ['option.required' => 'Choisissez une réponse.']);
+        $data = $request->validate(['option' => ['required', 'integer']], ['option.required' => __('Choisissez une réponse.')]);
         $polls->vote($post->poll, $this->viewer(), (int) $data['option']);
 
-        return redirect()->to(url()->previous() . '#sondage-' . $post->id)->with('ok', 'Votre vote est enregistré.');
+        return redirect()->to(url()->previous() . '#sondage-' . $post->id)->with('ok', __('Votre vote est enregistré.'));
     }
 }

@@ -2,6 +2,17 @@
    défilement continu, emojis, mentions (@), vidéos envoyées par morceaux, lecture automatique, réels. */
 (function () {
   'use strict';
+
+  /* Multilingue (M2b) : T(clé, variables, nombre) lit les traductions envoyées par
+     la page (<script type="application/json" id="mx-i18n">) ; sans traduction, le français reste. */
+  var I18N = (function () { try { return JSON.parse((document.getElementById('mx-i18n') || {}).textContent || '{}'); } catch (x) { return {}; } })();
+  var FR = (document.documentElement.lang || 'fr').indexOf('fr') === 0;
+  function T(key, vars, n) {
+    var s = I18N[key] || key, parts = s.split('|');
+    if (parts.length > 1) { s = (n === 1 || (n === 0 && FR)) ? parts[0] : parts[parts.length - 1]; }
+    if (vars) { Object.keys(vars).forEach(function (k) { s = s.split(':' + k).join(vars[k]); }); }
+    return s;
+  }
   var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
   var mentionUrl = (document.querySelector('meta[name="mx-mentions"]') || {}).content || '';
 
@@ -52,9 +63,9 @@
   function openEmoji(btn, ta) {
     if (pop && popTarget === ta) { closeEmoji(); return; }
     closeEmoji();
-    pop = document.createElement('div'); pop.className = 'mx-emoji-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Choisir un emoji');
+    pop = document.createElement('div'); pop.className = 'mx-emoji-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', T('Choisir un emoji'));
     Object.keys(EMOJIS).forEach(function (cat) {
-      var h = document.createElement('div'); h.className = 'mx-emoji-pop__cat'; h.textContent = cat; pop.appendChild(h);
+      var h = document.createElement('div'); h.className = 'mx-emoji-pop__cat'; h.textContent = T(cat); pop.appendChild(h);
       var g = document.createElement('div'); g.className = 'mx-emoji-pop__grid';
       EMOJIS[cat].split(' ').forEach(function (em) {
         var b = document.createElement('button'); b.type = 'button'; b.textContent = em; b.setAttribute('aria-label', em);
@@ -103,7 +114,7 @@
     closeMention();
     mpop = document.createElement('div'); mpop.className = 'mx-mention-pop'; mpop.setAttribute('role', 'listbox');
     if (!items.length) {
-      mpop.innerHTML = '<div class="mx-mention-pop__empty">Aucun membre ou page trouvé</div>';
+      mpop.innerHTML = '<div class="mx-mention-pop__empty">' + T('Aucun membre ou page trouvé') + '</div>';
     }
     items.forEach(function (it, i) {
       var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option'); if (i === 0) b.classList.add('is-active');
@@ -177,7 +188,7 @@
   function renderMentionsHint(ta) {
     closeMention();
     mpop = document.createElement('div'); mpop.className = 'mx-mention-pop';
-    mpop.innerHTML = '<div class="mx-mention-pop__empty">Tapez le nom d’un membre ou d’une page…</div>';
+    mpop.innerHTML = '<div class="mx-mention-pop__empty">' + T('Tapez le nom d’un membre ou d’une page…') + '</div>';
     document.body.appendChild(mpop);
     var r = ta.getBoundingClientRect();
     mpop.style.left = Math.max(8, r.left + window.scrollX) + 'px'; mpop.style.top = (r.bottom + window.scrollY + 4) + 'px';
@@ -199,10 +210,10 @@
     if (!file) return;
     var ext = (file.name.split('.').pop() || '').toLowerCase();
     var mime = /^video\/(mp4|quicktime|webm)$/.test(file.type) ? file.type : (EXT_MIME[ext] || '');
-    if (!mime) { toast('Format vidéo non accepté : utilisez une vidéo MP4, MOV ou WebM.', true); return; }
-    if (file.size > VIDEO_MAX) { toast('Vidéo trop lourde : 100 Mo maximum (' + Math.round(file.size / 1048576) + ' Mo).', true); return; }
+    if (!mime) { toast(T('Format vidéo non accepté : utilisez une vidéo MP4, MOV ou WebM.'), true); return; }
+    if (file.size > VIDEO_MAX) { toast(T('Vidéo trop lourde : 100 Mo maximum (:size Mo).', {size: Math.round(file.size / 1048576)}), true); return; }
     var imgs = form.querySelector('[data-images]');
-    if (imgs && imgs.files && imgs.files.length) { toast('Publiez soit des photos, soit une vidéo. Retirez d’abord les photos.', true); return; }
+    if (imgs && imgs.files && imgs.files.length) { toast(T('Publiez soit des photos, soit une vidéo. Retirez d’abord les photos.'), true); return; }
     startVideo(form, file, mime);
   });
 
@@ -224,7 +235,7 @@
       form.querySelector('[data-video-width]').value = w || ''; form.querySelector('[data-video-height]').value = h || '';
       var tooLong = d > REEL_MAX + 0.5;
       reel.disabled = tooLong; reel.checked = !tooLong && h > w;
-      reel.closest('label').title = tooLong ? 'Un réel dure au maximum ' + REEL_MAX + ' secondes.' : '';
+      reel.closest('label').title = tooLong ? T('Un réel dure au maximum :seconds secondes.', {seconds: REEL_MAX}) : '';
       // Image d'aperçu : une image prise vers le début de la vidéo.
       try { vid.currentTime = Math.min(1, d / 3 || 0.1); } catch (x) {}
     };
@@ -237,11 +248,11 @@
         c.toBlob(function (b) { if (b && form._videoToken === token) form._poster = b; }, 'image/jpeg', 0.82);
       } catch (x) {}
     };
-    vid.onerror = function () { status.textContent = 'Aperçu indisponible sur cet appareil : la vidéo sera tout de même envoyée.'; };
+    vid.onerror = function () { status.textContent = T('Aperçu indisponible sur cet appareil : la vidéo sera tout de même envoyée.'); };
 
     // Envoi par morceaux (reprend où le serveur s'est arrêté en cas de coupure).
     form.dataset.videoBusy = '1';
-    status.textContent = 'Envoi de la vidéo… 0 %';
+    status.textContent = T('Envoi de la vidéo… :percent %', {percent: 0});
     var fd = new FormData(); fd.append('size', file.size); fd.append('mime', mime); fd.append('name', file.name);
     post(form.dataset.videoStart, fd).then(function (d) {
       var id = d.id, chunk = d.chunk || 1536 * 1024, offset = 0, tries = 0;
@@ -250,7 +261,7 @@
         if (offset >= file.size) {
           form.querySelector('[data-video-id]').value = id; delete form.dataset.videoBusy;
           bar.classList.add('is-done'); bar.firstElementChild.style.width = '100%';
-          status.textContent = 'Vidéo prête (' + Math.round(file.size / 1048576 * 10) / 10 + ' Mo). Ajoutez un texte et publiez.';
+          status.textContent = T('Vidéo prête (:size Mo). Ajoutez un texte et publiez.', {size: Math.round(file.size / 1048576 * 10) / 10});
           return;
         }
         var part = new FormData(); part.append('offset', offset); part.append('chunk', file.slice(offset, offset + chunk), 'morceau');
@@ -258,19 +269,19 @@
           tries = 0; offset = r.received;
           var pc = Math.min(100, Math.round(offset / file.size * 100));
           bar.firstElementChild.style.width = pc + '%'; bar.setAttribute('aria-valuenow', pc);
-          status.textContent = 'Envoi de la vidéo… ' + pc + ' %';
+          status.textContent = T('Envoi de la vidéo… :percent %', {percent: pc});
           next();
         }).catch(function (err) {
           if (form._videoToken !== token) return;
-          if (++tries <= 4 && !err.final) { status.textContent = 'Connexion instable, nouvel essai…'; setTimeout(next, 1500 * tries); return; }
+          if (++tries <= 4 && !err.final) { status.textContent = T('Connexion instable, nouvel essai…'); setTimeout(next, 1500 * tries); return; }
           delete form.dataset.videoBusy; status.textContent = err.message || 'Envoi interrompu.';
-          toast(err.message || 'Envoi de la vidéo interrompu. Réessayez.', true);
+          toast(err.message || T('Envoi de la vidéo interrompu. Réessayez.'), true);
         });
       }
       next();
     }).catch(function (err) {
-      delete form.dataset.videoBusy; status.textContent = err.message || 'Envoi impossible.';
-      toast(err.message || 'Envoi de la vidéo impossible.', true);
+      delete form.dataset.videoBusy; status.textContent = err.message || T('Envoi impossible.');
+      toast(err.message || T('Envoi de la vidéo impossible.'), true);
     });
   }
   function resetVideo(form) {
@@ -291,7 +302,7 @@
         return r.json().catch(function () { return {}; }).then(function (d) {
           if (r.status === 401) { location.href = '/compte/connexion'; }
           if (!r.ok) {
-            var err = new Error(d.message && r.status !== 422 ? d.message : (d.errors && Object.values(d.errors)[0][0]) || d.message || 'Erreur ' + r.status);
+            var err = new Error(d.message && r.status !== 422 ? d.message : (d.errors && Object.values(d.errors)[0][0]) || d.message || T('Erreur :code', {code: r.status}));
             err.final = r.status === 422 || r.status === 403 || r.status === 413; throw err;
           }
           return d;
@@ -338,8 +349,8 @@
     if (s) {
       reelSound = !reelSound;
       document.querySelectorAll('[data-reel-video]').forEach(function (x) { x.muted = !reelSound; });
-      document.querySelectorAll('[data-reel-sound] span').forEach(function (x) { x.textContent = reelSound ? 'Son activé' : 'Son coupé'; });
-      document.querySelectorAll('[data-reel-sound]').forEach(function (x) { x.setAttribute('aria-label', reelSound ? 'Couper le son' : 'Activer le son'); });
+      document.querySelectorAll('[data-reel-sound] span').forEach(function (x) { x.textContent = reelSound ? T('Son activé') : T('Son coupé'); });
+      document.querySelectorAll('[data-reel-sound]').forEach(function (x) { x.setAttribute('aria-label', reelSound ? T('Couper le son') : T('Activer le son')); });
     }
   });
 

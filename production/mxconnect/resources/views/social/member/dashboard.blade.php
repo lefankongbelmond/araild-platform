@@ -15,11 +15,11 @@
     </div>
     @if ($d['reasons'])<ul class="mx-small mx-muted" style="margin:8px 0 0 18px">@foreach ($d['reasons'] as $r)<li>{{ __('mxconnect.rights.' . $r) }}</li>@endforeach</ul>@endif
     <dl class="mx-kv" style="margin-top:12px">
-      <dt>{{ __('Formule') }}</dt><dd>{{ $d['formula'] ?? 'Aucune formule en cours' }}</dd>
+      <dt>{{ __('Formule') }}</dt><dd>{{ $d['formula'] ?? __('Aucune formule en cours') }}</dd>
       <dt>{{ __('Adhérent depuis le') }}</dt><dd>{{ $m->joined_at?->format('d/m/Y') }}</dd>
       <dt>{{ __('Couvert depuis le') }}</dt><dd>{{ $d['coverage_start']?->format('d/m/Y') ?? '—' }}</dd>
-      <dt>{{ __('Fin de couverture') }}</dt><dd>{{ $d['coverage_end'] ? $d['coverage_end']->format('d/m/Y') : 'Sans date de fin (tant que les cotisations sont à jour)' }}</dd>
-      <dt>{{ __('Bénéficiaires') }}</dt><dd>{{ $d['beneficiaries'] }} (vous compris)</dd>
+      <dt>{{ __('Fin de couverture') }}</dt><dd>{{ $d['coverage_end'] ? $d['coverage_end']->format('d/m/Y') : __('Sans date de fin (tant que les cotisations sont à jour)') }}</dd>
+      <dt>{{ __('Bénéficiaires') }}</dt><dd>{{ __(':beneficiaries (vous compris)', ['beneficiaries' => $d['beneficiaries']]) }}</dd>
     </dl>
   </section>
 
@@ -27,7 +27,7 @@
     <section class="mx-card mx-card__pad">
       <span class="mx-xs mx-muted">{{ __('Mes cotisations') }}</span>
       @if ($d['overdue_count'] > 0)
-        <p style="margin:6px 0 0"><b style="color:var(--mx-danger)">En retard : {{ $d['overdue_count'] }} échéance(s), {{ $fmt($d['overdue_minor']) }}</b></p>
+        <p style="margin:6px 0 0"><b style="color:var(--mx-danger)">{{ __('En retard : :count échéance(s), :amount', ['count' => $d['overdue_count'], 'amount' => $fmt($d['overdue_minor'])]) }}</b></p>
         @if (! empty($d['grace_until']))<p style="margin:4px 0 0">{{ __('Vos droits restent ouverts jusqu’au') }} <b>{{ \Illuminate\Support\Carbon::parse($d['grace_until'])->format('d/m/Y') }}</b>{{ __('. Réglez votre cotisation avant cette date pour éviter la suspension.') }}</p>@endif
         <p class="mx-xs mx-muted">{{ __('Vos droits sont suspendus tant que le retard n’est pas réglé auprès de votre mutuelle.') }}</p>
       @else
@@ -51,8 +51,8 @@
         <div class="mx-between mx-small" style="gap:8px;flex-wrap:wrap"><b>{{ $l['label'] }}</b><span class="mx-muted">{{ $l['period'] }}</span></div>
         <div class="mx-bar" style="height:10px;margin-top:6px" role="img" aria-label="{{ $pct }} % utilisé"><i style="width:{{ $pct }}%;{{ $pct >= 90 ? 'background:var(--mx-danger)' : '' }}"></i></div>
         <div class="mx-xs mx-muted" style="margin-top:4px">
-          @if ($l['amount'] !== null)Utilisé {{ $fmt($l['used']) }} sur {{ $fmt($l['amount']) }} · <b>reste {{ $fmt($l['remaining']) }}</b>@endif
-          @if ($l['max_count'] !== null) · {{ $l['used_count'] }} acte(s) sur {{ $l['max_count'] }}@endif
+          @if ($l['amount'] !== null){{ __('Utilisé :used sur :amount', ['used' => $fmt($l['used']), 'amount' => $fmt($l['amount'])]) }} · <b>{{ __('reste :amount', ['amount' => $fmt($l['remaining'])]) }}</b>@endif
+          @if ($l['max_count'] !== null) · {{ __(':used acte(s) sur :max', ['used' => $l['used_count'], 'max' => $l['max_count']]) }}@endif
         </div>
       </div>
     @empty
@@ -61,7 +61,7 @@
   </section>
 
   @if ($d['pending_requests'] > 0)
-    <p class="mx-alert mx-alert--info" style="margin-top:14px">{{ $d['pending_requests'] }} demande(s) de modification en attente de validation par la mutuelle.</p>
+    <p class="mx-alert mx-alert--info" style="margin-top:14px">{{ __(':pending_requests demande(s) de modification en attente de validation par la mutuelle.', ['pending_requests' => $d['pending_requests']]) }}</p>
   @endif
   <p class="mx-xs mx-muted" style="margin-top:14px">{{ __('Le paiement des cotisations en ligne n’est pas encore disponible : réglez-les auprès de votre mutuelle.') }}</p>
 </x-layouts.social>

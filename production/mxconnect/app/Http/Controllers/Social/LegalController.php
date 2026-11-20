@@ -58,10 +58,10 @@ class LegalController extends Controller
         foreach ($pending as $d) {
             $rules['doc_' . $d->id] = ['accepted'];
         }
-        $request->validate($rules, collect($pending)->mapWithKeys(fn ($d) => ['doc_' . $d->id . '.accepted' => 'Cochez la case « ' . $d->checkboxText() . ' » pour continuer.'])->all());
+        $request->validate($rules, collect($pending)->mapWithKeys(fn ($d) => ['doc_' . $d->id . '.accepted' => __('Cochez la case « :text » pour continuer.', ['text' => $d->checkboxText()])])->all());
         $this->legal->record($account, $pending, $request);
 
-        return redirect()->to($this->after($request))->with('ok', $pending->isNotEmpty() ? 'Merci, vos choix sont enregistrés.' : null);
+        return redirect()->to($this->after($request))->with('ok', $pending->isNotEmpty() ? __('Merci, vos choix sont enregistrés.') : null);
     }
 
     /** Historique des acceptations du compte (Paramètres et confidentialité). */

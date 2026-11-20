@@ -2,7 +2,7 @@
   <h1 style="font-size:22px">{{ __('Mes connexions') }}</h1>
   <p class="mx-small mx-muted">{{ __('Les publications des organisations et des membres que vous suivez apparaissent dans « Abonnements ». Suivre une mutuelle n\'est pas une adhésion.') }}</p>
   <section class="mx-card">
-    <div class="mx-card__head"><h2 class="mx-card__title">Mutuelles suivies ({{ $follows->count() }})</h2></div>
+    <div class="mx-card__head"><h2 class="mx-card__title">{{ __('Mutuelles suivies (:count)', ['count' => $follows->count()]) }}</h2></div>
     <div class="mx-mini">
       @forelse ($follows as $f) @include('social.partials.mutual-mini', ['m' => $f->mutual]) @empty
         <div class="mx-mini__item mx-row mx-between" style="width:100%"><span class="mx-small mx-muted">{{ __('Vous ne suivez encore aucune mutuelle.') }}</span><a class="mx-btn mx-btn--primary mx-btn--sm" href="{{ route('social.mutuals') }}">{{ __('Découvrir') }}</a></div>
@@ -10,7 +10,7 @@
     </div>
   </section>
   <section class="mx-card">
-    <div class="mx-card__head"><h2 class="mx-card__title">Personnes suivies ({{ $people->count() }})</h2></div>
+    <div class="mx-card__head"><h2 class="mx-card__title">{{ __('Personnes suivies (:count)', ['count' => $people->count()]) }}</h2></div>
     <div class="mx-mini">
       @forelse ($people as $p)
         <div class="mx-mini__item">
@@ -25,7 +25,7 @@
   </section>
   @if ($followers->isNotEmpty())
     <section class="mx-card">
-      <div class="mx-card__head"><h2 class="mx-card__title">Mes abonnés ({{ $followers->count() }})</h2></div>
+      <div class="mx-card__head"><h2 class="mx-card__title">{{ __('Mes abonnés (:count)', ['count' => $followers->count()]) }}</h2></div>
       <div class="mx-mini">
         @foreach ($followers as $p)
           <a class="mx-mini__item" href="{{ route('social.user', $p) }}" style="color:inherit"><x-mx.avatar :src="$p->avatarUrl()" :name="$p->name" /><b class="mx-grow">{{ $p->name }}</b></a>

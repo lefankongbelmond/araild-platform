@@ -68,12 +68,12 @@
         @endif
         <a class="mx-iconbtn mx-show-sm" href="{{ route('social.search') }}" aria-label="{{ __('Rechercher') }}"><x-mx.icon name="search" :size="20" /></a>
         @if ($viewer)
-          <a class="mx-iconbtn mx-badge-wrap mx-apphead-only" href="{{ route('social.notifications') }}" aria-label="Notifications{{ $unreadNotif ? ' ('.$unreadNotif.' non lues)' : '' }}"><x-mx.icon name="bell" :size="20"/>@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
+          <a class="mx-iconbtn mx-badge-wrap mx-apphead-only" href="{{ route('social.notifications') }}" aria-label="{{ $unreadNotif ? __('Notifications (:count non lues)', ['count' => $unreadNotif]) : __('Notifications') }}"><x-mx.icon name="bell" :size="20"/>@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
           <a class="mx-apphead-only" href="{{ route('social.app.menu') }}" aria-label="{{ __('Mon profil') }}"><x-mx.avatar :src="$viewer->avatarUrl()" :name="$viewer->name" size="sm" /></a>
         @endif
         @if ($viewer)
-          <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.messages') }}" aria-label="Messages{{ $unreadMsg ? ' ('.$unreadMsg.' non lus)' : '' }}"><x-mx.icon name="message" :size="18" />@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
-          <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.notifications') }}" aria-label="Notifications{{ $unreadNotif ? ' ('.$unreadNotif.' non lues)' : '' }}"><x-mx.icon name="bell" :size="18" />@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
+          <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.messages') }}" aria-label="{{ $unreadMsg ? __('Messages (:count non lus)', ['count' => $unreadMsg]) : __('Messages') }}"><x-mx.icon name="message" :size="18" />@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
+          <a class="mx-iconbtn mx-badge-wrap mx-hide-m" href="{{ route('social.notifications') }}" aria-label="{{ $unreadNotif ? __('Notifications (:count non lues)', ['count' => $unreadNotif]) : __('Notifications') }}"><x-mx.icon name="bell" :size="18" />@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
           <a class="mx-btn mx-btn--primary mx-btn--sm mx-hide-m" href="{{ route('social.home') }}#composer"><x-mx.icon name="plus" :size="16"/> {{ __('Publier') }}</a>
           <details class="mx-menu mx-hide-m">
             <summary aria-label="{{ __('Mon compte') }}"><x-mx.avatar :src="$viewer->avatarUrl()" :name="$viewer->name" size="sm" class="mx-topavatar" /></summary>
@@ -142,14 +142,14 @@
     <a href="{{ route('social.home') }}" @class(['is-active' => $active === 'fil']) aria-label="{{ __('Accueil') }}" @if($active === 'fil') aria-current="page" @endif><x-mx.icon name="home" :size="24"/></a>
     @if ($viewer)
       <a href="{{ route('social.connections') }}" @class(['is-active' => in_array($active, ['connexions', 'abonnements'], true)]) aria-label="{{ __('Mes connexions et abonnements') }}"><x-mx.icon name="users" :size="24"/></a>
-      <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages']) aria-label="Messages{{ $unreadMsg ? ' ('.$unreadMsg.' non lus)' : '' }}"><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
+      <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages']) aria-label="{{ $unreadMsg ? __('Messages (:count non lus)', ['count' => $unreadMsg]) : __('Messages') }}"><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif</a>
     @else
       <a href="{{ route('social.discover') }}" @class(['is-active' => $active === 'decouvrir']) aria-label="{{ __('Découvrir') }}"><x-mx.icon name="compass" :size="24"/></a>
     @endif
     <a href="{{ route('social.reels') }}" @class(['is-active' => $active === 'reels']) aria-label="{{ __('Réels') }}"><x-mx.icon name="reel" :size="24"/></a>
     <a href="{{ route('social.groups') }}" @class(['is-active' => $active === 'groupes']) aria-label="{{ __('Groupes') }}"><x-mx.icon name="groups" :size="24"/></a>
     @if ($viewer)
-      <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications']) aria-label="Notifications{{ $unreadNotif ? ' ('.$unreadNotif.' non lues)' : '' }}"><x-mx.icon name="bell" :size="24"/>@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
+      <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications']) aria-label="{{ $unreadNotif ? __('Notifications (:count non lues)', ['count' => $unreadNotif]) : __('Notifications') }}"><x-mx.icon name="bell" :size="24"/>@if($unreadNotif)<span class="mx-count">{{ $unreadNotif > 9 ? '9+' : $unreadNotif }}</span>@endif</a>
     @else
       <a href="{{ route('social.events') }}" @class(['is-active' => $active === 'evenements']) aria-label="{{ __('Événements') }}"><x-mx.icon name="calendar" :size="24"/></a>
     @endif
@@ -172,8 +172,8 @@
           @endforeach
           @if ($viewer)
             <p class="mx-nav__title">{{ __('Mes espaces') }}</p>
-            <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" /> Messages @if($unreadMsg)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadMsg }}</span>@endif</a>
-            <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications'])><x-mx.icon name="bell" /> Notifications @if($unreadNotif)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadNotif }}</span>@endif</a>
+            <a href="{{ route('social.messages') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" /> {{ __('Messages') }} @if($unreadMsg)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadMsg }}</span>@endif</a>
+            <a href="{{ route('social.notifications') }}" @class(['is-active' => $active === 'notifications'])><x-mx.icon name="bell" /> {{ __('Notifications') }} @if($unreadNotif)<span class="mx-badge mx-badge--blue" style="margin-left:auto">{{ $unreadNotif }}</span>@endif</a>
             @foreach ($mine as [$key, $route, $icon, $label])
               <a href="{{ route($route) }}" @class(['is-active' => $active === $key])><x-mx.icon :name="$icon" /> {{ $label }}</a>
             @endforeach
@@ -220,7 +220,7 @@
     <a href="{{ route('social.home') }}" @class(['is-active' => $active === 'fil']) @if($active === 'fil') aria-current="page" @endif><x-mx.icon name="home" :size="24"/>{{ __('Accueil') }}</a>
     <a href="{{ route('social.discover') }}" @class(['is-active' => $active === 'decouvrir'])><x-mx.icon name="compass" :size="24"/>{{ __('Découvrir') }}</a>
     <a href="{{ $viewer ? route('social.home') . '#composer' : route('social.app.auth') }}" aria-label="{{ __('Publier') }}"><span class="mx-tabbar__plus"><x-mx.icon name="plus" :size="26"/></span>{{ __('Publier') }}</a>
-    <a href="{{ $viewer ? route('social.messages') : route('social.app.auth') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif Messages</a>
+    <a href="{{ $viewer ? route('social.messages') : route('social.app.auth') }}" @class(['is-active' => $active === 'messages'])><x-mx.icon name="message" :size="24"/>@if($unreadMsg)<span class="mx-count">{{ $unreadMsg > 9 ? '9+' : $unreadMsg }}</span>@endif {{ __('Messages') }}</a>
     <a href="{{ $viewer ? route('social.app.menu') : route('social.app.auth') }}" @class(['is-active' => in_array($active, ['profil', 'parametres', 'menu'], true)])><x-mx.icon name="user" :size="24"/>{{ __('Profil') }}</a>
   </nav>
 
@@ -233,6 +233,7 @@
       if(Math.abs(y-last)>6||y<60)last=y;}
     addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(run);}},{passive:true});
     document.addEventListener('focusin',function(e){if(e.target.closest&&e.target.closest('.mx-topbar'))d.classList.remove('mx-head-hidden');});})();</script>
+  @if ($mxI18n = \App\Support\JsTranslations::payload())<script type="application/json" id="mx-i18n">{!! json_encode($mxI18n, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>@endif
   <script src="/js/mx-social.js?v={{ config('mxconnect.asset_version') }}" defer></script>
   {{-- App Center (2026-11-13) : ouverture en mode application = installation confirmée + utilisateur actif (anonyme). --}}
   <script src="/js/mx-appcenter.js?v={{ config('mxconnect.asset_version') }}" defer></script>

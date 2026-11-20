@@ -43,15 +43,15 @@ class AdvertiserController extends SocialController
             'email'        => ['nullable', 'email:rfc', 'max:180'],
             'city'         => ['nullable', 'string', 'max:120'],
             'accept'       => [$this->advertiser() ? 'nullable' : 'accepted'],
-        ], ['accept.accepted' => 'Merci d’accepter les règles de la publicité sur MX-CONNECT.']);
+        ], ['accept.accepted' => __('Merci d’accepter les règles de la publicité sur MX-CONNECT.')]);
         unset($data['accept']);
         Advertiser::updateOrCreate(['public_account_id' => $viewer->id], $data);
 
         $back = $request->input('retour');
 
         return ($back && str_starts_with($back, '/') && ! str_starts_with($back, '//'))
-            ? redirect($back)->with('ok', 'Compte annonceur enregistré.')
-            : redirect()->route('social.ads')->with('ok', 'Compte annonceur enregistré. Vous pouvez sponsoriser vos publications.');
+            ? redirect($back)->with('ok', __('Compte annonceur enregistré.'))
+            : redirect()->route('social.ads')->with('ok', __('Compte annonceur enregistré. Vous pouvez sponsoriser vos publications.'));
     }
 
     public function create(int $post)
@@ -59,7 +59,7 @@ class AdvertiserController extends SocialController
         $post = $this->sponsorablePost($post);
         if (! $this->advertiser()) {
             return redirect()->route('social.ads', ['retour' => route('social.sponsor.create', $post->id, false)])
-                ->with('info', 'Ouvrez d’abord votre compte annonceur (une seule fois).');
+                ->with('info', __('Ouvrez d’abord votre compte annonceur (une seule fois).'));
         }
 
         return view('social.ads.create', [
@@ -73,7 +73,7 @@ class AdvertiserController extends SocialController
     {
         $post = $this->sponsorablePost($post);
         $adv = $this->advertiser();
-        abort_unless($adv && $adv->status === 'active', 403, 'Compte annonceur inactif.');
+        abort_unless($adv && $adv->status === 'active', 403, __('Compte annonceur inactif.'));
         $cur = SponsorService::currency();
         $min = SponsorService::minBudgetMinor();
         // « 10 000 » ou « 10000,50 » : espaces et virgule décimale acceptés.
@@ -88,10 +88,10 @@ class AdvertiserController extends SocialController
         ]);
         $budget = $cur->toMinor((float) $data['budget']);
         if ($budget < $min) {
-            return back()->withInput()->withErrors(['budget' => 'Budget minimum : ' . $cur->format($min) . '.']);
+            return back()->withInput()->withErrors(['budget' => __('Budget minimum : :amount.', ['amount' => $cur->format($min)])]);
         }
         if ($adv->sponsorships()->whereIn('status', ['pending_payment', 'active', 'paused'])->count() >= 10) {
-            return back()->withInput()->withErrors(['budget' => '10 campagnes en cours maximum.']);
+            return back()->withInput()->withErrors(['budget' => __('10 campagnes en cours maximum.')]);
         }
         $cpm = SponsorService::cpmMinor();
         $start = \Illuminate\Support\Carbon::parse($data['starts_on'])->startOfDay();
@@ -104,19 +104,19 @@ class AdvertiserController extends SocialController
             'status' => 'pending_payment',
         ]);
 
-        return redirect()->route('social.ads')->with('ok', "Demande de sponsorisation n° SP-{$s->id} enregistrée. Payez selon les instructions puis indiquez la référence du paiement : la campagne sera activée après vérification.");
+        return redirect()->route('social.ads')->with('ok', __('Demande de sponsorisation n° :ref enregistrée. Payez selon les instructions puis indiquez la référence du paiement : la campagne sera activée après vérification.', ['ref' => 'SP-' . $s->id]));
     }
 
     /** L'annonceur indique la référence de son paiement. */
     public function payment(Request $request, int $id)
     {
         $s = $this->own($id);
-        abort_unless($s->status === 'pending_payment', 422, 'Cette campagne n’attend plus de paiement.');
+        abort_unless($s->status === 'pending_payment', 422, __('Cette campagne n’attend plus de paiement.'));
         $data = $request->validate(['payment_reference' => ['required', 'string', 'min:4', 'max:120']],
-            ['payment_reference.required' => 'Indiquez la référence de la transaction (ex. identifiant Mobile Money).']);
+            ['payment_reference.required' => __('Indiquez la référence de la transaction (ex. identifiant Mobile Money).')]);
         $s->update(['payment_reference' => $data['payment_reference']]);
 
-        return back()->with('ok', 'Référence enregistrée. L’administration du réseau va vérifier le paiement et activer la campagne.');
+        return back()->with('ok', __('Référence enregistrée. L’administration du réseau va vérifier le paiement et activer la campagne.'));
     }
 
     /** Pause, reprise ou annulation par l'annonceur. */
@@ -130,11 +130,11 @@ class AdvertiserController extends SocialController
             $action === 'annuler' && $s->status === 'pending_payment'       => 'cancelled',
             default                                                         => null,
         };
-        abort_unless($new, 422, 'Action impossible pour cette campagne.');
+        abort_unless($new, 422, __('Action impossible pour cette campagne.'));
         $s->update(['status' => $new]);
         Cache::forget('social:sponsor:active');
 
-        return back()->with('ok', 'Campagne mise à jour : ' . $s->statusLabel() . '.');
+        return back()->with('ok', __('Campagne mise à jour : :status.', ['status' => $s->statusLabel()]));
     }
 
     /** Clic sur le bouton d'une publication sponsorisée (compté, puis redirection). */
@@ -171,7 +171,7 @@ class AdvertiserController extends SocialController
     private function sponsorablePost(int $id): Post
     {
         $post = Post::query()->publicFeed()->with(\App\Services\Social\FeedService::WITH)->findOrFail($id);
-        abort_unless($post->canManage($this->viewer()), 403, 'Vous ne pouvez sponsoriser que vos publications ou celles de vos pages.');
+        abort_unless($post->canManage($this->viewer()), 403, __('Vous ne pouvez sponsoriser que vos publications ou celles de vos pages.'));
 
         return $post;
     }

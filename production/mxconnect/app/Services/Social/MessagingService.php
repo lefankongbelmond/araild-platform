@@ -54,7 +54,7 @@ class MessagingService
             return $m;
         });
         $this->notifications->notify($c->public_account_id, 'message',
-            'Nouveau message de ' . ($c->mutual?->name ?? 'la mutuelle'), $c->subject, '/messages/' . $c->id);
+            $c->mutual?->name ? \App\Support\Msg::of('Nouveau message de :name', ['name' => $c->mutual->name]) : \App\Support\Msg::of('Nouveau message de votre mutuelle'), $c->subject, '/messages/' . $c->id);
 
         return $m;
     }

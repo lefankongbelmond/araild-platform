@@ -75,7 +75,7 @@ class ComplaintController extends Controller
         ]);
 
         if ($complaint->member_id && $complaint->wasChanged('status')) {
-            \App\Support\MemberNotifier::notify($complaint->member_id, "Votre demande {$complaint->ref} : " . mb_strtolower(\App\Models\Tenant\Complaint::STATUS_LABELS[$complaint->status] ?? $complaint->status),
+            \App\Support\MemberNotifier::notify($complaint->member_id, \App\Support\Msg::of('Votre demande :ref : :status', ['ref' => $complaint->ref, 'status' => ['__' => \App\Models\Tenant\Complaint::STATUS_LABELS[$complaint->status] ?? $complaint->status]]),
                 null, 'reclamations/' . $complaint->id);
         }
 
@@ -92,7 +92,7 @@ class ComplaintController extends Controller
             $complaint->update(['status' => 'in_progress']);
         }
         if ($complaint->member_id) {
-            \App\Support\MemberNotifier::notify($complaint->member_id, "Réponse de votre mutuelle à la demande {$complaint->ref}", null, 'reclamations/' . $complaint->id);
+            \App\Support\MemberNotifier::notify($complaint->member_id, \App\Support\Msg::of('Réponse de votre mutuelle à la demande :ref', ['ref' => $complaint->ref]), null, 'reclamations/' . $complaint->id);
         }
 
         return back()->with('success', 'Réponse envoyée à l’adhérent.');

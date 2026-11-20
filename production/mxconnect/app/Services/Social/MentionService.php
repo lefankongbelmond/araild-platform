@@ -77,7 +77,7 @@ class MentionService
                     'public_account_id' => $acc->id, 'label' => Str::limit($acc->name, 180, '')]);
                 if ($acc->id !== $authorId) {
                     $this->notifications->notify($acc->id, 'mention',
-                        $isPost ? "{$who} vous a mentionné dans une publication" : "{$who} vous a mentionné dans un commentaire",
+                        $isPost ? \App\Support\Msg::of(':name vous a mentionné dans une publication', ['name' => $who]) : \App\Support\Msg::of(':name vous a mentionné dans un commentaire', ['name' => $who]),
                         Str::limit($body, 120), $url);
                 }
             } elseif ($kind === 'p' && $id) {
@@ -90,7 +90,7 @@ class MentionService
                     'mutual_id' => $m->id, 'label' => Str::limit($m->name, 180, '')]);
                 foreach (PageService::managerIds($m->id) as $manager) {
                     if ($manager !== $authorId) {
-                        $this->notifications->notify($manager, 'mention', "{$who} a mentionné votre page {$m->name}", Str::limit($body, 120), $url);
+                        $this->notifications->notify($manager, 'mention', \App\Support\Msg::of(':name a mentionné votre page :page', ['name' => $who, 'page' => $m->name]), Str::limit($body, 120), $url);
                     }
                 }
             }

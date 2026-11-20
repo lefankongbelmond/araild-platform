@@ -31,15 +31,15 @@
     </section>
 
     <section class="mx-card">
-      <div class="mx-card__head"><h2 class="mx-card__title">Mes campagnes ({{ $campaigns->count() }})</h2></div>
+      <div class="mx-card__head"><h2 class="mx-card__title">{{ __('Mes campagnes (:count)', ['count' => $campaigns->count()]) }}</h2></div>
       @forelse ($campaigns as $c)
         <article class="mx-card__pad mx-stack" style="gap:8px;border-top:1px solid var(--mx-border)">
           <div class="mx-row mx-between mx-row--wrap" style="gap:8px">
-            <b>SP-{{ $c->id }} · <a href="{{ route('social.post', $c->post_id) }}">{{ \Illuminate\Support\Str::limit($c->post?->body ?: 'Publication', 60) }}</a></b>
+            <b>SP-{{ $c->id }} · <a href="{{ route('social.post', $c->post_id) }}">{{ \Illuminate\Support\Str::limit($c->post?->body ?: __('Publication'), 60) }}</a></b>
             <span @class(['mx-badge', 'mx-badge--blue' => $c->status === 'active'])>{{ $c->statusLabel() }}</span>
           </div>
-          <div class="mx-xs mx-muted">Du {{ $c->starts_on->format('d/m/Y') }} au {{ $c->ends_on->format('d/m/Y') }} · Budget {{ $c->money($c->budget_minor) }} · {{ number_format($c->max_impressions, 0, ',', ' ') }} affichages prévus
-            @if($c->target_city) · Ville : {{ $c->target_city }}@endif @if($c->target_interest) · Intérêt : {{ __(\App\Http\Controllers\Social\AccountController::INTERESTS[$c->target_interest] ?? $c->target_interest) }}@endif</div>
+          <div class="mx-xs mx-muted">{{ __('Du :start au :end · Budget :amount · :count affichages prévus', ['start' => $c->starts_on->format('d/m/Y'), 'end' => $c->ends_on->format('d/m/Y'), 'amount' => $c->money($c->budget_minor), 'count' => \App\Support\Locales::number($c->max_impressions)]) }}
+            @if($c->target_city) · {{ __('Ville : :name', ['name' => $c->target_city]) }}@endif @if($c->target_interest) · {{ __('Intérêt :') }} {{ __(\App\Http\Controllers\Social\AccountController::INTERESTS[$c->target_interest] ?? $c->target_interest) }}@endif</div>
           <div class="mx-stats" style="padding:0">
             <span><b>{{ number_format($c->impressions, 0, ',', ' ') }}</b> {{ __('affichages') }}</span>
             <span><b>{{ number_format($c->clicks, 0, ',', ' ') }}</b> {{ __('clics') }}</span>
