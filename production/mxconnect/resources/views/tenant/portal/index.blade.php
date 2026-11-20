@@ -6,12 +6,12 @@
   $toneText = ['ok' => 'text-pine', 'warn' => 'text-amber-700', 'ko' => 'text-clay'];
   $icon = ['ok' => '✓', 'warn' => '!', 'ko' => '✕'];
   $fmt = fn ($v) => $currency->format((int) $v);
-  $rel = ['spouse' => 'conjoint(e)', 'child' => 'enfant', 'ascendant' => 'ascendant', 'other' => 'autre'];
-  $memberStatus = ['active' => 'Actif', 'suspended' => 'Suspendu', 'left' => 'Sorti', 'revoked' => 'Radié'];
+  $rel = ['spouse' => __('conjoint(e)'), 'child' => __('enfant'), 'ascendant' => __('ascendant'), 'other' => __('autre')];
+  $memberStatus = ['active' => __('Actif'), 'suspended' => __('Suspendu'), 'left' => __('Sorti'), 'revoked' => __('Radié')];
   $rate = fn ($v) => $v === null ? 'non défini — à confirmer par la mutuelle' : rtrim(rtrim(number_format((float) $v, 2, ',', ''), '0'), ',') . ' %';
 @endphp
 <x-layouts.tenant title="{{ __('Vérifier les droits') }}">
-  @include('tenant.portal._head', ['title' => 'Vérifier les droits d’un bénéficiaire'])
+  @include('tenant.portal._head', ['title' => __('Vérifier les droits d’un bénéficiaire')])
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
   <div class="mt-6 grid gap-6 lg:grid-cols-2">

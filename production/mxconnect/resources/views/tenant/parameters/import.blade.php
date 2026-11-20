@@ -1,6 +1,6 @@
 @php
   use App\Models\Tenant\Medicine;
-  $titles = ['actes' => 'Nomenclature des actes', 'medicaments' => 'Liste des médicaments essentiels', 'garanties' => 'Formules de garanties types'];
+  $titles = ['actes' => __('Nomenclature des actes'), 'medicaments' => __('Liste des médicaments essentiels'), 'garanties' => __('Formules de garanties types')];
   $icons = ['actes' => 'stethoscope', 'medicaments' => 'pill', 'garanties' => 'heart'];
   $back = ['actes' => 'act-types.index', 'medicaments' => 'medicines.index', 'garanties' => 'guarantees.index'][$kind];
   $available = collect($items)->keys()->reject(fn ($c) => isset($existing[$c]))->count();

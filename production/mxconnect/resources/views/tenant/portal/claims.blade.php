@@ -1,6 +1,6 @@
 @php $S = ['captured' => __('En attente de validation'), 'validated' => __('Validée'), 'rejected' => __('Rejetée'), 'controlled' => __('Contrôlée')]; @endphp
 <x-layouts.tenant title="{{ __('Mes prises en charge') }}">
-  @include('tenant.portal._head', ['title' => 'Mes prises en charge'])
+  @include('tenant.portal._head', ['title' => __('Mes prises en charge')])
 
   <div class="mt-6 flex flex-wrap gap-2 text-sm">
     <a href="{{ route('portal.claims') }}" class="rounded-md px-3 py-1.5 {{ ! $status ? 'bg-pine text-white' : 'border border-ink/10 bg-white text-ink/70' }}">{{ __('Toutes') }}</a>

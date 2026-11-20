@@ -1,7 +1,7 @@
 @php
   $c = $currency;
   $f = 'rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
-  $tabs = ['overdue' => 'En retard', 'to_pay' => 'À venir', 'paid' => 'Payées'];
+  $tabs = ['overdue' => __('En retard'), 'to_pay' => __('À venir'), 'paid' => __('Payées')];
 @endphp
 <x-layouts.tenant :title="__('mxconnect.contribution.plural')">
   <x-tenant.hero icon="coins" kicker="{{ __('Facturation et finances') }}" tone="leaf">

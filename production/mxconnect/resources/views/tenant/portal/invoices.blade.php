@@ -4,7 +4,7 @@
   $canBill = ($portal['bill'] ?? false) && $ready;
 @endphp
 <x-layouts.tenant title="{{ __('Mes factures') }}">
-  @include('tenant.portal._head', ['title' => 'Mes factures'])
+  @include('tenant.portal._head', ['title' => __('Mes factures')])
 
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 

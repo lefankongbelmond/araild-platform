@@ -6,7 +6,7 @@
 @endphp
 <x-layouts.tenant title="Facture {{ $inv->label() }}">
   <div class="print:hidden">
-    @include('tenant.portal._head', ['title' => 'Facture ' . $inv->label()])
+    @include('tenant.portal._head', ['title' => __('Facture :label', ['label' => $inv->label()])])
     <div class="mt-4 flex flex-wrap gap-2 text-sm">
       <a href="{{ route('portal.invoices') }}" class="rounded-md border border-ink/10 bg-white px-3 py-1.5 text-ink/70 hover:bg-mist">{{ __('← Mes factures') }}</a>
       <button type="button" onclick="window.print()" class="rounded-md border border-ink/10 bg-white px-3 py-1.5 text-ink/70 hover:bg-mist">{{ __('Imprimer le bordereau (ou PDF)') }}</button>

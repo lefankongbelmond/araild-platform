@@ -1,6 +1,6 @@
 @php $S = array_map('__', \App\Models\Tenant\Preauthorization::STATUSES); @endphp
 <x-layouts.tenant title="{{ __('Accords préalables') }}">
-  @include('tenant.portal._head', ['title' => 'Accords préalables'])
+  @include('tenant.portal._head', ['title' => __('Accords préalables')])
   <p class="mt-4 text-sm text-ink/60">{{ __('Pour demander un accord, vérifiez d’abord les droits de l’adhérent, puis cliquez sur « Demander un accord préalable ». Un accord accordé porte un numéro et ne sert qu’une fois, pour votre établissement.') }}</p>
 
   <div class="mt-4 overflow-x-auto rounded-lg border border-ink/10 bg-white">
