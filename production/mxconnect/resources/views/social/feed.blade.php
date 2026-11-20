@@ -16,8 +16,8 @@
     @include('social.partials.composer')
     @guest('member')
       <section class="mx-card mx-card__pad mx-row mx-between mx-row--wrap mx-welcome">
-        <div><b>Bienvenue sur MX-CONNECT</b><p class="mx-small mx-muted">Créez un compte gratuit pour suivre les mutuelles, réagir et publier.</p></div>
-        <a class="mx-btn mx-btn--primary" href="{{ route('social.register') }}">Créer un compte</a>
+        <div><b>{{ __('Bienvenue sur MX-CONNECT') }}</b><p class="mx-small mx-muted">{{ __('Créez un compte gratuit pour suivre les mutuelles, réagir et publier.') }}</p></div>
+        <a class="mx-btn mx-btn--primary" href="{{ route('social.register') }}">{{ __('Créer un compte') }}</a>
       </section>
     @endguest
   @endif
@@ -31,31 +31,31 @@
   @endif
 
   @if (! empty($filtersBar))
-    <form class="mx-card mx-card__pad mx-stack" method="GET" action="{{ route('social.all') }}" aria-label="Filtrer les publications">
+    <form class="mx-card mx-card__pad mx-stack" method="GET" action="{{ route('social.all') }}" aria-label="{{ __('Filtrer les publications') }}">
       <div class="mx-chips" role="list">
-        <a role="listitem" href="{{ request()->fullUrlWithQuery(['type' => null, 'cursor' => null]) }}" @class(['mx-chip', 'is-active' => ! request('type')])>Tout</a>
+        <a role="listitem" href="{{ request()->fullUrlWithQuery(['type' => null, 'cursor' => null]) }}" @class(['mx-chip', 'is-active' => ! request('type')])>{{ __('Tout') }}</a>
         @foreach ($types as $k => $v)
-          <a role="listitem" href="{{ request()->fullUrlWithQuery(['type' => $k, 'cursor' => null]) }}" @class(['mx-chip', 'is-active' => request('type') === $k])>{{ $v }}</a>
+          <a role="listitem" href="{{ request()->fullUrlWithQuery(['type' => $k, 'cursor' => null]) }}" @class(['mx-chip', 'is-active' => request('type') === $k])>{{ __($v) }}</a>
         @endforeach
       </div>
       <div class="mx-row mx-row--wrap">
         @if (request('type'))<input type="hidden" name="type" value="{{ request('type') }}">@endif
-        <label class="mx-sr" for="f-cat">Thème</label>
+        <label class="mx-sr" for="f-cat">{{ __('Thème') }}</label>
         <select id="f-cat" class="mx-select" name="categorie" style="width:auto;flex:1;min-width:160px">
-          <option value="">Tous les thèmes</option>
-          @foreach (\App\Models\Social\Post::ACTIVITY_CATEGORIES as $k => $v)<option value="{{ $k }}" @selected(request('categorie') === $k)>{{ $v }}</option>@endforeach
+          <option value="">{{ __('Tous les thèmes') }}</option>
+          @foreach (\App\Models\Social\Post::ACTIVITY_CATEGORIES as $k => $v)<option value="{{ $k }}" @selected(request('categorie') === $k)>{{ __($v) }}</option>@endforeach
         </select>
-        <label class="mx-sr" for="f-reg">Région</label>
+        <label class="mx-sr" for="f-reg">{{ __('Région') }}</label>
         <select id="f-reg" class="mx-select" name="region" style="width:auto;flex:1;min-width:140px">
-          <option value="">Toutes les régions</option>
+          <option value="">{{ __('Toutes les régions') }}</option>
           @foreach ($places['regions'] as $r)<option @selected(request('region') === $r)>{{ $r }}</option>@endforeach
         </select>
-        <label class="mx-sr" for="f-city">Ville</label>
+        <label class="mx-sr" for="f-city">{{ __('Ville') }}</label>
         <select id="f-city" class="mx-select" name="ville" style="width:auto;flex:1;min-width:140px">
-          <option value="">Toutes les villes</option>
+          <option value="">{{ __('Toutes les villes') }}</option>
           @foreach ($places['cities'] as $c)<option @selected(request('ville') === $c)>{{ $c }}</option>@endforeach
         </select>
-        <button class="mx-btn mx-btn--soft">Filtrer</button>
+        <button class="mx-btn mx-btn--soft">{{ __('Filtrer') }}</button>
       </div>
     </form>
   @endif

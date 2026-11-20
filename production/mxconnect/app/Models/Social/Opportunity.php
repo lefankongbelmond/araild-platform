@@ -75,10 +75,10 @@ class Opportunity extends Model
             return 'Date limite dépassée';
         }
 
-        return self::AVAILABILITIES[$this->availability] ?? $this->availability;
+        return __(self::AVAILABILITIES[$this->availability] ?? $this->availability);
     }
 
-    public function categoryLabel(): string { return self::CATEGORIES[$this->category] ?? $this->category; }
+    public function categoryLabel(): string { return __(self::CATEGORIES[$this->category] ?? $this->category); }
     public function acceptsPlatform(): bool { return $this->apply_mode === 'platform'; }
     /** Une candidature (emploi, stage, consultance) ou une manifestation d'intérêt (le reste). */
     public function isJob(): bool { return in_array($this->category, self::JOB_CATEGORIES, true); }

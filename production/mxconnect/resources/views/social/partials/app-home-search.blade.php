@@ -3,13 +3,13 @@
 <div class="mx-apphome">
   <form class="mx-apphome__search" action="{{ route('social.search') }}" method="GET" role="search">
     <x-mx.icon name="search" :size="18" />
-    <label class="mx-sr" for="mx-aq">Rechercher</label>
-    <input id="mx-aq" name="q" placeholder="Rechercher organisations, projets, personnes…" autocomplete="off">
+    <label class="mx-sr" for="mx-aq">{{ __('Rechercher') }}</label>
+    <input id="mx-aq" name="q" placeholder="{{ __('Rechercher organisations, projets, personnes…') }}" autocomplete="off">
   </form>
-  <div class="mx-chips" role="list" aria-label="Domaines">
-    <a role="listitem" class="mx-chip is-active" href="{{ route('social.home') }}" aria-current="page">Tous</a>
+  <div class="mx-chips" role="list" aria-label="{{ __('Domaines') }}">
+    <a role="listitem" class="mx-chip is-active" href="{{ route('social.home') }}" aria-current="page">{{ __('Tous') }}</a>
     @foreach (\App\Support\SocialDomains::ALL as $code => $label)
-      <a role="listitem" class="mx-chip" href="{{ route('social.discover', ['domaine' => $code]) }}"><x-mx.icon :name="'d-' . $code" :size="16"/> {{ $label }}</a>
+      <a role="listitem" class="mx-chip" href="{{ route('social.discover', ['domaine' => $code]) }}"><x-mx.icon :name="'d-' . $code" :size="16"/> {{ __($label) }}</a>
     @endforeach
   </div>
 </div>

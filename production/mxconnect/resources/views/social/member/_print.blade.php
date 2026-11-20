@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-  <div class="bar"><button class="mx-btn mx-btn--primary" onclick="window.print()">Imprimer ou enregistrer en PDF</button><a class="mx-btn mx-btn--ghost" href="{{ $back }}">Retour</a></div>
+  <div class="bar"><button class="mx-btn mx-btn--primary" onclick="window.print()">{{ __('Imprimer ou enregistrer en PDF') }}</button><a class="mx-btn mx-btn--ghost" href="{{ $back }}">{{ __('Retour') }}</a></div>
   <div class="doc">{{ $slot ?? '' }}@yield('doc')</div>
 </body>
 </html>

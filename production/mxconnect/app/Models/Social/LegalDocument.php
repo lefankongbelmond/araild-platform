@@ -27,13 +27,13 @@ class LegalDocument extends Model
 
     public function label(): string
     {
-        return self::TYPES[$this->type][0] ?? $this->title;
+        return __(self::TYPES[$this->type][0] ?? $this->title);
     }
 
     /** Phrase de la case à cocher (jamais pré-cochée). */
     public function checkboxText(): string
     {
-        $tpl = self::TYPES[$this->type][2] ?? 'J’accepte : :doc';
+        $tpl = __(self::TYPES[$this->type][2] ?? 'J’accepte : :doc');
 
         return str_replace(':doc', $this->label(), $tpl);
     }

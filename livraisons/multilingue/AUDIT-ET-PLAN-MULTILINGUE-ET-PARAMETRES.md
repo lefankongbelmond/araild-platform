@@ -81,7 +81,8 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 | Livraison | État | LISEZMOI |
 |---|---|---|
 | M1 Fondations | Faite (VERSION 2026.11.27) | `LISEZMOI-20261127.md` |
-| M2 Réseau social | À faire | — |
+| M2a Réseau social : paramètres du membre + écrans | Faite (VERSION 2026.11.28) | `LISEZMOI-20261128.md` |
+| M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | À faire | — |
 | M3 Mutuelle | À faire | — |
 | M4 Prestataires | À faire | — |
 | M5 Super-admin, accueil | À faire | — |
@@ -92,4 +93,7 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Variables** : `:nom` identiques dans toutes les langues (contrôlé).
 - **Montants** : `Currency::format()` suit la langue (séparateurs seulement).
 - **Sens d'écriture** : `<html {!! Locales::htmlAttributes() !!}>` ; corrections physiques dans `css/mx-rtl.css` (structure, puis écran par écran).
+- **Outils (M2a)** : `devtools/i18n/extraire-blade.py` (`--dry-run`, `--apply`, `--list`, `--mixed`) rend traduisibles les textes « purs » d'une vue ; `devtools/i18n/catalogue.py` (`sync`, `missing`, `merge`) tient le catalogue et refuse une traduction aux variables différentes. Relire le `git diff` après extraction (directives aux parenthèses imbriquées, attributs liés `:title`).
+- **Listes de libellés PHP** (constantes `STATUSES`, `TYPES`…) : afficher avec `__($libellé)` et **déclarer la constante dans `App\Support\TranslatableLabels::LISTS`** (test `MultilingueReseauSocialTest`). Les valeurs enregistrées en base restent les clés, jamais le texte traduit.
+- **Mot vérifié par le serveur** (« SUPPRIMER ») : jamais traduit.
 - **Une langue est « complète »** seulement quand elle figure dans `Locales::COMPLETE` ; sinon le sélecteur affiche « traduction partielle ».

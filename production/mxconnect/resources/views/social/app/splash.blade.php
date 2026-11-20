@@ -6,13 +6,13 @@
   $nodes = [[-90, '#2F6FDB'], [-30, '#2E9E4F'], [30, '#2F6FDB'], [90, '#0B2559'], [150, '#2E9E4F'], [210, '#2F6FDB']];
   $pts = array_map(fn ($n) => [round(160 + 118 * cos(deg2rad($n[0])), 1), round(160 + 118 * sin(deg2rad($n[0])), 1), $n[1]], $nodes);
 @endphp
-<x-layouts.app-plain title="Démarrage" class="mx-splash">
+<x-layouts.app-plain title="{{ __('Démarrage') }}" class="mx-splash">
   <x-slot:head><meta http-equiv="refresh" content="4;url={{ $next }}">
     {{-- L'application démarre toujours ici : la suite de la session s'affiche en mode application. --}}
     <script>try{sessionStorage.setItem('mx_app','1')}catch(e){}</script></x-slot:head>
 
   <div class="mx-splash__hero">
-  <div class="mx-net" role="img" aria-label="Le logo MX-CONNECT au centre d’un réseau de personnes qui se connectent">
+  <div class="mx-net" role="img" aria-label="{{ __('Le logo MX-CONNECT au centre d’un réseau de personnes qui se connectent') }}">
     <svg class="mx-net__svg" viewBox="0 0 320 320" aria-hidden="true">
       <circle class="mx-net__orbit" cx="160" cy="160" r="146" />
       <polygon class="mx-net__ring" points="{{ collect($pts)->map(fn ($p) => $p[0] . ',' . $p[1])->implode(' ') }}" pathLength="1" />
@@ -34,15 +34,15 @@
   </div>
 
   <div class="mx-splash__brand">
-    <div class="mx-splash__word">M<b>X</b>-CONNECT</div>
-    <div class="mx-splash__tag">Connecter · Collaborer · Réussir</div>
+    <div class="mx-splash__word">M<b>X</b>{{ __('-CONNECT') }}</div>
+    <div class="mx-splash__tag">{{ __('Connecter · Collaborer · Réussir') }}</div>
   </div>
   </div>
 
   <div>
-    <p class="mx-splash__msg">Les initiatives qui changent la vie méritent d’être visibles.</p>
-    <p class="mx-splash__status" role="status">Connexion au réseau<span class="mx-ldots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></p>
-    <noscript><a class="mx-abtn" href="{{ $next }}">Continuer</a></noscript>
+    <p class="mx-splash__msg">{{ __('Les initiatives qui changent la vie méritent d’être visibles.') }}</p>
+    <p class="mx-splash__status" role="status">{{ __('Connexion au réseau') }}<span class="mx-ldots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></p>
+    <noscript><a class="mx-abtn" href="{{ $next }}">{{ __('Continuer') }}</a></noscript>
   </div>
   <x-slot:scripts><script>(function(){var calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(function(){location.replace(@json($next));},calm?700:2000);})();</script></x-slot:scripts>

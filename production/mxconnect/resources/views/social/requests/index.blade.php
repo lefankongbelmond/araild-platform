@@ -1,6 +1,6 @@
-<x-layouts.social title="Mes candidatures et engagements" active="demandes">
-  <h1 style="font-size:22px">Mes candidatures et engagements</h1>
-  <p class="mx-small mx-muted">Vos candidatures, vos propositions d’engagement et de soutien, et leurs réponses. <a href="{{ route('social.opportunities') }}">Chercher une opportunité</a> · <a href="{{ route('social.projects') }}">Voir les projets</a></p>
+<x-layouts.social title="{{ __('Mes candidatures et engagements') }}" active="demandes">
+  <h1 style="font-size:22px">{{ __('Mes candidatures et engagements') }}</h1>
+  <p class="mx-small mx-muted">{{ __('Vos candidatures, vos propositions d’engagement et de soutien, et leurs réponses.') }} <a href="{{ route('social.opportunities') }}">{{ __('Chercher une opportunité') }}</a> · <a href="{{ route('social.projects') }}">{{ __('Voir les projets') }}</a></p>
   @forelse ($items as $r)
     <a class="mx-card mx-card__pad mx-row" href="{{ route('social.request', $r->reference) }}" style="color:inherit;gap:12px">
       <x-mx.avatar :src="$r->mutual?->profile?->logoUrl()" :name="$r->mutual?->name ?? '?'" org />

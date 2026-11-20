@@ -10,5 +10,5 @@ class AdhesionDocument extends Model
     protected $guarded = [];
 
     public function request() { return $this->belongsTo(AdhesionRequest::class, 'adhesion_request_id'); }
-    public function kindLabel(): string { return AdhesionRequest::DOC_KINDS[$this->kind] ?? 'Document'; }
+    public function kindLabel(): string { return __(AdhesionRequest::DOC_KINDS[$this->kind] ?? 'Document'); }
 }

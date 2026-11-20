@@ -7,6 +7,6 @@
 @endforeach
 @if ($posts->hasMorePages())
   <div class="mx-row" style="justify-content:center" data-more-wrap>
-    <a class="mx-btn mx-btn--ghost" href="{{ $posts->nextPageUrl() }}" data-more>Charger plus de publications</a>
+    <a class="mx-btn mx-btn--ghost" href="{{ $posts->nextPageUrl() }}" data-more>{{ __('Charger plus de publications') }}</a>
   </div>
 @endif

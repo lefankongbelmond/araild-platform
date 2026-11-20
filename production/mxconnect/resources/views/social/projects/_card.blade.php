@@ -4,10 +4,10 @@
   <span class="mx-listcard__body">
     <span class="mx-tags">
       <span class="mx-badge mx-badge--blue">{{ $p->phaseLabel() }}</span>
-      @if ($p->seeks_volunteers)<span class="mx-badge mx-badge--green">Cherche des bénévoles</span>@endif
-      @if ($p->seeks_partners)<span class="mx-badge mx-badge--green">Cherche des partenaires</span>@endif
-      @if ($p->is_demo || $p->mutual?->profile?->is_demo)<span class="mx-demo-ribbon">Démo</span>@endif
-      @if ($p->status !== 'published')<span class="mx-badge mx-badge--warn">{{ \App\Models\Social\Project::STATUSES[$p->status] ?? $p->status }}</span>@endif
+      @if ($p->seeks_volunteers)<span class="mx-badge mx-badge--green">{{ __('Cherche des bénévoles') }}</span>@endif
+      @if ($p->seeks_partners)<span class="mx-badge mx-badge--green">{{ __('Cherche des partenaires') }}</span>@endif
+      @if ($p->is_demo || $p->mutual?->profile?->is_demo)<span class="mx-demo-ribbon">{{ __('Démo') }}</span>@endif
+      @if ($p->status !== 'published')<span class="mx-badge mx-badge--warn">{{ __(\App\Models\Social\Project::STATUSES[$p->status] ?? $p->status) }}</span>@endif
     </span>
     <span class="mx-listcard__title">{{ $p->title }}</span>
     <span class="mx-small">{{ \Illuminate\Support\Str::limit($p->summary, 160) }}</span>

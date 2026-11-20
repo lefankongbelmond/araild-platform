@@ -1,10 +1,10 @@
 {{-- En-tête du portail adhérent : mutuelle, adhérent, onglets (2026-11-20). --}}
 @php
   $tabs = [
-    ['dashboard', 'social.member.dashboard', 'Accueil'], ['guarantees', 'social.member.guarantees', 'Mes garanties'],
-    ['dependents', 'social.member.dependents', 'Bénéficiaires'], ['prestations', 'social.member.prestations', 'Prestations'],
-    ['contributions', 'social.member.contributions', 'Cotisations'], ['providers', 'social.member.providers', 'Prestataires'],
-    ['complaints', 'social.member.complaints', 'Réclamations'], ['profile', 'social.member.profile', 'Mon profil'],
+    ['dashboard', 'social.member.dashboard', __('Accueil')], ['guarantees', 'social.member.guarantees', __('Mes garanties')],
+    ['dependents', 'social.member.dependents', __('Bénéficiaires')], ['prestations', 'social.member.prestations', __('Prestations')],
+    ['contributions', 'social.member.contributions', __('Cotisations')], ['providers', 'social.member.providers', __('Prestataires')],
+    ['complaints', 'social.member.complaints', __('Réclamations')], ['profile', 'social.member.profile', __('Mon profil')],
   ];
   $current = in_array($tab, ['prestation'], true) ? 'prestations' : ($tab === 'complaint' ? 'complaints' : $tab);
 @endphp
@@ -15,9 +15,9 @@
       <b>{{ $mutual->name }}</b>
       <span class="mx-xs mx-muted" style="display:block">{{ mb_strtoupper($m->last_name) }} {{ $m->first_name }} · n° {{ $m->member_code }}</span>
     </div>
-    <a class="mx-btn mx-btn--soft mx-btn--sm" href="{{ route('social.member.card', $mutual->slug) }}">Ma carte</a>
+    <a class="mx-btn mx-btn--soft mx-btn--sm" href="{{ route('social.member.card', $mutual->slug) }}">{{ __('Ma carte') }}</a>
   </div>
-  <nav class="mx-tabs" aria-label="Mon adhésion">
+  <nav class="mx-tabs" aria-label="{{ __('Mon adhésion') }}">
     @foreach ($tabs as [$k, $r, $l])<a href="{{ route($r, $mutual->slug) }}" @class(['is-active' => $current === $k])>{{ $l }}</a>@endforeach
   </nav>
 </div>

@@ -9,12 +9,12 @@
     <form method="POST" action="{{ route('social.poll.vote', $post) }}" class="mx-stack" style="gap:8px">
       @csrf
       <fieldset class="mx-stack" style="gap:8px;border:0;margin:0;padding:0">
-        <legend class="mx-sr">Votre choix</legend>
+        <legend class="mx-sr">{{ __('Votre choix') }}</legend>
         @foreach ($poll->options as $o)
           <label class="mx-poll__choice"><input type="radio" name="option" value="{{ $o->id }}" required> <span>{{ $o->label }}</span></label>
         @endforeach
       </fieldset>
-      <div><button class="mx-btn mx-btn--primary mx-btn--sm">Voter</button></div>
+      <div><button class="mx-btn mx-btn--primary mx-btn--sm">{{ __('Voter') }}</button></div>
     </form>
   @else
     <div class="mx-stack" style="gap:8px">
@@ -30,13 +30,13 @@
     @if ($open && $myVote)
       <form method="POST" action="{{ route('social.poll.vote', $post) }}" class="mx-row mx-row--wrap" style="gap:6px;margin-top:8px">
         @csrf
-        <label class="mx-sr" for="pv-{{ $post->id }}">Changer mon vote</label>
+        <label class="mx-sr" for="pv-{{ $post->id }}">{{ __('Changer mon vote') }}</label>
         <select class="mx-select" id="pv-{{ $post->id }}" name="option" style="width:auto;height:34px;padding:0 30px 0 10px;font-size:13px">@foreach ($poll->options as $o)<option value="{{ $o->id }}" @selected((int) $myVote === $o->id)>{{ $o->label }}</option>@endforeach</select>
-        <button class="mx-btn mx-btn--ghost mx-btn--sm">Changer mon vote</button>
+        <button class="mx-btn mx-btn--ghost mx-btn--sm">{{ __('Changer mon vote') }}</button>
       </form>
     @endif
   @endif
   <p class="mx-xs mx-muted" style="margin-top:8px">{{ $poll->votes_count }} vote{{ $poll->votes_count > 1 ? 's' : '' }} ·
     @if ($open) se termine {{ $poll->closes_at?->diffForHumans() }} @else sondage terminé @endif
-    @unless ($viewer) · <a href="{{ route('social.login') }}">connectez-vous pour voter</a>@endunless · résultats anonymes</p>
+    @unless ($viewer) · <a href="{{ route('social.login') }}">{{ __('connectez-vous pour voter') }}</a>@endunless · résultats anonymes</p>
 </div>

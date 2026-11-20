@@ -35,57 +35,57 @@
     <div class="mx-grow">
       <div class="mx-row" style="gap:6px;flex-wrap:wrap">
         <a class="mx-post__author" href="{{ $post->authorUrl() ?? '#' }}">{{ $post->authorName() }}</a>
-        @if ($post->mutual?->isVerified())<span class="mx-verified" title="Organisation vérifiée par l’administration du réseau"><x-mx.icon name="verified" :size="16"/></span>@endif
-        @if ($post->isReel())<a class="mx-badge mx-badge--reel" href="{{ route('social.reels', ['r' => $post->id]) }}"><x-mx.icon name="play" :size="12"/> Réel</a>@endif
+        @if ($post->mutual?->isVerified())<span class="mx-verified" title="{{ __('Organisation vérifiée par l’administration du réseau') }}"><x-mx.icon name="verified" :size="16"/></span>@endif
+        @if ($post->isReel())<a class="mx-badge mx-badge--reel" href="{{ route('social.reels', ['r' => $post->id]) }}"><x-mx.icon name="play" :size="12"/> {{ __('Réel') }}</a>@endif
         @if (! in_array($post->type, ['texte', 'reel'], true))<span class="mx-badge mx-badge--blue">{{ $post->typeLabel() }}</span>@endif
-        @if ($isDemo)<span class="mx-demo-ribbon" title="Contenu fictif de démonstration">Démo</span>@endif
-        @if ($post->group_id && $post->group && empty($inGroup))<span class="mx-xs mx-muted">dans <a href="{{ route('social.group', $post->group) }}">{{ $post->group->name }}</a>@if($post->group->isPrivate()) <x-mx.icon name="shield" :size="12"/>@endif</span>@endif
+        @if ($isDemo)<span class="mx-demo-ribbon" title="{{ __('Contenu fictif de démonstration') }}">{{ __('Démo') }}</span>@endif
+        @if ($post->group_id && $post->group && empty($inGroup))<span class="mx-xs mx-muted">{{ __('dans') }} <a href="{{ route('social.group', $post->group) }}">{{ $post->group->name }}</a>@if($post->group->isPrivate()) <x-mx.icon name="shield" :size="12"/>@endif</span>@endif
       </div>
       <div class="mx-post__meta">
         @if ($sponsor)
-          <span class="mx-sponsored" title="Publication mise en avant par un annonceur">Sponsorisé</span>
+          <span class="mx-sponsored" title="{{ __('Publication mise en avant par un annonceur') }}">{{ __('Sponsorisé') }}</span>
         @else
         <a href="{{ route('social.post', $post) }}" class="mx-muted" title="{{ $post->published_at?->format('d/m/Y H:i') }}">{{ $post->published_at?->diffForHumans(null, true, true) }}</a>
         @endif
-        @if ($post->visibility === 'public' && ! $post->group_id)<span class="mx-post__vis" title="Publication publique">· <x-mx.icon name="globe" :size="13"/></span>@endif
-        @if ($post->category && isset(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$post->category]))<span>· {{ \App\Models\Social\Post::ACTIVITY_CATEGORIES[$post->category] }}</span>@endif
-        @if ($post->visibility === 'followers')<span title="Visible par les abonnés">· Abonnés</span>@endif
+        @if ($post->visibility === 'public' && ! $post->group_id)<span class="mx-post__vis" title="{{ __('Publication publique') }}">· <x-mx.icon name="globe" :size="13"/></span>@endif
+        @if ($post->category && isset(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$post->category]))<span>· {{ __(\App\Models\Social\Post::ACTIVITY_CATEGORIES[$post->category]) }}</span>@endif
+        @if ($post->visibility === 'followers')<span title="{{ __('Visible par les abonnés') }}">{{ __('· Abonnés') }}</span>@endif
       </div>
     </div>
     <details class="mx-menu">
-      <summary class="mx-iconbtn" style="width:36px;height:36px;border:0;background:none" aria-label="Options de la publication"><x-mx.icon name="more" :size="18"/></summary>
+      <summary class="mx-iconbtn" style="width:36px;height:36px;border:0;background:none" aria-label="{{ __('Options de la publication') }}"><x-mx.icon name="more" :size="18"/></summary>
       <div class="mx-menu__list">
-        <button type="button" data-copy="{{ route('social.post', $post) }}"><x-mx.icon name="link" :size="18"/> Copier le lien</button>
+        <button type="button" data-copy="{{ route('social.post', $post) }}"><x-mx.icon name="link" :size="18"/> {{ __('Copier le lien') }}</button>
         @if ($viewer)
-          <button type="button" data-save="{{ route('social.post.save', $post) }}"><x-mx.icon name="bookmark" :size="18"/> <span>{{ $saved ? 'Retirer des enregistrements' : 'Enregistrer' }}</span></button>
+          <button type="button" data-save="{{ route('social.post.save', $post) }}"><x-mx.icon name="bookmark" :size="18"/> <span>{{ $saved ? __('Retirer des enregistrements') : __('Enregistrer') }}</span></button>
           @if ($post->mutual_id)
             <form method="POST" action="{{ route('social.mute', $post->mutual->slug) }}">@csrf<button><x-mx.icon name="eye-off" :size="18"/> Masquer {{ \Illuminate\Support\Str::limit($post->mutual->name, 24) }} de mon fil</button></form>
           @endif
           @if ($ownRepost)
-            <form method="POST" action="{{ route('social.post.destroy', $repostOf) }}" data-confirm="Retirer ce partage de votre profil ? La publication d’origine n’est pas supprimée.">@csrf @method('DELETE')<button class="is-danger"><x-mx.icon name="trash" :size="18"/> Retirer mon partage</button></form>
+            <form method="POST" action="{{ route('social.post.destroy', $repostOf) }}" data-confirm="{{ __('Retirer ce partage de votre profil ? La publication d’origine n’est pas supprimée.') }}">@csrf @method('DELETE')<button class="is-danger"><x-mx.icon name="trash" :size="18"/> {{ __('Retirer mon partage') }}</button></form>
           @endif
           @if ($isOwner && $post->status === 'published' && $post->visibility === 'public' && ! $post->group_id && \App\Services\Social\SponsorService::enabled())
-            <a href="{{ route('social.sponsor.create', $post) }}"><x-mx.icon name="megaphone" :size="18"/> Sponsoriser cette publication</a>
+            <a href="{{ route('social.sponsor.create', $post) }}"><x-mx.icon name="megaphone" :size="18"/> {{ __('Sponsoriser cette publication') }}</a>
           @endif
           @if ($isOwner)
-            <form method="POST" action="{{ route('social.post.destroy', $post) }}" data-confirm="Supprimer définitivement cette publication ?">@csrf @method('DELETE')<button class="is-danger"><x-mx.icon name="trash" :size="18"/> Supprimer</button></form>
+            <form method="POST" action="{{ route('social.post.destroy', $post) }}" data-confirm="{{ __('Supprimer définitivement cette publication ?') }}">@csrf @method('DELETE')<button class="is-danger"><x-mx.icon name="trash" :size="18"/> {{ __('Supprimer') }}</button></form>
           @else
-            <button type="button" class="is-danger" data-report="{{ route('social.post.report', $post) }}"><x-mx.icon name="flag" :size="18"/> Signaler</button>
+            <button type="button" class="is-danger" data-report="{{ route('social.post.report', $post) }}"><x-mx.icon name="flag" :size="18"/> {{ __('Signaler') }}</button>
           @endif
         @else
-          <a href="{{ route('social.login') }}"><x-mx.icon name="login" :size="18"/> Se connecter pour interagir</a>
+          <a href="{{ route('social.login') }}"><x-mx.icon name="login" :size="18"/> {{ __('Se connecter pour interagir') }}</a>
         @endif
       </div>
     </details>
   </header>
 
   @if ($post->body)
-    <div class="mx-post__body">{!! \App\Support\SocialText::render($post->body, $post->mentions, $detail ? null : 320) !!}@if(!$detail && mb_strlen($post->body) > 320) <a class="mx-more-link" href="{{ route('social.post', $post) }}">Voir plus</a>@endif</div>
+    <div class="mx-post__body">{!! \App\Support\SocialText::render($post->body, $post->mentions, $detail ? null : 320) !!}@if(!$detail && mb_strlen($post->body) > 320) <a class="mx-more-link" href="{{ route('social.post', $post) }}">{{ __('Voir plus') }}</a>@endif</div>
   @endif
 
   @php $postDomains = $post->project?->domains ?: ($post->mutual?->profile?->domains ?? []); @endphp
   @if (! empty($postDomains) && ! $sponsor)
-    <div class="mx-dtags" style="padding:0 16px 10px">@foreach ($postDomains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['domaine' => $d]) }}">{{ \App\Support\SocialDomains::label($d) }}</a>@endif @endforeach</div>
+    <div class="mx-dtags" style="padding:0 16px 10px">@foreach ($postDomains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['domaine' => $d]) }}">{{ __(\App\Support\SocialDomains::label($d)) }}</a>@endif @endforeach</div>
   @endif
 
   @if ($post->type === 'evenement' && $post->event_starts_at)
@@ -113,7 +113,7 @@
     <div @class(['mx-video', 'mx-video--reel' => $post->isReel() || ($video->height && $video->width && $video->height > $video->width)])>
       <video src="{{ $video->url() }}" @if($video->posterUrl()) poster="{{ $video->posterUrl() }}" @endif controls playsinline muted preload="metadata" data-autoplay
              @if($video->width) width="{{ $video->width }}" height="{{ $video->height }}" @endif aria-label="Vidéo publiée par {{ $post->authorName() }}"></video>
-      @if ($post->isReel())<a class="mx-video__open" href="{{ route('social.reels', ['r' => $post->id]) }}"><x-mx.icon name="play" :size="14"/> Ouvrir dans Réels</a>@endif
+      @if ($post->isReel())<a class="mx-video__open" href="{{ route('social.reels', ['r' => $post->id]) }}"><x-mx.icon name="play" :size="14"/> {{ __('Ouvrir dans Réels') }}</a>@endif
     </div>
   @elseif ($post->media->isNotEmpty())
     @php $n = $post->media->count(); $shown = $post->media->take(4); @endphp
@@ -141,7 +141,7 @@
       @if ($post->shared && ! $post->shared->trashed() && $post->shared->status === 'published')
         @include('social.partials.post-embed', ['p' => $post->shared])
       @else
-        <p class="mx-card__pad mx-small mx-muted">Cette publication n'est plus disponible.</p>
+        <p class="mx-card__pad mx-small mx-muted">{{ __('Cette publication n\'est plus disponible.') }}</p>
       @endif
     </div>
   @endif
@@ -170,7 +170,7 @@
   @if ($sponsor)
     <a class="mx-sponsor-cta" href="{{ route('social.sponsor.click', $sponsor->id) }}" rel="nofollow sponsored">
       <span>{{ $post->mutual?->name ?? $post->authorName() }}</span>
-      <b>{{ \App\Models\Social\Sponsorship::CTA[$sponsor->cta_label] ?? 'En savoir plus' }}</b>
+      <b>{{ __(\App\Models\Social\Sponsorship::CTA[$sponsor->cta_label] ?? 'En savoir plus') }}</b>
     </a>
   @endif
 
@@ -181,30 +181,30 @@
   <div class="mx-post__actions">
     @if ($viewer)
       <div class="mx-reactbar">
-        <button type="button" @class(['mx-act', 'is-on' => $mine]) data-react="{{ route('social.post.react', $post) }}" data-type="jaime" style="width:100%"><x-mx.icon name="thumb" :size="18"/> <span data-react-label>{{ $mine ? \App\Models\Social\Post::REACTIONS[$mine] : 'J’aime' }}</span></button>
-        <div class="mx-reactbar__pick" role="group" aria-label="Choisir une réaction">
-          @foreach (\App\Models\Social\Post::REACTIONS as $k => $v)<button type="button" data-react="{{ route('social.post.react', $post) }}" data-type="{{ $k }}">{{ $v }}</button>@endforeach
+        <button type="button" @class(['mx-act', 'is-on' => $mine]) data-react="{{ route('social.post.react', $post) }}" data-type="jaime" style="width:100%"><x-mx.icon name="thumb" :size="18"/> <span data-react-label>{{ $mine ? __(\App\Models\Social\Post::REACTIONS[$mine]) : __('J’aime') }}</span></button>
+        <div class="mx-reactbar__pick" role="group" aria-label="{{ __('Choisir une réaction') }}">
+          @foreach (\App\Models\Social\Post::REACTIONS as $k => $v)<button type="button" data-react="{{ route('social.post.react', $post) }}" data-type="{{ $k }}">{{ __($v) }}</button>@endforeach
         </div>
       </div>
-      <a class="mx-act" href="{{ route('social.post', $post) }}#commentaires"><x-mx.icon name="comment" :size="18"/> <span>Commenter</span></a>
+      <a class="mx-act" href="{{ route('social.post', $post) }}#commentaires"><x-mx.icon name="comment" :size="18"/> <span>{{ __('Commenter') }}</span></a>
       @if (! ($post->group_id && $post->group?->isPrivate()))
-      <button type="button" class="mx-act" data-share="{{ route('social.post.share', $post) }}"><x-mx.icon name="share" :size="18"/> <span>Partager</span></button>
+      <button type="button" class="mx-act" data-share="{{ route('social.post.share', $post) }}"><x-mx.icon name="share" :size="18"/> <span>{{ __('Partager') }}</span></button>
       @endif
-      <button type="button" @class(['mx-act', 'is-on' => $saved]) data-save="{{ route('social.post.save', $post) }}"><x-mx.icon name="bookmark" :size="18"/> <span>Enregistrer</span></button>
+      <button type="button" @class(['mx-act', 'is-on' => $saved]) data-save="{{ route('social.post.save', $post) }}"><x-mx.icon name="bookmark" :size="18"/> <span>{{ __('Enregistrer') }}</span></button>
     @else
-      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="thumb" :size="18"/> <span>J’aime</span></a>
-      <a class="mx-act" href="{{ route('social.post', $post) }}#commentaires"><x-mx.icon name="comment" :size="18"/> <span>Commenter</span></a>
-      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="share" :size="18"/> <span>Partager</span></a>
-      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="bookmark" :size="18"/> <span>Enregistrer</span></a>
+      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="thumb" :size="18"/> <span>{{ __('J’aime') }}</span></a>
+      <a class="mx-act" href="{{ route('social.post', $post) }}#commentaires"><x-mx.icon name="comment" :size="18"/> <span>{{ __('Commenter') }}</span></a>
+      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="share" :size="18"/> <span>{{ __('Partager') }}</span></a>
+      <a class="mx-act" href="{{ route('social.login') }}"><x-mx.icon name="bookmark" :size="18"/> <span>{{ __('Enregistrer') }}</span></a>
     @endif
   </div>
 
   {{-- Les 3 actions (design Lot 2), affichées seulement quand elles ont un sens. --}}
   @if ($linkedProject)
     <div class="mx-tiles">
-      @if ($canAct && $linkedProject->seeks_volunteers)<a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>Je m’engage<small>Bénévolat, participation, compétences</small></span></a>@endif
-      <a class="mx-tile mx-tile--project" href="{{ route('social.project', $linkedProject) }}#resultats"><x-mx.icon name="chart" :size="20"/><span>Voir le projet et les résultats<small>Objectifs, indicateurs, avancement</small></span></a>
-      @if ($canAct && $linkedProject->seeks_partners)<a class="mx-tile mx-tile--support" href="{{ $act('support', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="gift" :size="20"/><span>Soutenir<small>Partenariat, matériel, expertise</small></span></a>@endif
+      @if ($canAct && $linkedProject->seeks_volunteers)<a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>{{ __('Je m’engage') }}<small>{{ __('Bénévolat, participation, compétences') }}</small></span></a>@endif
+      <a class="mx-tile mx-tile--project" href="{{ route('social.project', $linkedProject) }}#resultats"><x-mx.icon name="chart" :size="20"/><span>{{ __('Voir le projet et les résultats') }}<small>{{ __('Objectifs, indicateurs, avancement') }}</small></span></a>
+      @if ($canAct && $linkedProject->seeks_partners)<a class="mx-tile mx-tile--support" href="{{ $act('support', ['projet' => $linkedProject->slug]) }}"><x-mx.icon name="gift" :size="20"/><span>{{ __('Soutenir') }}<small>{{ __('Partenariat, matériel, expertise') }}</small></span></a>@endif
     </div>
   @elseif ($linkedOffer)
     <div class="mx-tiles">
@@ -212,7 +212,7 @@
     </div>
   @elseif ($canAct && $post->type === 'evenement' && ! $post->group_id && ! $post->mutual?->profile?->is_demo)
     <div class="mx-tiles">
-      <a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['page' => $post->mutual->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>Je m’engage<small>Bénévolat, participation, compétences</small></span></a>
+      <a class="mx-tile mx-tile--engage" href="{{ $act('engagement', ['page' => $post->mutual->slug]) }}"><x-mx.icon name="hand" :size="20"/><span>{{ __('Je m’engage') }}<small>{{ __('Bénévolat, participation, compétences') }}</small></span></a>
     </div>
   @endif
 

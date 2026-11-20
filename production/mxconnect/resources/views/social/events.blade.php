@@ -1,9 +1,9 @@
-<x-layouts.social title="Événements" active="evenements">
+<x-layouts.social title="{{ __('Événements') }}" active="evenements">
   <div class="mx-row mx-between mx-row--wrap">
-    <h1 style="font-size:22px">Événements des mutuelles</h1>
-    <nav class="mx-segment" style="width:auto" aria-label="Période">
-      <a href="{{ route('social.events') }}" @class(['is-active' => ! $past])>À venir</a>
-      <a href="{{ route('social.events', ['periode' => 'passes']) }}" @class(['is-active' => $past])>Passés</a>
+    <h1 style="font-size:22px">{{ __('Événements des mutuelles') }}</h1>
+    <nav class="mx-segment" style="width:auto" aria-label="{{ __('Période') }}">
+      <a href="{{ route('social.events') }}" @class(['is-active' => ! $past])>{{ __('À venir') }}</a>
+      <a href="{{ route('social.events', ['periode' => 'passes']) }}" @class(['is-active' => $past])>{{ __('Passés') }}</a>
     </nav>
   </div>
   @if ($posts->isEmpty())

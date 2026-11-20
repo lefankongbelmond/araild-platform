@@ -1,6 +1,6 @@
-<x-layouts.social title="Messages" active="messages">
-  <h1 style="font-size:22px">Messages</h1>
-  <p class="mx-small mx-muted">Échanges privés avec les mutuelles. Pour écrire à une mutuelle, ouvrez sa page puis l’onglet « Contact ».</p>
+<x-layouts.social title="{{ __('Messages') }}" active="messages">
+  <h1 style="font-size:22px">{{ __('Messages') }}</h1>
+  <p class="mx-small mx-muted">{{ __('Échanges privés avec les mutuelles. Pour écrire à une mutuelle, ouvrez sa page puis l’onglet « Contact ».') }}</p>
   <section class="mx-card">
     @forelse ($conversations as $c)
       <a class="mx-notif @if($c->account_unread) is-unread @endif" href="{{ route('social.messages.show', $c) }}">
@@ -11,7 +11,7 @@
         <span class="mx-xs mx-muted">{{ $c->last_message_at?->diffForHumans() }}</span>
       </a>
     @empty
-      <p class="mx-card__pad mx-small mx-muted">Aucune conversation pour le moment.</p>
+      <p class="mx-card__pad mx-small mx-muted">{{ __('Aucune conversation pour le moment.') }}</p>
     @endforelse
   </section>
   {{ $conversations->links('social.partials.pagination') }}

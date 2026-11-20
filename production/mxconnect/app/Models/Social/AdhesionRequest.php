@@ -42,7 +42,7 @@ class AdhesionRequest extends Model
     public function conversation() { return $this->hasOne(Conversation::class); }
 
     public function isOpen(): bool { return in_array($this->status, self::OPEN, true); }
-    public function statusLabel(): string { return self::STATUSES[$this->status] ?? $this->status; }
+    public function statusLabel(): string { return __(self::STATUSES[$this->status] ?? $this->status); }
     public function getNameAttribute(): string { return trim($this->first_name . ' ' . $this->last_name); }
 
     public static function newReference(): string

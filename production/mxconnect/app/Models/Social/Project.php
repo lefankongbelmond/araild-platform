@@ -43,7 +43,7 @@ class Project extends Model
             ->whereHas('mutual', fn ($m) => $m->where('status', '!=', 'suspended'));
     }
 
-    public function phaseLabel(): string { return self::PHASES[$this->phase] ?? $this->phase; }
+    public function phaseLabel(): string { return __(self::PHASES[$this->phase] ?? $this->phase); }
     public function coverUrl(): ?string  { return \App\Services\Social\MediaService::url($this->cover_path); }
     public function isPublic(): bool     { return $this->status === 'published' && $this->mutual && $this->mutual->status !== 'suspended'; }
     public function getRouteKeyName(): string { return 'slug'; }

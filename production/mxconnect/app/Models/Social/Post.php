@@ -164,9 +164,9 @@ class Post extends Model
     public function typeLabel(): string
     {
         if (! $this->mutual_id && isset(self::MEMBER_TYPES[$this->type])) {
-            return self::MEMBER_TYPES[$this->type];
+            return __(self::MEMBER_TYPES[$this->type]);
         }
 
-        return self::TYPES[$this->type] ?? 'Publication';
+        return __(self::TYPES[$this->type] ?? 'Publication');
     }
 }

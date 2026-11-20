@@ -59,14 +59,14 @@ class SocialRequest extends Model
     public function events()      { return $this->hasMany(SocialRequestEvent::class, 'social_request_id')->orderBy('id'); }
 
     public function isOpen(): bool { return in_array($this->status, self::OPEN, true); }
-    public function statusLabel(): string { return self::STATUSES[$this->status] ?? $this->status; }
+    public function statusLabel(): string { return __(self::STATUSES[$this->status] ?? $this->status); }
     public function kindLabel(): string
     {
         if ($this->kind === 'application' && $this->opportunity && ! $this->opportunity->isJob()) {
             return 'Manifestation d’intérêt';
         }
 
-        return self::KINDS[$this->kind] ?? $this->kind;
+        return __(self::KINDS[$this->kind] ?? $this->kind);
     }
     public function subtypeLabel(): ?string
     {

@@ -1,6 +1,6 @@
-<x-layouts.social title="Notifications" active="notifications">
-  <div class="mx-row mx-between"><h1 style="font-size:22px">Notifications</h1>
-    <form method="POST" action="{{ route('social.notifications.read') }}">@csrf<button class="mx-btn mx-btn--ghost mx-btn--sm">Tout marquer comme lu</button></form></div>
+<x-layouts.social title="{{ __('Notifications') }}" active="notifications">
+  <div class="mx-row mx-between"><h1 style="font-size:22px">{{ __('Notifications') }}</h1>
+    <form method="POST" action="{{ route('social.notifications.read') }}">@csrf<button class="mx-btn mx-btn--ghost mx-btn--sm">{{ __('Tout marquer comme lu') }}</button></form></div>
   <section class="mx-card">
     @forelse ($items as $n)
       @php $icon = ['comment' => 'comment', 'reply' => 'comment', 'message' => 'message', 'adhesion' => 'file', 'mutuelle' => 'building', 'mention' => 'at', 'follow' => 'users', 'demande' => 'handshake', 'resultat' => 'target'][$n->type] ?? 'bell'; @endphp
@@ -10,7 +10,7 @@
         <span class="mx-xs mx-muted">{{ $n->created_at->diffForHumans() }}</span>
       </a>
     @empty
-      <p class="mx-card__pad mx-small mx-muted">Aucune notification.</p>
+      <p class="mx-card__pad mx-small mx-muted">{{ __('Aucune notification.') }}</p>
     @endforelse
   </section>
   {{ $items->links('social.partials.pagination') }}

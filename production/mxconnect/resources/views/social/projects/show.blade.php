@@ -15,46 +15,46 @@
   <a class="mx-small" href="{{ route('social.mutual', [$page->slug, 'onglet' => 'projets']) }}"><x-mx.icon name="arrow-left" :size="14"/> {{ $page->name }}</a>
 
   @if ($project->status !== 'published')
-    <div class="mx-alert mx-alert--warn">{{ $project->status === 'draft' ? 'Brouillon : ce projet n’est visible que par les gestionnaires de la page.' : 'Ce projet a été masqué par la modération du réseau.' }}</div>
+    <div class="mx-alert mx-alert--warn">{{ $project->status === 'draft' ? 'Brouillon : ce projet n’est visible que par les gestionnaires de la page.' : __('Ce projet a été masqué par la modération du réseau.') }}</div>
   @endif
 
   <section class="mx-card" style="overflow:hidden">
     <div @class(['mx-phero', 'has-img' => $project->cover_path]) @if($project->cover_path) style="background-image:url('{{ $project->coverUrl() }}')" @endif>
       <span class="mx-badge">{{ $project->phaseLabel() }}</span>
-      <h1>{{ $project->title }}@if($isDemo) <span class="mx-demo-ribbon" title="Contenu fictif de démonstration">Démo</span>@endif</h1>
+      <h1>{{ $project->title }}@if($isDemo) <span class="mx-demo-ribbon" title="{{ __('Contenu fictif de démonstration') }}">{{ __('Démo') }}</span>@endif</h1>
       <p>{{ $project->summary }}</p>
     </div>
     <div class="mx-pbar">
       <a class="mx-row" href="{{ route('social.mutual', $page->slug) }}" style="color:inherit;gap:10px;min-width:0">
         <x-mx.avatar :src="$page->profile?->logoUrl()" :name="$page->name" org />
-        <span style="min-width:0"><span class="mx-xs mx-muted" style="display:block">Porté par</span><b class="mx-truncate" style="display:block">{{ $page->name }}@if($page->isVerified()) <span class="mx-verified" title="Organisation vérifiée par l’administration du réseau"><x-mx.icon name="verified" :size="14"/></span>@endif</b></span>
+        <span style="min-width:0"><span class="mx-xs mx-muted" style="display:block">{{ __('Porté par') }}</span><b class="mx-truncate" style="display:block">{{ $page->name }}@if($page->isVerified()) <span class="mx-verified" title="{{ __('Organisation vérifiée par l’administration du réseau') }}"><x-mx.icon name="verified" :size="14"/></span>@endif</b></span>
       </a>
       <div class="mx-row mx-row--wrap" style="gap:8px">
         @if ($canManage)
-          <a class="mx-btn mx-btn--primary" href="{{ route('social.manage.project.edit', [$page->slug, $project->id]) }}"><x-mx.icon name="edit" :size="16"/> Gérer ce projet</a>
+          <a class="mx-btn mx-btn--primary" href="{{ route('social.manage.project.edit', [$page->slug, $project->id]) }}"><x-mx.icon name="edit" :size="16"/> {{ __('Gérer ce projet') }}</a>
         @elseif ($canAct)
-          @if ($project->seeks_volunteers)<a class="mx-btn mx-btn--primary" href="{{ $actionUrl('engagement') }}"><x-mx.icon name="hand" :size="16"/> Je m’engage</a>@endif
-          @if ($project->seeks_partners)<a class="mx-btn mx-btn--ghost mx-btn--support" href="{{ $actionUrl('support') }}" style="color:var(--mx-sun)"><x-mx.icon name="gift" :size="16"/> Soutenir</a>@endif
+          @if ($project->seeks_volunteers)<a class="mx-btn mx-btn--primary" href="{{ $actionUrl('engagement') }}"><x-mx.icon name="hand" :size="16"/> {{ __('Je m’engage') }}</a>@endif
+          @if ($project->seeks_partners)<a class="mx-btn mx-btn--ghost mx-btn--support" href="{{ $actionUrl('support') }}" style="color:var(--mx-sun)"><x-mx.icon name="gift" :size="16"/> {{ __('Soutenir') }}</a>@endif
         @endif
-        <a class="mx-btn mx-btn--ghost" href="#resultats"><x-mx.icon name="chart" :size="16"/> Voir les résultats</a>
-        <button type="button" class="mx-btn mx-btn--ghost" data-copy="{{ route('social.project', $project) }}"><x-mx.icon name="share-out" :size="16"/> Partager</button>
+        <a class="mx-btn mx-btn--ghost" href="#resultats"><x-mx.icon name="chart" :size="16"/> {{ __('Voir les résultats') }}</a>
+        <button type="button" class="mx-btn mx-btn--ghost" data-copy="{{ route('social.project', $project) }}"><x-mx.icon name="share-out" :size="16"/> {{ __('Partager') }}</button>
       </div>
     </div>
     <div class="mx-kpis">
-      <div><small>Avancement</small>@if ($project->progress !== null)<b style="font-size:20px">{{ $project->progress }} %</b><span class="mx-bar" role="img" aria-label="{{ $project->progress }} % (déclaré)"><i style="width:{{ $project->progress }}%"></i></span>@else<b>{{ $project->phaseLabel() }}</b>@endif</div>
-      <div><small>Zone d’intervention</small><b>{{ $place ?: 'Non précisée' }}</b></div>
-      <div><small>Calendrier</small><b>@if($project->starts_on){{ $project->starts_on->translatedFormat('M Y') }} → {{ $project->ends_on?->translatedFormat('M Y') ?? '…' }}@else Non précisé @endif</b></div>
-      <div><small>Bénéficiaires</small><b>{{ $project->beneficiaries ?: 'Non précisé' }}</b></div>
+      <div><small>{{ __('Avancement') }}</small>@if ($project->progress !== null)<b style="font-size:20px">{{ $project->progress }} %</b><span class="mx-bar" role="img" aria-label="{{ $project->progress }} % (déclaré)"><i style="width:{{ $project->progress }}%"></i></span>@else<b>{{ $project->phaseLabel() }}</b>@endif</div>
+      <div><small>{{ __('Zone d’intervention') }}</small><b>{{ $place ?: 'Non précisée' }}</b></div>
+      <div><small>{{ __('Calendrier') }}</small><b>@if($project->starts_on){{ $project->starts_on->translatedFormat('M Y') }} → {{ $project->ends_on?->translatedFormat('M Y') ?? '…' }}@else Non précisé @endif</b></div>
+      <div><small>{{ __('Bénéficiaires') }}</small><b>{{ $project->beneficiaries ?: 'Non précisé' }}</b></div>
     </div>
   </section>
-  @if ($isDemo)<p class="mx-xs mx-muted">Projet fictif de démonstration : aucune demande ne peut être envoyée.</p>@endif
+  @if ($isDemo)<p class="mx-xs mx-muted">{{ __('Projet fictif de démonstration : aucune demande ne peut être envoyée.') }}</p>@endif
 
   {{-- Application (maquettes 10 et 12) : onglets d'accès rapide aux sections réelles de la page. --}}
-  <nav class="mx-ptabs" aria-label="Sections du projet">
-    <a href="#apercu">Aperçu</a>
-    <a href="#resultats">Résultats</a>
-    <a href="#actualites">Activités</a>
-    @if ($project->documents->isNotEmpty())<a href="#documents">Rapports</a>@endif
+  <nav class="mx-ptabs" aria-label="{{ __('Sections du projet') }}">
+    <a href="#apercu">{{ __('Aperçu') }}</a>
+    <a href="#resultats">{{ __('Résultats') }}</a>
+    <a href="#actualites">{{ __('Activités') }}</a>
+    @if ($project->documents->isNotEmpty())<a href="#documents">{{ __('Rapports') }}</a>@endif
   </nav>
   <script>(function(){var n=document.querySelector('.mx-ptabs');if(!n)return;var a=n.querySelectorAll('a');function on(h){a.forEach(function(x){x.classList.toggle('is-active',x.getAttribute('href')===h);});}on(location.hash||'#apercu');n.addEventListener('click',function(e){var l=e.target.closest('a');if(l)on(l.getAttribute('href'));});})();</script>
 
@@ -62,17 +62,17 @@
     <div class="mx-stack">
       @if ($project->objectives || $project->description)
         <section class="mx-card mx-card__pad mx-stack">
-          @if ($project->objectives)<h2 class="mx-card__title"><x-mx.icon name="target" :size="18"/> Objectifs</h2><p style="white-space:pre-line">{{ $project->objectives }}</p>@endif
-          @if ($project->description)<h2 class="mx-card__title" @if($project->objectives) style="margin-top:6px" @endif>Le projet</h2><p style="white-space:pre-line;overflow-wrap:anywhere">{{ $project->description }}</p>@endif
-          @if (! empty($project->domains))<div class="mx-dtags">@foreach ($project->domains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['onglet' => 'projets', 'domaine' => $d]) }}">{{ \App\Support\SocialDomains::label($d) }}</a>@endif @endforeach</div>@endif
+          @if ($project->objectives)<h2 class="mx-card__title"><x-mx.icon name="target" :size="18"/> {{ __('Objectifs') }}</h2><p style="white-space:pre-line">{{ $project->objectives }}</p>@endif
+          @if ($project->description)<h2 class="mx-card__title" @if($project->objectives) style="margin-top:6px" @endif>{{ __('Le projet') }}</h2><p style="white-space:pre-line;overflow-wrap:anywhere">{{ $project->description }}</p>@endif
+          @if (! empty($project->domains))<div class="mx-dtags">@foreach ($project->domains as $d)@if(\App\Support\SocialDomains::label($d))<a class="mx-dtag" href="{{ route('social.discover', ['onglet' => 'projets', 'domaine' => $d]) }}">{{ __(\App\Support\SocialDomains::label($d)) }}</a>@endif @endforeach</div>@endif
         </section>
       @endif
 
       <section class="mx-card mx-card__pad mx-stack" id="resultats">
-        <h2 class="mx-card__title"><x-mx.icon name="chart" :size="18"/> Indicateurs et résultats</h2>
-        <p class="mx-xs mx-muted">Les résultats « déclarés » sont communiqués par l’organisation. Seuls ceux marqués « vérifiés » ont été contrôlés par le réseau.</p>
+        <h2 class="mx-card__title"><x-mx.icon name="chart" :size="18"/> {{ __('Indicateurs et résultats') }}</h2>
+        <p class="mx-xs mx-muted">{{ __('Les résultats « déclarés » sont communiqués par l’organisation. Seuls ceux marqués « vérifiés » ont été contrôlés par le réseau.') }}</p>
         @if ($project->indicators->isEmpty())
-          <p class="mx-small mx-muted">L’organisation n’a pas encore publié de résultats chiffrés pour ce projet.</p>
+          <p class="mx-small mx-muted">{{ __('L’organisation n’a pas encore publié de résultats chiffrés pour ce projet.') }}</p>
         @else
           <div class="mx-results">
             @foreach ($project->indicators as $i)
@@ -84,9 +84,9 @@
                   <span class="mx-xs mx-muted">Objectif : {{ $I::fmt($i->target) }}{{ $i->unit ? ' ' . $i->unit : '' }} ({{ $i->percent() }} %)</span>
                 @endif
                 @if ($i->isVerified())
-                  <span><span class="mx-badge mx-badge--verified" title="Contrôlé par l’administration du réseau le {{ $i->verified_at->format('d/m/Y') }}"><x-mx.icon name="check" :size="12"/> Vérifié par le réseau</span></span>
+                  <span><span class="mx-badge mx-badge--verified" title="Contrôlé par l’administration du réseau le {{ $i->verified_at->format('d/m/Y') }}"><x-mx.icon name="check" :size="12"/> {{ __('Vérifié par le réseau') }}</span></span>
                 @else
-                  <span><span class="mx-badge mx-badge--declared" title="Chiffre publié par l’organisation, non contrôlé par le réseau">Déclaré par l’organisation</span></span>
+                  <span><span class="mx-badge mx-badge--declared" title="{{ __('Chiffre publié par l’organisation, non contrôlé par le réseau') }}">{{ __('Déclaré par l’organisation') }}</span></span>
                 @endif
                 @if ($i->period || $i->source_note)<span class="mx-xs mx-muted">@if($i->period){{ $i->period }}@endif @if($i->period && $i->source_note) · @endif @if($i->source_note)Source : {{ $i->source_note }}@endif</span>@endif
               </div>
@@ -96,9 +96,9 @@
       </section>
 
       <section class="mx-card mx-card__pad mx-stack" id="actualites">
-        <h2 class="mx-card__title"><x-mx.icon name="clock" :size="18"/> Mises à jour et prochaines étapes</h2>
+        <h2 class="mx-card__title"><x-mx.icon name="clock" :size="18"/> {{ __('Mises à jour et prochaines étapes') }}</h2>
         @if ($project->updates->isEmpty())
-          <p class="mx-small mx-muted">Aucune actualité d’avancement pour le moment.</p>
+          <p class="mx-small mx-muted">{{ __('Aucune actualité d’avancement pour le moment.') }}</p>
         @else
           <ol class="mx-timeline">
             @foreach ($project->updates as $u)
@@ -110,7 +110,7 @@
 
       @if ($opportunities->isNotEmpty())
         <section class="mx-stack">
-          <h2 class="mx-card__title" style="padding:0 6px">Offres liées à ce projet</h2>
+          <h2 class="mx-card__title" style="padding:0 6px">{{ __('Offres liées à ce projet') }}</h2>
           @foreach ($opportunities as $o)@include('social.opportunities._card', ['o' => $o->setRelation('mutual', $page)])@endforeach
         </section>
       @endif
@@ -119,24 +119,24 @@
     <aside class="mx-stack">
       @if ($partners->isNotEmpty())
         <section class="mx-card mx-card__pad mx-stack" style="gap:10px">
-          <h2 class="mx-card__title">Partenaires</h2>
+          <h2 class="mx-card__title">{{ __('Partenaires') }}</h2>
           <ul class="mx-checklist">@foreach ($partners as $pt)<li><x-mx.icon name="check" :size="16"/><span>{{ $pt }}</span></li>@endforeach</ul>
-          <p class="mx-xs mx-muted">Déclarés par l’organisation.</p>
+          <p class="mx-xs mx-muted">{{ __('Déclarés par l’organisation.') }}</p>
         </section>
       @endif
       @if ($project->seeks_volunteers || $project->seeks_partners)
         <section class="mx-card mx-card__pad mx-stack" style="gap:10px">
-          <h2 class="mx-card__title">Besoins</h2>
-          @if ($project->seeks_volunteers)<div><b class="mx-small">Bénévoles recherchés</b><p class="mx-small" style="white-space:pre-line">{{ $project->volunteer_needs }}</p>
-            @if ($canAct)<a class="mx-btn mx-btn--soft mx-btn--sm" style="margin-top:6px" href="{{ $actionUrl('engagement') }}"><x-mx.icon name="hand" :size="14"/> Je m’engage</a>@endif</div>@endif
-          @if ($project->seeks_partners)<div><b class="mx-small">Soutien recherché</b><p class="mx-small" style="white-space:pre-line">{{ $project->partner_needs }}</p>
-            @if ($canAct)<a class="mx-btn mx-btn--ghost mx-btn--sm" style="margin-top:6px;color:var(--mx-sun)" href="{{ $actionUrl('support') }}"><x-mx.icon name="gift" :size="14"/> Soutenir ou devenir partenaire</a>@endif</div>
-            <p class="mx-xs mx-muted">MX-CONNECT ne collecte aucun fonds : un soutien financier se convient directement avec l’organisation.</p>@endif
+          <h2 class="mx-card__title">{{ __('Besoins') }}</h2>
+          @if ($project->seeks_volunteers)<div><b class="mx-small">{{ __('Bénévoles recherchés') }}</b><p class="mx-small" style="white-space:pre-line">{{ $project->volunteer_needs }}</p>
+            @if ($canAct)<a class="mx-btn mx-btn--soft mx-btn--sm" style="margin-top:6px" href="{{ $actionUrl('engagement') }}"><x-mx.icon name="hand" :size="14"/> {{ __('Je m’engage') }}</a>@endif</div>@endif
+          @if ($project->seeks_partners)<div><b class="mx-small">{{ __('Soutien recherché') }}</b><p class="mx-small" style="white-space:pre-line">{{ $project->partner_needs }}</p>
+            @if ($canAct)<a class="mx-btn mx-btn--ghost mx-btn--sm" style="margin-top:6px;color:var(--mx-sun)" href="{{ $actionUrl('support') }}"><x-mx.icon name="gift" :size="14"/> {{ __('Soutenir ou devenir partenaire') }}</a>@endif</div>
+            <p class="mx-xs mx-muted">{{ __('MX-CONNECT ne collecte aucun fonds : un soutien financier se convient directement avec l’organisation.') }}</p>@endif
         </section>
       @endif
       @if ($project->documents->isNotEmpty())
         <section class="mx-card mx-stack" style="gap:0" id="documents">
-          <div class="mx-card__head"><h2 class="mx-card__title"><x-mx.icon name="file" :size="18"/> Documents</h2></div>
+          <div class="mx-card__head"><h2 class="mx-card__title"><x-mx.icon name="file" :size="18"/> {{ __('Documents') }}</h2></div>
           <div class="mx-docs" style="padding-top:12px">
             @foreach ($project->documents as $doc)
               <a class="mx-doc" href="{{ $doc->url() }}" rel="nofollow"><i><x-mx.icon name="file" :size="20"/></i><span class="mx-grow" style="min-width:0"><b>{{ $doc->title }}</b><span class="mx-xs mx-muted">PDF · {{ $doc->sizeLabel() }}</span></span><x-mx.icon name="download" :size="18"/></a>
@@ -145,11 +145,11 @@
         </section>
       @endif
       <section class="mx-card mx-card__pad mx-stack" style="gap:10px">
-        <h2 class="mx-card__title">Publications liées</h2>
+        <h2 class="mx-card__title">{{ __('Publications liées') }}</h2>
         @forelse ($related as $rp)
           <a href="{{ route('social.post', $rp) }}" style="color:inherit;display:block"><span class="mx-small" style="display:block;overflow-wrap:anywhere">{{ \Illuminate\Support\Str::limit($rp->body, 110) }}</span><span class="mx-xs mx-muted">{{ $rp->published_at?->diffForHumans() }}</span></a>
         @empty
-          <p class="mx-small mx-muted">Aucune publication liée pour le moment.</p>
+          <p class="mx-small mx-muted">{{ __('Aucune publication liée pour le moment.') }}</p>
         @endforelse
       </section>
     </aside>

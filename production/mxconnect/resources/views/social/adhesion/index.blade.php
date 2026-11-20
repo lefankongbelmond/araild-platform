@@ -1,6 +1,6 @@
-<x-layouts.social title="Mes demandes d’adhésion" active="adhesions">
-  <h1 style="font-size:22px">Mes demandes d’adhésion</h1>
-  <p class="mx-small mx-muted">Suivre une mutuelle n’est pas adhérer : l’adhésion se demande depuis l’onglet « Offres » d’une mutuelle.</p>
+<x-layouts.social title="{{ __('Mes demandes d’adhésion') }}" active="adhesions">
+  <h1 style="font-size:22px">{{ __('Mes demandes d’adhésion') }}</h1>
+  <p class="mx-small mx-muted">{{ __('Suivre une mutuelle n’est pas adhérer : l’adhésion se demande depuis l’onglet « Offres » d’une mutuelle.') }}</p>
   @forelse ($requests as $r)
     <a class="mx-card mx-card__pad mx-row" href="{{ route('social.adhesion', $r) }}" style="color:inherit;gap:12px">
       <x-mx.avatar :src="$r->mutual?->profile?->logoUrl()" :name="$r->mutual?->name ?? '?'" org />
