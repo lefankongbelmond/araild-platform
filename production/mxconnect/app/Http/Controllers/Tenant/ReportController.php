@@ -69,7 +69,7 @@ class ReportController extends Controller
         $key = $request->get('periode', 'mois');
         if ($key === 'libre') {
             $this->validateOr(route('reports.index'), $request, ['du' => ['required', 'date'], 'au' => ['required', 'date', 'after_or_equal:du']],
-                ['au.after_or_equal' => 'La fin doit suivre le début.']);
+                ['au.after_or_equal' => __('La fin doit suivre le début.')]);
             [$from, $to] = [Carbon::parse($request->get('du'))->startOfDay(), Carbon::parse($request->get('au'))->endOfDay()];
         } else {
             $key = array_key_exists($key, $periods) ? $key : 'mois';

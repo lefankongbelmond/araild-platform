@@ -163,8 +163,8 @@ class AccountingStatementController extends Controller
                 'du' => ['nullable', 'date', 'after_or_equal:' . $start->toDateString(), 'before_or_equal:' . $year . '-12-31'],
                 'au' => ['nullable', 'date', ...($request->filled('du') ? ['after_or_equal:du'] : []), 'after_or_equal:' . $start->toDateString(), 'before_or_equal:' . $year . '-12-31'],
             ], [
-                'du.after_or_equal' => 'Les dates doivent rester dans l’exercice ' . $year . '.', 'du.before_or_equal' => 'Les dates doivent rester dans l’exercice ' . $year . '.',
-                'au.before_or_equal' => 'Les dates doivent rester dans l’exercice ' . $year . '.', 'au.after_or_equal' => 'La fin doit suivre le début, dans l’exercice ' . $year . '.',
+                'du.after_or_equal' => __('Les dates doivent rester dans l’exercice :year.', ['year' => $year]), 'du.before_or_equal' => __('Les dates doivent rester dans l’exercice :year.', ['year' => $year]),
+                'au.before_or_equal' => __('Les dates doivent rester dans l’exercice :year.', ['year' => $year]), 'au.after_or_equal' => __('La fin doit suivre le début, dans l’exercice :year.', ['year' => $year]),
             ]);
             $from = $request->filled('du') ? Carbon::parse($request->get('du'))->startOfDay() : $start;
             $to = $request->filled('au') ? Carbon::parse($request->get('au'))->startOfDay() : Carbon::create($year, 12, 31)->startOfDay();

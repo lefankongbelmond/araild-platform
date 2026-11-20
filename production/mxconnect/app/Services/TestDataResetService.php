@@ -101,31 +101,31 @@ class TestDataResetService
     public function reset(Mutual $mutual, string $confirm, string $note, array $opts, ?int $networkUserId, string $byLabel): array
     {
         if (! TestEnvironment::of($mutual)) {
-            throw new AccountingRefusal('Réinitialisation refusée : cette mutuelle n’est pas marquée « MUTUELLE TEST ».');
+            throw new AccountingRefusal(__('Réinitialisation refusée : cette mutuelle n’est pas marquée « MUTUELLE TEST ».'));
         }
         if (trim($confirm) !== (string) $mutual->slug) {
-            throw new AccountingRefusal('Confirmation incorrecte : saisissez exactement l’identifiant « ' . $mutual->slug . ' ».');
+            throw new AccountingRefusal(__('Confirmation incorrecte : saisissez exactement l’identifiant « :slug ».', ['slug' => $mutual->slug]));
         }
         $note = trim($note);
         if (mb_strlen($note) < 5) {
-            throw new AccountingRefusal('Indiquez le motif de la réinitialisation (5 caractères au moins).');
+            throw new AccountingRefusal(__('Indiquez le motif de la réinitialisation (5 caractères au moins).'));
         }
         $lock = Cache::lock('test-reset:' . $mutual->id, 600);
         if (! $lock->get()) {
-            throw new AccountingRefusal('Une réinitialisation de cette mutuelle est déjà en cours.');
+            throw new AccountingRefusal(__('Une réinitialisation de cette mutuelle est déjà en cours.'));
         }
 
         try {
             $unclassified = $mutual->run(fn () => $this->unclassified($this->tables()));
             if ($unclassified) {
-                throw new AccountingRefusal('Réinitialisation refusée : table(s) non classée(s) ' . implode(', ', $unclassified) . '. Rien n’a été effacé.');
+                throw new AccountingRefusal(__('Réinitialisation refusée : table(s) non classée(s) :tables. Rien n’a été effacé.', ['tables' => implode(', ', $unclassified)]));
             }
 
             // 1. Sauvegarde complète AVANT tout effacement.
             $file = self::backupDir() . '/' . $mutual->slug . '-' . now()->format('Ymd_His') . '.sql';
             if (! $this->backup->dumpMutual($mutual, $file)) {
                 @unlink($file);
-                throw new AccountingRefusal('La sauvegarde préalable a échoué : rien n’a été effacé.');
+                throw new AccountingRefusal(__('La sauvegarde préalable a échoué : rien n’a été effacé.'));
             }
             $this->prune($mutual->slug, 5);
 

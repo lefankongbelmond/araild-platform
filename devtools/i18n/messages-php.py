@@ -20,7 +20,7 @@ import os, re, sys
 LIT = re.compile(r"(?<![\w\]\)])'((?:[^'\\]|\\.)*)'")
 CONTEXT = re.compile(
     r"->with\(\s*'(ok|error|status|success|info|warning)'\s*,"
-    r"|withErrors\(|withMessages\(|abort(?:_if|_unless)?\(|AccountingRefusal\(|Refusal\("
+    r"|withErrors\(|withMessages\(|abort(?:_if|_unless)?\(|AccountingRefusal\(|Refusal\(|(?:->|::)?refuse\("
     r"|'[\w\*]+(?:\.[\w\*]+)+'\s*=>\s*'"
     r"|\$(msg|message|error|flash|fail)\s*="
     r"|=>\s*'[^']*'\s*,?\s*$"

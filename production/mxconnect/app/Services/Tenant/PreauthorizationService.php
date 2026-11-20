@@ -74,16 +74,16 @@ class PreauthorizationService
         return DB::transaction(function () use ($p, $by, $to, $note, $approvedMinor, $validUntil) {
             $p = Preauthorization::whereKey($p->id)->lockForUpdate()->firstOrFail();
             if ($p->status !== 'requested') {
-                throw new AccountingRefusal('Cette demande a déjà été traitée.');
+                throw new AccountingRefusal(__('Cette demande a déjà été traitée.'));
             }
             if ((int) $p->requested_by === (int) $by->id) {
-                throw new AccountingRefusal('Vous avez saisi cette demande : une autre personne doit décider (contrôle « 4 yeux »).');
+                throw new AccountingRefusal(__('Vous avez saisi cette demande : une autre personne doit décider (contrôle « 4 yeux »).'));
             }
             if ($p->review_type === 'medical' && ! $by->hasRole('medical_advisor')) {
-                throw new AccountingRefusal('Cette demande relève d’un examen médical : seul un médecin-conseil peut décider.');
+                throw new AccountingRefusal(__('Cette demande relève d’un examen médical : seul un médecin-conseil peut décider.'));
             }
             if ($to === 'rejected' && trim((string) $note) === '') {
-                throw new AccountingRefusal('Indiquez le motif du rejet : il est communiqué au prestataire.');
+                throw new AccountingRefusal(__('Indiquez le motif du rejet : il est communiqué au prestataire.'));
             }
             $data = ['status' => $to, 'decided_by' => $by->id, 'decided_at' => now(), 'decision_note' => $note ? trim($note) : null];
             if ($to === 'approved') {
@@ -115,7 +115,7 @@ class PreauthorizationService
     public function cancel(Preauthorization $p, User $by): void
     {
         if ($p->status !== 'requested' || $p->emergency) {
-            throw new AccountingRefusal('Seule une demande en attente (hors urgence) peut être retirée.');
+            throw new AccountingRefusal(__('Seule une demande en attente (hors urgence) peut être retirée.'));
         }
         $p->update(['status' => 'cancelled', 'decided_by' => $by->id, 'decided_at' => now(), 'decision_note' => 'Retirée par le demandeur.']);
     }

@@ -121,7 +121,7 @@ class SocialPresenceController extends Controller
         }
         cache()->forget('social:places');
 
-        return redirect()->route('social-presence.index')->with('success', 'Page publique mise à jour.');
+        return redirect()->route('social-presence.index')->with('success', __('Page publique mise à jour.'));
     }
 
     /** Comptes du réseau social autorisés à publier au nom de la mutuelle depuis le réseau. */
@@ -129,10 +129,10 @@ class SocialPresenceController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
         $data = $request->validate(['manager' => ['required', 'string', 'max:180'], 'role' => ['required', Rule::in(array_keys(\App\Models\Social\PageAdmin::ROLES))]],
-            ['manager.required' => 'Indiquez le téléphone ou l’e-mail du compte MX-CONNECT.']);
+            ['manager.required' => __('Indiquez le téléphone ou l’e-mail du compte MX-CONNECT.')]);
         $admin = \App\Services\Social\PageService::addManager($mutual, $data['manager'], $data['role']);
 
-        return redirect()->route('social-presence.profile')->with('success', $admin->account->name . ' peut publier au nom de la mutuelle sur le réseau social.');
+        return redirect()->route('social-presence.profile')->with('success', __(':name peut publier au nom de la mutuelle sur le réseau social.', ['name' => $admin->account->name]));
     }
 
     public function removeManager(Request $request, int $admin)
@@ -140,7 +140,7 @@ class SocialPresenceController extends Controller
         $mutual = $this->authorizeMutual($request);
         \App\Models\Social\PageAdmin::where('mutual_id', $mutual->id)->findOrFail($admin)->delete();
 
-        return redirect()->route('social-presence.profile')->with('success', 'Gestionnaire retiré.');
+        return redirect()->route('social-presence.profile')->with('success', __('Gestionnaire retiré.'));
     }
 
     // --- Publications ---
@@ -193,10 +193,10 @@ class SocialPresenceController extends Controller
         $newFiles = $request->file('images', []);
         $max = (int) config('mxconnect.social.max_images', 6);
         if ($remaining + count($newFiles) > $max) {
-            return back()->withInput()->withErrors(['images' => "Maximum {$max} images par publication."]);
+            return back()->withInput()->withErrors(['images' => __('Maximum :max images par publication.', ['max' => $max])]);
         }
         if (trim((string) $data['body']) === '' && $remaining + count($newFiles) === 0) {
-            return back()->withInput()->withErrors(['body' => 'Écrivez un message ou gardez au moins une image.']);
+            return back()->withInput()->withErrors(['body' => __('Écrivez un message ou gardez au moins une image.')]);
         }
 
         $stored = [];
@@ -219,7 +219,7 @@ class SocialPresenceController extends Controller
             $this->posts->setStatus($post, $data['status']);
         }
 
-        return redirect()->route('social-presence.index')->with('success', 'Publication mise à jour.');
+        return redirect()->route('social-presence.index')->with('success', __('Publication mise à jour.'));
     }
 
     public function status(Request $request, int $post)
@@ -227,10 +227,10 @@ class SocialPresenceController extends Controller
         $mutual = $this->authorizeMutual($request);
         $post = $this->ownPost($mutual, $post);
         $data = $request->validate(['status' => ['required', 'in:published,draft,archived']]);
-        abort_if($post->status === 'hidden', 403, 'Publication masquée par la modération du réseau.');
+        abort_if($post->status === 'hidden', 403, __('Publication masquée par la modération du réseau.'));
         $this->posts->setStatus($post, $data['status']);
 
-        return back()->with('success', 'Statut mis à jour.');
+        return back()->with('success', __('Statut mis à jour.'));
     }
 
     public function destroy(Request $request, int $post)
@@ -238,7 +238,7 @@ class SocialPresenceController extends Controller
         $mutual = $this->authorizeMutual($request);
         $this->posts->delete($this->ownPost($mutual, $post));
 
-        return redirect()->route('social-presence.index')->with('success', 'Publication supprimée.');
+        return redirect()->route('social-presence.index')->with('success', __('Publication supprimée.'));
     }
 
     /** Masquer un commentaire sous une publication de la mutuelle. */
@@ -251,7 +251,7 @@ class SocialPresenceController extends Controller
         $c->update(['status' => 'hidden']);
         $c->post->forceFill(['comments_count' => Comment::where('post_id', $c->post_id)->where('status', 'visible')->count()])->save();
 
-        return back()->with('success', 'Commentaire masqué.');
+        return back()->with('success', __('Commentaire masqué.'));
     }
 
     public function comments(Request $request, int $post)
@@ -281,7 +281,7 @@ class SocialPresenceController extends Controller
         $msg = ContactRequest::where('mutual_id', $mutual->id)->findOrFail($message);
         $msg->update($request->validate(['status' => ['required', 'in:new,read,closed']]));
 
-        return back()->with('success', 'Message mis à jour.');
+        return back()->with('success', __('Message mis à jour.'));
     }
 
     // --- Outils ---
@@ -318,9 +318,9 @@ class SocialPresenceController extends Controller
             'images.*'        => ['file', 'mimes:jpeg,jpg,png,webp,gif', 'max:' . $maxKb],
             'medical_ack'     => ['accepted'],
         ], [
-            'link_url.required_if'        => 'Indiquez le lien à partager.',
-            'event_starts_at.required_if' => 'Indiquez la date et l’heure de l’événement.',
-            'medical_ack.accepted'        => 'Confirmez que la publication ne contient aucune donnée médicale personnelle.',
+            'link_url.required_if'        => __('Indiquez le lien à partager.'),
+            'event_starts_at.required_if' => __('Indiquez la date et l’heure de l’événement.'),
+            'medical_ack.accepted'        => __('Confirmez que la publication ne contient aucune donnée médicale personnelle.'),
         ]);
         if ($post && $post->status === 'hidden') {
             $data['status'] = 'hidden';   // la modération du réseau garde la main

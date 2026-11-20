@@ -51,7 +51,7 @@ class PharmacyController extends Controller
             MutualSetting::put($k, isset($d[$k]) ? (string) $d[$k] : null, $request->user()->id);
         }
 
-        return back()->with('success', 'Politique pharmaceutique enregistrée.');
+        return back()->with('success', __('Politique pharmaceutique enregistrée.'));
     }
 
     /** Liste des médicaments pris en charge : enregistrée en une fois. */
@@ -76,7 +76,7 @@ class PharmacyController extends Controller
             }
         }
 
-        return back()->with('success', "Liste des médicaments enregistrée ({$n} modification(s)).");
+        return back()->with('success', __('Liste des médicaments enregistrée (:count modification(s)).', ['count' => $n]));
     }
 
     private function currency(): Currency

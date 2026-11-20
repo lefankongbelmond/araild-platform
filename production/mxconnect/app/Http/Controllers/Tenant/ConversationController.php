@@ -49,7 +49,7 @@ class ConversationController extends Controller
             $c->update(['status' => 'open']);
         }
 
-        return redirect()->to(route('conversations.show', $c->id) . '#fin')->with('success', 'Réponse envoyée.');
+        return redirect()->to(route('conversations.show', $c->id) . '#fin')->with('success', __('Réponse envoyée.'));
     }
 
     public function toggle(Request $request, int $conversation)
@@ -58,7 +58,7 @@ class ConversationController extends Controller
         $c = $this->find($mutual, $conversation);
         $c->update(['status' => $c->status === 'open' ? 'closed' : 'open']);
 
-        return back()->with('success', $c->status === 'closed' ? 'Conversation close.' : 'Conversation rouverte.');
+        return back()->with('success', $c->status === 'closed' ? __('Conversation close.') : __('Conversation rouverte.'));
     }
 
     private function find(Mutual $mutual, int $id): Conversation

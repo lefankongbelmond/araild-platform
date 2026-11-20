@@ -31,10 +31,10 @@ class ProviderSpaceGuard
             Auth::guard('provider')->logout();
             $request->session()->forget(['provider_mfa_passed', 'provider_membership']);
 
-            return redirect()->route('pro.login')->withErrors(['email' => 'Ce compte a été désactivé. Contactez l’administrateur de votre établissement.']);
+            return redirect()->route('pro.login')->withErrors(['email' => __('Ce compte a été désactivé. Contactez l’administrateur de votre établissement.')]);
         }
         if ($account->must_change_password) {
-            return redirect()->route('pro.password')->with('error', 'Choisissez votre mot de passe personnel avant de continuer.');
+            return redirect()->route('pro.password')->with('error', __('Choisissez votre mot de passe personnel avant de continuer.'));
         }
         if (! $account->mfa_enabled) {
             return redirect()->route('pro.mfa.enroll');
@@ -53,7 +53,7 @@ class ProviderSpaceGuard
         view()->share(['providerMembership' => $current, 'providerMemberships' => $memberships, 'providerAccount' => $account]);
 
         $route = (string) $request->route()?->getName();
-        abort_unless(ProviderAccess::canRoute($route, $current), 403, 'Cette rubrique n’est pas ouverte à votre rôle dans l’établissement. Demandez à son administrateur.');
+        abort_unless(ProviderAccess::canRoute($route, $current), 403, __('Cette rubrique n’est pas ouverte à votre rôle dans l’établissement. Demandez à son administrateur.'));
 
         return $next($request);
     }

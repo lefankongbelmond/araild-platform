@@ -59,7 +59,7 @@ class MemberCardController extends Controller
         $members = Member::whereIn('id', $ids)->where('status', 'active')
             ->with(['subscriptions' => fn ($s) => $s->where('status', 'validated')->latest('effective_date')->with('guaranteeVersion.guarantee')])
             ->orderBy('last_name')->get()->filter(fn ($m) => $m->subscriptions->isNotEmpty())->values();
-        abort_if($members->isEmpty(), 422, 'Aucune carte imprimable dans la sélection (adhérent actif avec souscription validée).');
+        abort_if($members->isEmpty(), 422, __('Aucune carte imprimable dans la sélection (adhérent actif avec souscription validée).'));
 
         return view('tenant.cards.batch', [
             'members' => $members,
@@ -73,6 +73,6 @@ class MemberCardController extends Controller
         $ids = array_map('intval', (array) $request->input('ids', []));
         $n = Member::whereIn('id', $ids)->update(['card_printed_at' => now()]);
 
-        return redirect()->route('cards.index')->with('success', $n . ' carte(s) marquée(s) comme imprimée(s).');
+        return redirect()->route('cards.index')->with('success', __(':count carte(s) marquée(s) comme imprimée(s).', ['count' => $n]));
     }
 }

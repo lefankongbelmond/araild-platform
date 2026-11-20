@@ -52,21 +52,21 @@ class CoverageExceptionController extends Controller
             'reason'              => ['required', 'string', 'min:5', 'max:160'],
             'justification'       => ['required', 'string', 'min:10', 'max:2000'],
         ], [
-            'member_code.required' => 'Indiquez le numéro d’adhérent.',
-            'amount.required' => 'Indiquez le montant du plafond supplémentaire.',
-            'reason.required' => 'Indiquez le motif de la dérogation.',
-            'justification.required' => 'Justifiez la dérogation (pièce, avis, contexte) : elle sera relue par une autre personne.',
-            'justification.min' => 'La justification est trop courte.',
+            'member_code.required' => __('Indiquez le numéro d’adhérent.'),
+            'amount.required' => __('Indiquez le montant du plafond supplémentaire.'),
+            'reason.required' => __('Indiquez le motif de la dérogation.'),
+            'justification.required' => __('Justifiez la dérogation (pièce, avis, contexte) : elle sera relue par une autre personne.'),
+            'justification.min' => __('La justification est trop courte.'),
         ]);
         $member = Member::where('member_code', trim($d['member_code']))->first();
         if (! $member) {
-            return back()->withInput()->withErrors(['member_code' => 'Aucun adhérent avec ce numéro.']);
+            return back()->withInput()->withErrors(['member_code' => __('Aucun adhérent avec ce numéro.')]);
         }
         if (! empty($d['dependent_id']) && ! $member->dependents()->whereKey($d['dependent_id'])->exists()) {
-            return back()->withInput()->withErrors(['dependent_id' => 'Cet ayant droit n’appartient pas à l’adhérent.']);
+            return back()->withInput()->withErrors(['dependent_id' => __('Cet ayant droit n’appartient pas à l’adhérent.')]);
         }
         if (empty($d['service_category_id']) && empty($d['act_type_id']) && $d['kind'] !== 'waiting_waiver') {
-            return back()->withInput()->withErrors(['service_category_id' => 'Précisez la catégorie de soins ou l’acte concerné.']);
+            return back()->withInput()->withErrors(['service_category_id' => __('Précisez la catégorie de soins ou l’acte concerné.')]);
         }
         CoverageException::create([
             'member_id' => $member->id, 'dependent_id' => $d['dependent_id'] ?? null, 'kind' => $d['kind'],
@@ -78,7 +78,7 @@ class CoverageExceptionController extends Controller
         ]);
 
         return redirect()->route('derogations.index', ['adherent' => $member->member_code])
-            ->with('success', 'Dérogation demandée. Elle n’a aucun effet tant qu’une autre personne ne l’a pas accordée.');
+            ->with('success', __('Dérogation demandée. Elle n’a aucun effet tant qu’une autre personne ne l’a pas accordée.'));
     }
 
     public function approve(Request $request, CoverageException $exception)
@@ -95,23 +95,23 @@ class CoverageExceptionController extends Controller
     public function revoke(Request $request, CoverageException $exception)
     {
         abort_unless($exception->status === 'approved', 422);
-        $d = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], ['note.required' => 'Indiquez le motif du retrait.']);
+        $d = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], ['note.required' => __('Indiquez le motif du retrait.')]);
         $exception->update(['status' => 'revoked', 'decision_note' => trim(($exception->decision_note ? $exception->decision_note . "\n" : '') . 'Retrait : ' . $d['note'])]);
 
-        return back()->with('success', 'Dérogation retirée.');
+        return back()->with('success', __('Dérogation retirée.'));
     }
 
     private function decide(Request $request, CoverageException $exception, string $to)
     {
         abort_unless($exception->status === 'requested', 422);
         if ((int) $exception->requested_by === (int) $request->user()->id) {
-            return back()->with('error', 'Vous avez demandé cette dérogation : une autre personne doit décider (contrôle « 4 yeux »).');
+            return back()->with('error', __('Vous avez demandé cette dérogation : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
         $d = $request->validate(['note' => [$to === 'rejected' ? 'required' : 'nullable', 'string', 'max:500']],
-            ['note.required' => 'Indiquez le motif du refus.']);
+            ['note.required' => __('Indiquez le motif du refus.')]);
         $exception->update(['status' => $to, 'decided_by' => $request->user()->id, 'decided_at' => now(), 'decision_note' => $d['note'] ?? null]);
 
-        return back()->with('success', $to === 'approved' ? 'Dérogation accordée.' : 'Dérogation refusée.');
+        return back()->with('success', $to === 'approved' ? __('Dérogation accordée.') : __('Dérogation refusée.'));
     }
 
     private function currency(): Currency

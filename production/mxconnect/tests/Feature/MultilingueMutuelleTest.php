@@ -91,6 +91,34 @@ it('traduit le reste du back-office (M3b) : écrans métier et vocabulaire', fun
         ->assertDontSee('Forbidden');
 });
 
+it('renvoie les messages du serveur (validation, refus métier) dans la langue de la mutuelle (M3c)', function () {
+    $h = $this->host;
+    $this->mutual->forceFill(['locale_id' => Locale::where('code', 'pt')->value('id')])->save();
+
+    // Message de validation d'un contrôleur du back-office.
+    asAdmin()->from($h . '/mon-mot-de-passe')->post($h . '/mon-mot-de-passe', [
+        'current_password' => 'x', 'password' => 'Abcdefgh12', 'password_confirmation' => 'Autre1234567',
+    ])->assertSessionHasErrors(['password' => 'As duas novas palavras-passe não coincidem.']);
+
+    // Refus métier levé par un service (AccountingRefusal), avec une valeur insérée dans la phrase.
+    $msg = $this->mutual->run(function () {
+        app()->setLocale('pt');
+        $m = Member::create(['member_code' => 'MUT-M3C', 'first_name' => 'Ana', 'last_name' => 'Teste',
+            'birth_date' => '1990-01-01', 'sex' => 'F', 'status' => 'active', 'joined_at' => '2026-01-01']);
+        try {
+            app(\App\Services\Tenant\ContributionCollectionService::class)->collect($m, 0, now()->toDateString(), 'cash', null, 1);
+        } catch (\App\Services\AccountingRefusal $e) {
+            return $e->getMessage();
+        } finally {
+            app()->setLocale('fr');
+        }
+
+        return null;
+    });
+    expect($msg)->toBe('O montante deve ser superior a zero.');
+    expect(__('L’exercice :year est clôturé.', ['year' => 2025], 'ar'))->toBe('السنة المالية 2025 مُقفلة.');
+});
+
 it('fournit dans chaque langue le vocabulaire (mxconnect.*) employé par le back-office', function () {
     $keys = [];
     $files = array_merge(

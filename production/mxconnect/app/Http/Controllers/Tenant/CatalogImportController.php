@@ -45,7 +45,7 @@ class CatalogImportController extends Controller
         abort_unless($request->user()?->can('manage-parameters'), 403);
         $codes = array_values(array_filter((array) $request->input('codes', []), 'is_string'));
         if (! $codes) {
-            return back()->with('error', 'Cochez au moins un élément à importer.');
+            return back()->with('error', __('Cochez au moins un élément à importer.'));
         }
         $currency = $this->currency();
         $added = 0;
@@ -103,8 +103,8 @@ class CatalogImportController extends Controller
         });
 
         $target = ['actes' => 'act-types.index', 'medicaments' => 'medicines.index', 'garanties' => 'guarantees.index'][$kind];
-        $note = $kind === 'medicaments' && $added ? ' Renseignez maintenant les prix de référence (affichés « à renseigner »).' : '';
+        $note = $kind === 'medicaments' && $added ? ' ' . __('Renseignez maintenant les prix de référence (affichés « à renseigner »).') : '';
 
-        return redirect()->route($target)->with('success', $added . ' élément(s) importé(s) depuis la liste de référence.' . $note);
+        return redirect()->route($target)->with('success', __(':count élément(s) importé(s) depuis la liste de référence.', ['count' => $added]) . $note);
     }
 }

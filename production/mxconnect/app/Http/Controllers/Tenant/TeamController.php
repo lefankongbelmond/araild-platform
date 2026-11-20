@@ -66,7 +66,7 @@ class TeamController extends Controller
         $data = $request->validate($this->rules(false), $this->messages());
         $this->team->update($member, $data, $data['roles'] ?? [], $request->user());
 
-        return redirect()->route('team.index')->with('success', "Fiche de {$member->name} mise à jour.");
+        return redirect()->route('team.index')->with('success', __('Fiche de :name mise à jour.', ['name' => $member->name]));
     }
 
     public function toggle(Request $request, int $user)
@@ -75,18 +75,18 @@ class TeamController extends Controller
         $member = User::findOrFail($user);
         $this->team->setActive($member, ! $member->active, $request->user());
 
-        return back()->with('success', $member->active ? "{$member->name} peut de nouveau se connecter." : "Le compte de {$member->name} est désactivé : il ne peut plus se connecter.");
+        return back()->with('success', $member->active ? __(':name peut de nouveau se connecter.', ['name' => $member->name]) : __('Le compte de :name est désactivé : il ne peut plus se connecter.', ['name' => $member->name]));
     }
 
     public function resetPassword(Request $request, int $user)
     {
         $this->authorizeAdmin($request);
         $member = User::findOrFail($user);
-        abort_if($member->is($request->user()), 422, 'Changez votre propre mot de passe depuis « Mon mot de passe ».');
+        abort_if($member->is($request->user()), 422, __('Changez votre propre mot de passe depuis « Mon mot de passe ».'));
         $password = $this->team->resetPassword($member);
 
         return back()->with('team_password', [$member->name, $member->email, $password])
-            ->with('success', "Nouveau mot de passe provisoire pour {$member->name}.");
+            ->with('success', __('Nouveau mot de passe provisoire pour :name.', ['name' => $member->name]));
     }
 
     public function resetMfa(Request $request, int $user)
@@ -126,7 +126,7 @@ class TeamController extends Controller
 
     private function messages(): array
     {
-        return ['roles.required' => 'Choisissez au moins un rôle.', 'email.prohibited' => 'L’adresse e-mail d’un compte ne se modifie pas : créez un nouveau compte.'];
+        return ['roles.required' => __('Choisissez au moins un rôle.'), 'email.prohibited' => __('L’adresse e-mail d’un compte ne se modifie pas : créez un nouveau compte.')];
     }
 
     /** Prestataires conventionnés (pour rattacher un compte « Prestataire de soins »). */

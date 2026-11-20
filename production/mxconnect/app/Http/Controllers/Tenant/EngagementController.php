@@ -65,7 +65,7 @@ class EngagementController extends Controller
         $data = $request->validate(['status' => ['required', 'in:in_review,accepted,rejected,closed'], 'note' => ['nullable', 'string', 'max:2000']]);
         $this->requests->decide($r, $data['status'], $data['note'] ?? null, $request->user()->name . ' (' . $mutual->name . ')');
 
-        return back()->with('success', 'Demande mise à jour : ' . SocialRequest::STATUSES[$data['status']] . '.');
+        return back()->with('success', __('Demande mise à jour : :status.', ['status' => __(SocialRequest::STATUSES[$data['status']])]));
     }
 
     public function cv(Request $request, string $reference)
@@ -90,7 +90,7 @@ class EngagementController extends Controller
         $data = $request->validate(ProjectService::projectRules() + ['medical_ack' => ['accepted']], ProjectService::projectMessages());
         $p = $this->projects->saveProject($mutual, $data, $request->file('cover'), null, null, $request->user()->id, $request->user()->name);
 
-        return redirect()->route('engagement.projects.edit', $p->id)->with('success', 'Projet enregistré. Ajoutez maintenant ses résultats chiffrés.');
+        return redirect()->route('engagement.projects.edit', $p->id)->with('success', __('Projet enregistré. Ajoutez maintenant ses résultats chiffrés.'));
     }
 
     public function editProject(Request $request, int $project)
@@ -107,7 +107,7 @@ class EngagementController extends Controller
         $data = $request->validate(ProjectService::projectRules() + ['medical_ack' => ['accepted']], ProjectService::projectMessages());
         $this->projects->saveProject($mutual, $data, $request->file('cover'), $p, null, $request->user()->id, $request->user()->name);
 
-        return redirect()->route('engagement.projects.edit', $p->id)->with('success', 'Projet mis à jour.');
+        return redirect()->route('engagement.projects.edit', $p->id)->with('success', __('Projet mis à jour.'));
     }
 
     public function destroyProject(Request $request, int $project)
@@ -115,7 +115,7 @@ class EngagementController extends Controller
         $mutual = $this->authorizeMutual($request);
         $this->projects->deleteProject($this->project($mutual, $project));
 
-        return redirect()->route('engagement.index', ['onglet' => 'projets'])->with('success', 'Projet supprimé.');
+        return redirect()->route('engagement.index', ['onglet' => 'projets'])->with('success', __('Projet supprimé.'));
     }
 
     public function storeIndicator(Request $request, int $project)
@@ -124,7 +124,7 @@ class EngagementController extends Controller
         $p = $this->project($mutual, $project);
         $this->projects->saveIndicator($p, $request->validateWithBag('indicator', ProjectService::indicatorRules()));
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', 'Résultat ajouté (déclaré par la mutuelle).');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', __('Résultat ajouté (déclaré par la mutuelle).'));
     }
 
     public function updateIndicator(Request $request, int $project, int $indicator)
@@ -134,7 +134,7 @@ class EngagementController extends Controller
         $i = ProjectIndicator::where('project_id', $p->id)->findOrFail($indicator);
         $this->projects->saveIndicator($p, $request->validateWithBag('indicator', ProjectService::indicatorRules()), $i);
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', 'Résultat mis à jour.');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', __('Résultat mis à jour.'));
     }
 
     public function destroyIndicator(Request $request, int $project, int $indicator)
@@ -143,7 +143,7 @@ class EngagementController extends Controller
         $p = $this->project($mutual, $project);
         ProjectIndicator::where('project_id', $p->id)->findOrFail($indicator)->delete();
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', 'Résultat supprimé.');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#resultats')->with('success', __('Résultat supprimé.'));
     }
 
     public function storeUpdate(Request $request, int $project)
@@ -155,7 +155,7 @@ class EngagementController extends Controller
         ]);
         $this->projects->addUpdate($p, $data['update_title'], $data['update_body'], (bool) ($data['announce'] ?? false), $mutual, null, $request->user()->id, $request->user()->name);
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#actualites')->with('success', 'Actualité du projet publiée.');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#actualites')->with('success', __('Actualité du projet publiée.'));
     }
 
     public function storeDocuments(Request $request, int $project)
@@ -163,14 +163,14 @@ class EngagementController extends Controller
         $mutual = $this->authorizeMutual($request);
         $p = $this->project($mutual, $project);
         $data = $request->validateWithBag('docs', array_merge(\App\Services\Social\DocumentService::rules(\App\Services\Social\DocumentService::MAX_PER_PROJECT), ['documents' => ['required', 'array', 'max:5']]),
-            \App\Services\Social\DocumentService::messages() + ['documents.required' => 'Choisissez au moins un fichier PDF.']);
+            \App\Services\Social\DocumentService::messages() + ['documents.required' => __('Choisissez au moins un fichier PDF.')]);
         \App\Services\Social\DocumentService::requireConsent($request, 'docs');
         if ($p->documents()->count() + count($data['documents']) > \App\Services\Social\DocumentService::MAX_PER_PROJECT) {
-            return back()->withErrors(['documents' => \App\Services\Social\DocumentService::MAX_PER_PROJECT . ' documents maximum par projet.'], 'docs');
+            return back()->withErrors(['documents' => __(':count documents maximum par projet.', ['count' => \App\Services\Social\DocumentService::MAX_PER_PROJECT])], 'docs');
         }
         app(\App\Services\Social\DocumentService::class)->store($mutual, $data['documents'], $data['document_titles'] ?? [], ['project_id' => $p->id], null, $request->user()->id);
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', 'Document(s) ajouté(s) au projet.');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', __('Document(s) ajouté(s) au projet.'));
     }
 
     public function destroyDocument(Request $request, int $project, int $document)
@@ -179,7 +179,7 @@ class EngagementController extends Controller
         $p = $this->project($mutual, $project);
         app(\App\Services\Social\DocumentService::class)->delete(\App\Models\Social\Document::where('project_id', $p->id)->findOrFail($document));
 
-        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', 'Document supprimé.');
+        return redirect()->to(route('engagement.projects.edit', $p->id) . '#documents')->with('success', __('Document supprimé.'));
     }
 
     // --- Opportunités ---
@@ -199,7 +199,7 @@ class EngagementController extends Controller
         $data = $request->validate(ProjectService::opportunityRules(), ProjectService::opportunityMessages());
         $this->projects->saveOpportunity($mutual, $data, null, null, $request->user()->id, $request->user()->name);
 
-        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', 'Offre enregistrée.');
+        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', __('Offre enregistrée.'));
     }
 
     public function editOpportunity(Request $request, int $opportunity)
@@ -216,7 +216,7 @@ class EngagementController extends Controller
         $data = $request->validate(ProjectService::opportunityRules(), ProjectService::opportunityMessages());
         $this->projects->saveOpportunity($mutual, $data, $o, null, $request->user()->id, $request->user()->name);
 
-        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', 'Offre mise à jour.');
+        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', __('Offre mise à jour.'));
     }
 
     public function availability(Request $request, int $opportunity)
@@ -225,7 +225,7 @@ class EngagementController extends Controller
         $data = $request->validate(['availability' => ['required', 'in:' . implode(',', array_keys(Opportunity::AVAILABILITIES))]]);
         $this->projects->setAvailability($this->opportunity($mutual, $opportunity), $data['availability']);
 
-        return back()->with('success', 'Statut de l’offre mis à jour.');
+        return back()->with('success', __('Statut de l’offre mis à jour.'));
     }
 
     public function destroyOpportunity(Request $request, int $opportunity)
@@ -233,7 +233,7 @@ class EngagementController extends Controller
         $mutual = $this->authorizeMutual($request);
         $this->opportunity($mutual, $opportunity)->delete();
 
-        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', 'Offre supprimée.');
+        return redirect()->route('engagement.index', ['onglet' => 'opportunites'])->with('success', __('Offre supprimée.'));
     }
 
     // ---

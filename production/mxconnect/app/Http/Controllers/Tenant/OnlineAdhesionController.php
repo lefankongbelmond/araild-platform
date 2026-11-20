@@ -61,7 +61,7 @@ class OnlineAdhesionController extends Controller
         }
         $this->adhesions->decide($r, $data['status'], $data['note'] ?? null, $request->user()->id, $request->user()->name);
 
-        return back()->with('success', 'Dossier mis à jour : ' . AdhesionRequest::STATUSES[$data['status']] . '.');
+        return back()->with('success', __('Dossier mis à jour : :status.', ['status' => __(AdhesionRequest::STATUSES[$data['status']])]));
     }
 
     public function document(Request $request, string $reference, int $document)
@@ -77,7 +77,7 @@ class OnlineAdhesionController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
         $r = $this->find($mutual, $reference);
-        abort_unless($r->status === 'accepted', 422, 'Acceptez d’abord la demande.');
+        abort_unless($r->status === 'accepted', 422, __('Acceptez d’abord la demande.'));
         abort_unless($request->user()->hasAnyRole(['enrollment_agent', 'mutual_admin']), 403);
 
         return redirect()->route('members.create')->withInput([
@@ -85,7 +85,7 @@ class OnlineAdhesionController extends Controller
             'birth_date' => $r->birth_date->toDateString(), 'sex' => $r->sex,
             'phone' => $r->phone, 'id_document' => $r->id_document_number,
             'address' => trim(collect([$r->address, $r->city])->filter()->implode(', ')),
-        ])->with('success', "Fiche préremplie depuis le dossier {$r->reference}. Vérifiez puis enregistrez, puis reliez le compte depuis le dossier.");
+        ])->with('success', __('Fiche préremplie depuis le dossier :ref. Vérifiez puis enregistrez, puis reliez le compte depuis le dossier.', ['ref' => $r->reference]));
     }
 
     /** Relie le compte du demandeur à une fiche adhérent existante (accès à l'espace adhérent). */
@@ -93,17 +93,17 @@ class OnlineAdhesionController extends Controller
     {
         $mutual = $this->authorizeMutual($request);
         $r = $this->find($mutual, $reference);
-        abort_unless($r->status === 'accepted', 422, 'Acceptez d’abord la demande.');
+        abort_unless($r->status === 'accepted', 422, __('Acceptez d’abord la demande.'));
         abort_unless($request->user()->hasAnyRole(['enrollment_agent', 'mutual_admin']), 403);
         $data = $request->validate(['member_code' => ['required', 'string', 'max:40']]);
 
         $member = Member::where('member_code', trim($data['member_code']))->first();
         if (! $member) {
-            return back()->withErrors(['member_code' => 'Aucun adhérent avec ce code dans votre mutuelle.']);
+            return back()->withErrors(['member_code' => __('Aucun adhérent avec ce code dans votre mutuelle.')]);
         }
         $existing = MemberLink::where('public_account_id', $r->public_account_id)->where('mutual_id', $mutual->id)->first();
         if ($existing && (int) $existing->member_id !== (int) $member->id) {
-            return back()->withErrors(['member_code' => 'Ce compte est déjà relié à une autre fiche (' . $existing->member_code . ').']);
+            return back()->withErrors(['member_code' => __('Ce compte est déjà relié à une autre fiche (:code).', ['code' => $existing->member_code])]);
         }
         MemberLink::updateOrCreate(
             ['public_account_id' => $r->public_account_id, 'mutual_id' => $mutual->id],
@@ -114,7 +114,7 @@ class OnlineAdhesionController extends Controller
             \App\Support\Msg::of('Votre compte est relié à votre fiche adhérent chez :name', ['name' => $mutual->name]), \App\Support\Msg::of('Numéro d’adhérent : :code', ['code' => $member->member_code]),
             '/compte/adhesions/' . $r->reference);
 
-        return back()->with('success', "Compte relié à la fiche {$member->member_code}.");
+        return back()->with('success', __('Compte relié à la fiche :code.', ['code' => $member->member_code]));
     }
 
     private function find(Mutual $mutual, string $reference): AdhesionRequest

@@ -29,7 +29,7 @@ class TestEnvironmentController extends Controller
             'note'     => ['required', 'string', 'min:5', 'max:300'],
             'formulas' => ['nullable', 'boolean'],
             'examples' => ['nullable', 'boolean'],
-        ], ['confirm.required' => 'Saisissez l’identifiant de la mutuelle pour confirmer.', 'note.required' => 'Indiquez le motif.']);
+        ], ['confirm.required' => __('Saisissez l’identifiant de la mutuelle pour confirmer.'), 'note.required' => __('Indiquez le motif.')]);
         $user = $request->user();
         try {
             $r = $resets->reset(tenant(), $data['confirm'], $data['note'], ['formulas' => (bool) ($data['formulas'] ?? false), 'examples' => (bool) ($data['examples'] ?? false)],
@@ -38,7 +38,7 @@ class TestEnvironmentController extends Controller
             return back()->withErrors(['confirm' => $e->getMessage()])->withInput();
         }
 
-        return redirect()->route('test-env.index')->with('success', "Données de test réinitialisées : {$r['deleted']} ligne(s) effacée(s)"
-            . ($r['examples'] ? ", {$r['examples']} formule(s) d’exemple rechargée(s)" : '') . ". Sauvegarde préalable : {$r['backup']}.");
+        return redirect()->route('test-env.index')->with('success', __('Données de test réinitialisées : :count ligne(s) effacée(s)', ['count' => $r['deleted']])
+            . ($r['examples'] ? __(', :count formule(s) d’exemple rechargée(s)', ['count' => $r['examples']]) : '') . '. ' . __('Sauvegarde préalable : :file.', ['file' => $r['backup']]));
     }
 }

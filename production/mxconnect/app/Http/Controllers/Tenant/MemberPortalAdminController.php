@@ -26,14 +26,14 @@ class MemberPortalAdminController extends Controller
         $c = $this->portal->issueCode((string) tenant('id'), $member->id, $request->user()->id);
 
         return back()->with('portal_code', ['code' => $c['code'], 'expires' => $c['expires_at']->format('d/m/Y')])
-            ->with('success', 'Code d’activation créé : remettez-le à l’adhérent. Il ne sera plus affiché.');
+            ->with('success', __('Code d’activation créé : remettez-le à l’adhérent. Il ne sera plus affiché.'));
     }
 
     public function revoke(Request $request, Member $member)
     {
         $n = $this->portal->revoke((string) tenant('id'), $member->id);
 
-        return back()->with('success', $n ? 'Accès au portail retiré : le compte MX-CONNECT n’est plus relié à cette fiche.' : 'Aucun accès à retirer.');
+        return back()->with('success', $n ? __('Accès au portail retiré : le compte MX-CONNECT n’est plus relié à cette fiche.') : __('Aucun accès à retirer.'));
     }
 
     public function index(Request $request)
@@ -52,7 +52,7 @@ class MemberPortalAdminController extends Controller
         abort_unless($memberRequest->status === 'requested', 422);
         $d = $request->validate(['decision' => ['required', 'in:approved,rejected'], 'note' => ['nullable', 'string', 'max:500']]);
         if ($d['decision'] === 'rejected' && blank($d['note'] ?? null)) {
-            return back()->with('error', 'Indiquez le motif du refus : il est communiqué à l’adhérent.');
+            return back()->with('error', __('Indiquez le motif du refus : il est communiqué à l’adhérent.'));
         }
         DB::transaction(function () use ($memberRequest, $d, $request) {
             if ($d['decision'] === 'approved') {
@@ -64,7 +64,7 @@ class MemberPortalAdminController extends Controller
         MemberNotifier::notify($memberRequest->member_id, $d['decision'] === 'approved' ? \App\Support\Msg::of(':kind : acceptée', ['kind' => ['__' => $label]]) : \App\Support\Msg::of(':kind : refusée', ['kind' => ['__' => $label]]),
             $d['decision'] === 'rejected' ? \App\Support\Msg::of('Motif : :note', ['note' => $d['note']]) : null, $memberRequest->kind === 'contact' ? 'profil' : 'beneficiaires');
 
-        return back()->with('success', $d['decision'] === 'approved' ? 'Demande acceptée et appliquée.' : 'Demande refusée.');
+        return back()->with('success', $d['decision'] === 'approved' ? __('Demande acceptée et appliquée.') : __('Demande refusée.'));
     }
 
     private function apply(MemberChangeRequest $r): void

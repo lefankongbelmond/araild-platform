@@ -54,19 +54,19 @@ class ContributionCollectionService
     {
         $day = Carbon::parse($date)->startOfDay();
         if ($amountMinor <= 0) {
-            $this->refuse('Le montant doit être supérieur à zéro.');
+            $this->refuse(__('Le montant doit être supérieur à zéro.'));
         }
         if (! array_key_exists($mode, self::TREASURY_MODE)) {
-            $this->refuse('Mode d’encaissement inconnu.');
+            $this->refuse(__('Mode d’encaissement inconnu.'));
         }
         if ($day->gt(now()->startOfDay())) {
-            $this->refuse('La date d’encaissement ne peut pas être dans le futur.');
+            $this->refuse(__('La date d’encaissement ne peut pas être dans le futur.'));
         }
         if ($this->accounting->isYearClosed((int) $day->year)) {
-            $this->refuse("L’exercice {$day->year} est clôturé : choisissez une date dans un exercice ouvert.");
+            $this->refuse(__('L’exercice :year est clôturé : choisissez une date dans un exercice ouvert.', ['year' => $day->year]));
         }
         if (AccountingDay::whereDate('day', $day->toDateString())->first()?->isClosed()) {
-            $this->refuse('La journée du ' . $day->format('d/m/Y') . ' est arrêtée (arrêté de caisse) : choisissez une autre date.');
+            $this->refuse(__('La journée du :date est arrêtée (arrêté de caisse) : choisissez une autre date.', ['date' => $day->format('d/m/Y')]));
         }
 
         $open = $this->openSchedules($member)
@@ -74,10 +74,10 @@ class ContributionCollectionService
             ->filter(fn (ContributionSchedule $s) => $s->remainingMinor() > 0)->values();
         $due = $open->sum(fn (ContributionSchedule $s) => $s->remainingMinor());
         if ($due === 0) {
-            $this->refuse('Aucune échéance à régler pour cet adhérent. Actualisez les échéanciers pour encaisser une période à venir.');
+            $this->refuse(__('Aucune échéance à régler pour cet adhérent. Actualisez les échéanciers pour encaisser une période à venir.'));
         }
         if ($amountMinor > $due) {
-            $this->refuse('Le montant dépasse le reste à payer (' . $this->currency()->format($due) . ').');
+            $this->refuse(__('Le montant dépasse le reste à payer (:amount).', ['amount' => $this->currency()->format($due)]));
         }
 
         return DB::transaction(function () use ($member, $amountMinor, $day, $mode, $reference, $userId, $open) {
@@ -132,10 +132,10 @@ class ContributionCollectionService
     {
         $payments = ContributionPayment::where('collection_ref', $collectionRef)->with('schedule.subscription')->get();
         if ($payments->isEmpty()) {
-            $this->refuse('Encaissement introuvable ou déjà annulé.');
+            $this->refuse(__('Encaissement introuvable ou déjà annulé.'));
         }
         if (CollectionCancellation::where('collection_ref', $collectionRef)->where('status', 'pending')->exists()) {
-            $this->refuse('Une demande d’annulation de cet encaissement attend déjà une décision.');
+            $this->refuse(__('Une demande d’annulation de cet encaissement attend déjà une décision.'));
         }
 
         return CollectionCancellation::create([
@@ -149,10 +149,10 @@ class ContributionCollectionService
         $this->assertDecidable($c, $userId);
         $today = now()->startOfDay();
         if ($this->accounting->isYearClosed((int) $today->year)) {
-            $this->refuse("L’exercice {$today->year} est clôturé.");
+            $this->refuse(__('L’exercice :year est clôturé.', ['year' => $today->year]));
         }
         if (AccountingDay::whereDate('day', $today->toDateString())->first()?->isClosed()) {
-            $this->refuse('La journée d’aujourd’hui est arrêtée (arrêté de caisse) : l’annulation sera possible demain.');
+            $this->refuse(__('La journée d’aujourd’hui est arrêtée (arrêté de caisse) : l’annulation sera possible demain.'));
         }
 
         DB::transaction(function () use ($c, $userId, $today) {
@@ -187,10 +187,10 @@ class ContributionCollectionService
     private function assertDecidable(CollectionCancellation $c, int $userId): void
     {
         if ($c->status !== 'pending') {
-            $this->refuse('Cette demande a déjà été décidée.');
+            $this->refuse(__('Cette demande a déjà été décidée.'));
         }
         if ((int) $c->requested_by === $userId) {
-            $this->refuse('Vous avez demandé cette annulation : une autre personne doit décider (contrôle « 4 yeux »).');
+            $this->refuse(__('Vous avez demandé cette annulation : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
     }
 

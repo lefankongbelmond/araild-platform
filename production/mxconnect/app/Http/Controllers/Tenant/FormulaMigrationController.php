@@ -54,7 +54,7 @@ class FormulaMigrationController extends Controller
             'member_ids' => ['required', 'array', 'min:1'],
             'member_ids.*' => ['integer'],
             'note' => ['required', 'string', 'min:5', 'max:1000'],
-        ], ['member_ids.required' => 'Cochez au moins un adhérent.', 'note.required' => 'Indiquez le motif du changement.']);
+        ], ['member_ids.required' => __('Cochez au moins un adhérent.'), 'note.required' => __('Indiquez le motif du changement.')]);
         $data['member_ids'] = array_values(array_unique(array_map('intval', $data['member_ids'])));
         try {
             $mig = $this->service->request($data, $request->user());
@@ -62,7 +62,7 @@ class FormulaMigrationController extends Controller
             return back()->withInput()->withErrors(['note' => $e->getMessage()]);
         }
 
-        return redirect()->route('formula-migrations.show', $mig)->with('success', "Demande {$mig->reference} enregistrée : une autre personne doit la valider.");
+        return redirect()->route('formula-migrations.show', $mig)->with('success', __('Demande :ref enregistrée : une autre personne doit la valider.', ['ref' => $mig->reference]));
     }
 
     public function show(FormulaMigration $migration)

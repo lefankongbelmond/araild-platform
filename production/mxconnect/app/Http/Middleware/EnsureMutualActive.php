@@ -21,7 +21,7 @@ class EnsureMutualActive
             return $next($request);
         }
 
-        $message = 'L’espace de cette mutuelle est suspendu par l’administration du réseau MX-CONNECT. Les données sont conservées.';
+        $message = __('L’espace de cette mutuelle est suspendu par l’administration du réseau MX-CONNECT. Les données sont conservées.');
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json(['message' => $message, 'suspended' => true], 403);
         }

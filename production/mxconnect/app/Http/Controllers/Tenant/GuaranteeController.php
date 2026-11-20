@@ -87,15 +87,15 @@ class GuaranteeController extends Controller
             'effective_from' => $current->locked
                 ? ['required', 'date', 'after_or_equal:today', 'after:' . $current->valid_from->toDateString()] : ['nullable'],
         ], [
-            'providers.required'  => 'Cochez au moins un prestataire, ou choisissez « Tous les prestataires ».',
-            'providers.*.in'      => 'Seuls les prestataires conventionnés peuvent faire partie du réseau.',
-            'effective_from.after' => 'La nouvelle version doit commencer après le début de la version en cours.',
+            'providers.required'  => __('Cochez au moins un prestataire, ou choisissez « Tous les prestataires ».'),
+            'providers.*.in'      => __('Seuls les prestataires conventionnés peuvent faire partie du réseau.'),
+            'effective_from.after' => __('La nouvelle version doit commencer après le début de la version en cours.'),
         ]);
 
         $version = $this->versioning->setNetwork($guarantee, $data['mode'] === 'list' ? $data['providers'] : null, $data['effective_from'] ?? null);
 
         return redirect()->route('guarantees.show', $guarantee)->with('success', $version->is($current)
-            ? 'Réseau de soins mis à jour.'
+            ? __('Réseau de soins mis à jour.')
             : "Réseau de soins enregistré dans la version V{$version->version_no}, applicable à partir du {$version->valid_from->format('d/m/Y')} (la version précédente, déjà utilisée par des recours, reste inchangée).");
     }
 
@@ -136,8 +136,8 @@ class GuaranteeController extends Controller
             'effective_from'           => $current->locked
                 ? ['required', 'date', 'after_or_equal:today', 'after:' . $current->valid_from->toDateString()] : ['nullable'],
         ], [
-            'ceilings.*.amount.numeric' => 'Le montant d’un plafond doit être un nombre.',
-            'effective_from.after'      => 'La nouvelle version doit commencer après le début de la version en cours.',
+            'ceilings.*.amount.numeric' => __('Le montant d’un plafond doit être un nombre.'),
+            'effective_from.after'      => __('La nouvelle version doit commencer après le début de la version en cours.'),
         ]);
 
         $cur = $this->currency();
@@ -148,7 +148,7 @@ class GuaranteeController extends Controller
             }
             $key = ($c['act_type_id'] ?? 0) . '|' . $c['period'];
             if (isset($ceilings[$key])) {
-                return back()->withInput()->withErrors(['ceilings' => 'Deux plafonds identiques (même acte, même période) : gardez-en un seul.']);
+                return back()->withInput()->withErrors(['ceilings' => __('Deux plafonds identiques (même acte, même période) : gardez-en un seul.')]);
             }
             $ceilings[$key] = ['act_type_id' => isset($c['act_type_id']) ? (int) $c['act_type_id'] : null,
                 'ceiling_minor' => $cur->toMinor((float) $c['amount']), 'period' => $c['period']];
@@ -157,7 +157,7 @@ class GuaranteeController extends Controller
         $version = $this->versioning->setTerms($guarantee, $data['exclusions'] ?? [], array_values($ceilings), $data['effective_from'] ?? null);
 
         return redirect()->route('guarantees.show', $guarantee)->with('success', $version->is($current)
-            ? 'Plafonds et exclusions enregistrés.'
+            ? __('Plafonds et exclusions enregistrés.')
             : "Plafonds et exclusions enregistrés dans la version V{$version->version_no}, applicable à partir du {$version->valid_from->format('d/m/Y')} (la version précédente, déjà utilisée par des recours, reste inchangée).");
     }
 

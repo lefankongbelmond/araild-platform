@@ -18,7 +18,7 @@ class PrestationController extends Controller
     public function store(PrestationRequest $request, CareClaim $claim)
     {
         $data = $request->validated();
-        abort_unless($this->capture->versionFor($claim->member, $data['care_date']), 422, 'No applicable guarantee version');
+        abort_unless($this->capture->versionFor($claim->member, $data['care_date']), 422, __('Aucune garantie applicable à la date des soins.'));
 
         $result = $this->capture->capture($claim, [
             'act_type_id' => (int) $data['act_type_id'],
@@ -47,11 +47,11 @@ class PrestationController extends Controller
         abort_unless($prestation->care_claim_id === $claim->id, 404);
         abort_unless($prestation->status === 'captured', 422);
         if ($prestation->isCapturedBy($request->user())) {
-            return back()->with('error', 'Vous avez saisi cette prestation : une autre personne doit la valider (contrôle « 4 yeux »).');
+            return back()->with('error', __('Vous avez saisi cette prestation : une autre personne doit la valider (contrôle « 4 yeux »).'));
         }
         // Urgence soignée sans accord préalable (2026-11-19) : validation après la décision sur la régularisation.
         if ($prestation->authorization_missing && \App\Models\Tenant\Preauthorization::where('prestation_id', $prestation->id)->where('status', 'requested')->exists()) {
-            return back()->with('error', 'Urgence soignée sans accord préalable : la demande de régularisation doit d’abord être examinée (Accords préalables).');
+            return back()->with('error', __('Urgence soignée sans accord préalable : la demande de régularisation doit d’abord être examinée (Accords préalables).'));
         }
 
         $prestation->update(['status' => 'validated'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
@@ -72,12 +72,12 @@ class PrestationController extends Controller
         abort_unless($prestation->care_claim_id === $claim->id, 404);
         abort_unless($prestation->status === 'captured', 422);
         if ($prestation->isCapturedBy($request->user())) {
-            return back()->with('error', 'Vous avez saisi cette prestation : une autre personne doit décider (contrôle « 4 yeux »).');
+            return back()->with('error', __('Vous avez saisi cette prestation : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
         // Motif obligatoire (2026-11-15) : il est montré au prestataire dans « Mes prises en charge ».
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], [
-            'note.required' => 'Indiquez le motif du rejet : il sera communiqué au prestataire.',
-            'note.min'      => 'Le motif du rejet est trop court.',
+            'note.required' => __('Indiquez le motif du rejet : il sera communiqué au prestataire.'),
+            'note.min'      => __('Le motif du rejet est trop court.'),
         ]);
         $prestation->update(['status' => 'rejected'] + (Prestation::hasTraceColumns() ? ['validated_by' => $request->user()->id] : [])
             + (Prestation::hasDecisionColumns() ? ['decision_note' => trim($data['note']), 'decided_at' => now()] : []));

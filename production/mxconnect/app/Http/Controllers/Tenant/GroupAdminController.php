@@ -48,7 +48,7 @@ class GroupAdminController extends Controller
         $this->cover($request, $group, $mutual);
         $group->save();
 
-        return redirect()->route('social-groups.index')->with('success', "Groupe « {$group->name} » créé.");
+        return redirect()->route('social-groups.index')->with('success', __('Groupe « :name » créé.', ['name' => $group->name]));
     }
 
     public function edit(Request $request, int $group)
@@ -66,7 +66,7 @@ class GroupAdminController extends Controller
         $this->cover($request, $g, $mutual);
         $g->save();
 
-        return redirect()->route('social-groups.index')->with('success', 'Groupe mis à jour.');
+        return redirect()->route('social-groups.index')->with('success', __('Groupe mis à jour.'));
     }
 
     public function archive(Request $request, int $group)
@@ -75,7 +75,7 @@ class GroupAdminController extends Controller
         $g = $this->own($mutual, $group);
         $g->update(['status' => $g->status === 'active' ? 'archived' : 'active']);
 
-        return back()->with('success', $g->status === 'archived' ? 'Groupe archivé (lecture seule).' : 'Groupe réactivé.');
+        return back()->with('success', $g->status === 'archived' ? __('Groupe archivé (lecture seule).') : __('Groupe réactivé.'));
     }
 
     public function members(Request $request, int $group)
@@ -106,7 +106,7 @@ class GroupAdminController extends Controller
         }
         $g->refreshCounters();
 
-        return back()->with('success', ['approve' => 'Membre accepté.', 'reject' => 'Demande refusée.', 'remove' => 'Membre retiré du groupe.'][$action]);
+        return back()->with('success', ['approve' => __('Membre accepté.'), 'reject' => __('Demande refusée.'), 'remove' => __('Membre retiré du groupe.')][$action]);
     }
 
     public function posts(Request $request, int $group)
@@ -129,7 +129,7 @@ class GroupAdminController extends Controller
         $p->update(['status' => $p->status === 'hidden' ? 'published' : 'hidden']);
         $g->refreshCounters();
 
-        return back()->with('success', $p->status === 'hidden' ? 'Publication masquée.' : 'Publication réaffichée.');
+        return back()->with('success', $p->status === 'hidden' ? __('Publication masquée.') : __('Publication réaffichée.'));
     }
 
     private function validated(Request $request): array

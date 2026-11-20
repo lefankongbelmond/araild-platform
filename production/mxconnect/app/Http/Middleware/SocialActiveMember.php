@@ -18,7 +18,7 @@ class SocialActiveMember
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('social.login')->withErrors(['login' => 'Ce compte est suspendu par la modération du réseau.']);
+            return redirect()->route('social.login')->withErrors(['login' => __('Ce compte est suspendu par la modération du réseau.')]);
         }
 
         return $next($request);

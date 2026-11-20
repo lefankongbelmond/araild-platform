@@ -85,7 +85,7 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 | M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | Faite (VERSION 2026.11.29) | `LISEZMOI-20261129.md` |
 | M3a Mutuelle : page Paramètres en cartes, fiche « Identité et langue », cadre du back-office et écrans de paramétrage | Faite (VERSION 2026.11.30) | `LISEZMOI-20261130.md` |
 | M3b Mutuelle : reste du back-office (adhérents, prestations, cotisations, comptabilité, trésorerie, rapports, pharmacie, portail prestataire de la mutuelle) + vocabulaire `mxconnect.php` complet dans les 6 langues | Faite (VERSION 2026.12.01) | `LISEZMOI-20261201.md` |
-| M3c Mutuelle : messages renvoyés par le serveur (contrôleurs et services du back-office, `AccountingRefusal`, `TeamService`…) | À faire | — |
+| M3c Mutuelle : messages renvoyés par le serveur (contrôleurs et services du back-office, `AccountingRefusal`, `TeamService`…) — **étape M3 terminée** | Faite (VERSION 2026.12.02) | `LISEZMOI-20261202.md` |
 | M4 Prestataires | À faire | — |
 | M5 Super-admin, accueil | À faire | — |
 | M6 Documents | À faire | — |
@@ -102,6 +102,11 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Nouvelle rubrique de paramétrage** : l'ajouter à `App\Support\TenantSettings::SECTIONS` (carte affichée seulement si `TenantAccess::can()` l'autorise).
 - **Libellés de menu, rôles, sections** : traduits à l'affichage avec `__()` ; déclarés via `TranslatableLabels::extra()`.
 - **Vocabulaire `lang/<code>/mxconnect.php`** : complet en anglais ; en pt, es, ar, sw, ha, complet pour toutes les clés employées par le back-office (M3b, 351 clés ; test de couverture dans `MultilingueMutuelleTest`). Les clés propres au super-admin restent à faire en M5 (repli : français).
+
+### Règles ajoutées par M3c
+- **Message renvoyé par le serveur** (flash, `withErrors`, `abort`, `refuse(…)`, `AccountingRefusal`, messages de validation) : toujours `__('Texte :var', ['var' => …])`, jamais de concaténation ni de `"{$x}"`. Outil : `devtools/i18n/messages-php.py` (reconnaît aussi `refuse(`).
+- **Libellé stocké** (écriture comptable, mouvement de trésorerie) : reste en français, non traduit, pour que le journal soit le même pour tous.
+- **Phrases à deux variantes** : deux `__()` complets (`$x ? __('… bénéfice …') : __('… perte …')`), jamais `__($x ? '…' : '…')` (non repéré par les scanners).
 
 ### Règles ajoutées par M3b
 - **Listes de libellés dans une vue** : les traduire à l'affectation (`$S = array_map('__', Modele::STATUSES)` ou `['clé' => __('Libellé')]`), pas à chaque écho ; déclarer la constante dans `TranslatableLabels::LISTS` (ou `extra()` pour une liste [libellé, teinte]).

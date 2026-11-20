@@ -104,8 +104,8 @@ class InvoiceRegisterController extends Controller
         $cur = $this->currency();
         $msg = $r['done']
             ? ($r['accepted'] > 0 ? 'Contrôle terminé : facture validée pour ' . $cur->format($r['amount']) . ' (' . $r['accepted'] . ' ligne(s) acceptée(s), ' . $r['rejected'] . ' rejetée(s)). Elle attend maintenant le paiement par le trésorier.'
-                : 'Contrôle terminé : toutes les lignes sont rejetées, la facture est rejetée. L’établissement voit les motifs et peut renvoyer.')
-            : 'Décision enregistrée.';
+                : __('Contrôle terminé : toutes les lignes sont rejetées, la facture est rejetée. L’établissement voit les motifs et peut renvoyer.'))
+            : __('Décision enregistrée.');
 
         return back()->with('success', $msg);
     }
@@ -117,14 +117,14 @@ class InvoiceRegisterController extends Controller
             'mode' => ['required', 'in:' . implode(',', array_keys(ProviderBillingService::MODES))],
             'payment_reference' => ['required', 'string', 'min:3', 'max:60'],
             'paid_on' => ['required', 'date'],
-        ], ['payment_reference.required' => 'Indiquez la référence du paiement effectué (n° de virement, de transaction ou de reçu).']);
+        ], ['payment_reference.required' => __('Indiquez la référence du paiement effectué (n° de virement, de transaction ou de reçu).')]);
         try {
             $billing->pay($invoice, $request->user(), $data['mode'], $data['payment_reference'], $data['paid_on']);
         } catch (AccountingRefusal $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Paiement de la facture ' . $invoice->label() . ' enregistré (' . $this->currency()->format($invoice->fresh()->amount_minor) . '). L’établissement est prévenu.');
+        return back()->with('success', __('Paiement de la facture :label enregistré (:amount). L’établissement est prévenu.', ['label' => $invoice->label(), 'amount' => $this->currency()->format($invoice->fresh()->amount_minor)]));
     }
 
     /** Facture PDF jointe par le prestataire (réservée aux rôles qui voient le détail médical). */
@@ -138,12 +138,12 @@ class InvoiceRegisterController extends Controller
     /** Rejet motivé (facture erronée, doublon…) : jamais par la personne qui l'a saisie. */
     public function reject(Request $request, ProviderInvoice $invoice, ProviderBillingService $billing)
     {
-        abort_unless(in_array($invoice->status, ProviderInvoice::PAYABLE, true), 422, 'Cette facture n’est plus en attente de paiement.');
+        abort_unless(in_array($invoice->status, ProviderInvoice::PAYABLE, true), 422, __('Cette facture n’est plus en attente de paiement.'));
         if ((int) $invoice->captured_by === (int) $request->user()->id) {
-            return back()->with('error', 'Vous avez saisi cette facture : une autre personne doit décider (contrôle « 4 yeux »).');
+            return back()->with('error', __('Vous avez saisi cette facture : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']],
-            ['note.required' => 'Indiquez le motif du rejet : il est communiqué au prestataire.', 'note.min' => 'Précisez le motif du rejet.']);
+            ['note.required' => __('Indiquez le motif du rejet : il est communiqué au prestataire.'), 'note.min' => __('Précisez le motif du rejet.')]);
         try {
             $billing->reject($invoice, $request->user(), trim($data['note']));
         } catch (AccountingRefusal $e) {
@@ -153,8 +153,9 @@ class InvoiceRegisterController extends Controller
         \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_rejected', 'Facture ' . $invoice->label() . ' rejetée',
             'Montant : ' . \App\Support\ProviderNotifier::money((int) $invoice->amount_minor) . ' · motif : ' . trim($data['note']), 'invoices', 'invoices.view');
 
-        return back()->with('success', 'Facture ' . $invoice->label() . ' rejetée. Le prestataire voit le motif dans son portail'
-            . ($invoice->hasLines() ? ' et peut renvoyer les prestations dans une nouvelle facture.' : '.'));
+        return back()->with('success', $invoice->hasLines()
+            ? __('Facture :label rejetée. Le prestataire voit le motif dans son portail et peut renvoyer les prestations dans une nouvelle facture.', ['label' => $invoice->label()])
+            : __('Facture :label rejetée. Le prestataire voit le motif dans son portail.', ['label' => $invoice->label()]));
     }
 
     /**

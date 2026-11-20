@@ -23,18 +23,18 @@ class AccountController extends Controller
             'current_password' => ['required', 'string'],
             'password'         => ['required', 'confirmed', Password::min(10)->letters()->numbers()],
         ], [
-            'password.confirmed' => 'Les deux nouveaux mots de passe ne correspondent pas.',
-            'password.min'       => 'Le mot de passe doit contenir au moins 10 caractères.',
+            'password.confirmed' => __('Les deux nouveaux mots de passe ne correspondent pas.'),
+            'password.min'       => __('Le mot de passe doit contenir au moins 10 caractères.'),
         ]);
         if (! Hash::check($request->input('current_password'), $user->password)) {
-            return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.']);
+            return back()->withErrors(['current_password' => __('Mot de passe actuel incorrect.')]);
         }
         if (Hash::check($request->input('password'), $user->password)) {
-            return back()->withErrors(['password' => 'Choisissez un mot de passe différent de l’actuel.']);
+            return back()->withErrors(['password' => __('Choisissez un mot de passe différent de l’actuel.')]);
         }
         $user->forceFill(['password' => $request->input('password')] + (TeamService::hasTeamColumns() ? ['must_change_password' => false] : []))->save();
         $request->session()->regenerate();
 
-        return redirect(\App\Support\TenantAccess::home($request->user()))->with('success', 'Votre mot de passe a été changé.');
+        return redirect(\App\Support\TenantAccess::home($request->user()))->with('success', __('Votre mot de passe a été changé.'));
     }
 }

@@ -78,12 +78,12 @@ class FormulaCatalogController extends Controller
             'sale_from'         => ['nullable', 'date'],
             'sale_to'           => ['nullable', 'date', 'after_or_equal:sale_from'],
         ], [
-            'max_age.gte' => 'L’âge maximal doit être supérieur ou égal à l’âge minimal.',
-            'sale_to.after_or_equal' => 'La fin de commercialisation doit suivre son début.',
+            'max_age.gte' => __('L’âge maximal doit être supérieur ou égal à l’âge minimal.'),
+            'sale_to.after_or_equal' => __('La fin de commercialisation doit suivre son début.'),
         ]);
         $guarantee->update($d);
 
-        return redirect()->route('formulas.show', $guarantee)->with('success', 'Fiche de la formule enregistrée.');
+        return redirect()->route('formulas.show', $guarantee)->with('success', __('Fiche de la formule enregistrée.'));
     }
 
     /** Paramètres de la version (âge senior, renouvellement continu) : versionnés. */
@@ -106,7 +106,7 @@ class FormulaCatalogController extends Controller
         $d = $this->validateRule($request, $guarantee);
         $v = $this->target($guarantee, $d);
         if ($this->duplicateRule($v, $d)) {
-            return back()->withInput()->withErrors(['rule' => 'Cette formule a déjà une garantie pour cette catégorie de soins et cette catégorie de bénéficiaire : modifiez-la.']);
+            return back()->withInput()->withErrors(['rule' => __('Cette formule a déjà une garantie pour cette catégorie de soins et cette catégorie de bénéficiaire : modifiez-la.')]);
         }
         $v->rules()->create($this->ruleData($d) + ['sort' => (int) $v->rules()->max('sort') + 10]);
 
@@ -120,7 +120,7 @@ class FormulaCatalogController extends Controller
         $v = $this->target($guarantee, $d);
         $rule = $v->rules()->where('rule_key', $rule->rule_key)->firstOrFail();
         if ($this->duplicateRule($v, $d, $rule->id)) {
-            return back()->withInput()->withErrors(['rule' => 'Une autre garantie couvre déjà cette catégorie de soins pour cette catégorie de bénéficiaire.']);
+            return back()->withInput()->withErrors(['rule' => __('Une autre garantie couvre déjà cette catégorie de soins pour cette catégorie de bénéficiaire.')]);
         }
         $rule->update($this->ruleData($d));
 
@@ -192,7 +192,7 @@ class FormulaCatalogController extends Controller
             'rule_key'             => ['nullable', Rule::in($current->rules()->pluck('rule_key')->all())],
             'beneficiary_category' => ['required', Rule::in(array_keys(CoverageRule::BENEFICIARY_CATEGORIES))],
             'days'                 => ['required', 'integer', 'between:0,3650'],
-        ] + $this->versionRules($guarantee), ['days.required' => 'Indiquez le délai en jours (0 = aucun délai).']);
+        ] + $this->versionRules($guarantee), ['days.required' => __('Indiquez le délai en jours (0 = aucun délai).')]);
         $v = $this->target($guarantee, $d);
         $v->waitingPeriods()->updateOrCreate(
             ['rule_key' => $d['rule_key'] ?? null, 'beneficiary_category' => $d['beneficiary_category']],
@@ -229,10 +229,10 @@ class FormulaCatalogController extends Controller
             'emergency'   => ['nullable', 'boolean'],
             'accident'    => ['nullable', 'boolean'],
         ], [
-            'act_type_id.required' => 'Choisissez l’acte à simuler.',
-            'amount.required' => 'Indiquez le montant facturé.',
-            'age.required' => 'Indiquez l’âge du bénéficiaire.',
-            'days.required' => 'Indiquez l’ancienneté de la couverture en jours.',
+            'act_type_id.required' => __('Choisissez l’acte à simuler.'),
+            'amount.required' => __('Indiquez le montant facturé.'),
+            'age.required' => __('Indiquez l’âge du bénéficiaire.'),
+            'days.required' => __('Indiquez l’ancienneté de la couverture en jours.'),
         ]);
         $version = $guarantee->versions()->findOrFail($d['version_id']);
         $cur = $this->currency();
@@ -272,11 +272,11 @@ class FormulaCatalogController extends Controller
         $d = $request->validate([
             'label'  => ['required', 'string', 'max:120', Rule::unique('service_categories', 'label')],
             'family' => ['required', Rule::in(array_keys(ServiceCategory::FAMILIES))],
-        ], ['label.unique' => 'Cette catégorie existe déjà.']);
+        ], ['label.unique' => __('Cette catégorie existe déjà.')]);
         $code = 'c' . substr(md5($d['label'] . microtime()), 0, 10);
         ServiceCategory::create(['code' => $code, 'label' => $d['label'], 'family' => $d['family'], 'sort' => (int) ServiceCategory::max('sort') + 10, 'active' => true]);
 
-        return redirect()->route('formulas.categories')->with('success', 'Catégorie de soins ajoutée.');
+        return redirect()->route('formulas.categories')->with('success', __('Catégorie de soins ajoutée.'));
     }
 
     /** Rattachement des actes aux catégories de soins : enregistré seulement à la validation du formulaire. */
@@ -296,19 +296,19 @@ class FormulaCatalogController extends Controller
             }
         }
 
-        return redirect()->route('formulas.categories')->with('success', "Rattachement enregistré ({$n} acte(s) modifié(s)).");
+        return redirect()->route('formulas.categories')->with('success', __('Rattachement enregistré (:count acte(s) modifié(s)).', ['count' => $n]));
     }
 
     // ------------------------------------------------------------------ formules d'exemple (MUTUELLE TEST)
 
     public function examples()
     {
-        abort_unless(TestEnvironment::active(), 403, 'Les formules d’exemple ne sont disponibles que dans la mutuelle de test.');
+        abort_unless(TestEnvironment::active(), 403, __('Les formules d’exemple ne sont disponibles que dans la mutuelle de test.'));
         $n = app(\App\Services\Tenant\ExampleFormulaService::class)->load();
 
         return redirect()->route('formulas.index')->with('success', $n
             ? "{$n} formule(s) d’exemple chargée(s), marquées « Exemple »."
-            : 'Les formules d’exemple sont déjà chargées.');
+            : __('Les formules d’exemple sont déjà chargées.'));
     }
 
     // ------------------------------------------------------------------ outils
@@ -386,9 +386,9 @@ class FormulaCatalogController extends Controller
             'authorization_review'  => ['nullable', Rule::in(['administrative', 'medical'])],
             'authorization_above'   => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
         ] + $this->versionRules($guarantee), [
-            'label.required' => 'Donnez un nom à la garantie (ex. « Consultations »).',
-            'coverage_rate.required' => 'Indiquez le taux de prise en charge : aucun taux n’est appliqué par défaut.',
-            'coverage_rate.between' => 'Le taux de prise en charge est compris entre 0 et 100 %.',
+            'label.required' => __('Donnez un nom à la garantie (ex. « Consultations »).'),
+            'coverage_rate.required' => __('Indiquez le taux de prise en charge : aucun taux n’est appliqué par défaut.'),
+            'coverage_rate.between' => __('Le taux de prise en charge est compris entre 0 et 100 %.'),
         ]);
     }
 
@@ -432,10 +432,10 @@ class FormulaCatalogController extends Controller
         ] + $this->versionRules($guarantee));
         $hasAmount = ($d['amount'] ?? null) !== null && $d['amount'] !== '';
         if (! $hasAmount && empty($d['max_count'])) {
-            return 'Indiquez un montant maximal, un nombre maximal d’actes, ou les deux.';
+            return __('Indiquez un montant maximal, un nombre maximal d’actes, ou les deux.');
         }
         if ($d['scope'] === 'act' && ! $hasAmount) {
-            return 'Un plafond « par acte » se fixe en montant (le nombre d’actes se compte par jour, mois ou année).';
+            return __('Un plafond « par acte » se fixe en montant (le nombre d’actes se compte par jour, mois ou année).');
         }
 
         return $d;

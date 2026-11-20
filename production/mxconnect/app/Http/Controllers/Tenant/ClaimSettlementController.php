@@ -79,7 +79,7 @@ class ClaimSettlementController extends Controller
         if (\App\Services\Tenant\ProviderBillingService::ready()) {
             $ids = $billing->billable($providerId)->where('care_claim_id', $claim->id)->pluck('id')->all();
             if (! $ids) {
-                return back()->with('error', 'Aucune prestation validée de ce prestataire à facturer dans ce recours (déjà facturée, ou aucune).');
+                return back()->with('error', __('Aucune prestation validée de ce prestataire à facturer dans ce recours (déjà facturée, ou aucune).'));
             }
             try {
                 $billing->submit($providerId, $ids, $request->user(), null, null, 'claim');
@@ -119,7 +119,7 @@ class ClaimSettlementController extends Controller
             'mode' => ['nullable', 'in:' . implode(',', array_keys(\App\Services\Tenant\ProviderBillingService::MODES))],
             'payment_reference' => ['required', 'string', 'min:3', 'max:60'],
             'paid_on' => ['nullable', 'date'],
-        ], ['payment_reference.required' => 'Indiquez la référence du paiement effectué (n° de virement, de transaction ou de reçu).']);
+        ], ['payment_reference.required' => __('Indiquez la référence du paiement effectué (n° de virement, de transaction ou de reçu).')]);
         try {
             $billing->pay($invoice, $request->user(), $data['mode'] ?? 'bank', $data['payment_reference'], $data['paid_on'] ?? now()->toDateString());
         } catch (\App\Services\AccountingRefusal $e) {

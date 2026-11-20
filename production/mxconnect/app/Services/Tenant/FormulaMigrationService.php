@@ -76,20 +76,20 @@ class FormulaMigrationService
     {
         $date = (string) $data['effective_date'];
         if ((int) $data['source_guarantee_id'] === (int) $data['target_guarantee_id']) {
-            throw new AccountingRefusal('Choisissez une formule cible différente de la formule actuelle.');
+            throw new AccountingRefusal(__('Choisissez une formule cible différente de la formule actuelle.'));
         }
         if ($date < now()->toDateString()) {
-            throw new AccountingRefusal('La date d’effet ne peut pas être passée : un changement de formule ne modifie jamais les droits déjà ouverts.');
+            throw new AccountingRefusal(__('La date d’effet ne peut pas être passée : un changement de formule ne modifie jamais les droits déjà ouverts.'));
         }
         $c = $this->candidates((int) $data['source_guarantee_id'], (int) $data['target_guarantee_id'], $date, $data['member_ids'] ?? null);
         if (! $c['version']) {
-            throw new AccountingRefusal('La formule cible n’a pas de version en vigueur à la date d’effet.');
+            throw new AccountingRefusal(__('La formule cible n’a pas de version en vigueur à la date d’effet.'));
         }
         if ($why = self::targetProblem($c['version'])) {
             throw new AccountingRefusal($why);
         }
         if (! $c['eligible']) {
-            throw new AccountingRefusal('Aucun adhérent ne peut changer de formule à cette date (voir les motifs dans l’aperçu).');
+            throw new AccountingRefusal(__('Aucun adhérent ne peut changer de formule à cette date (voir les motifs dans l’aperçu).'));
         }
 
         return DB::transaction(function () use ($data, $date, $by) {
@@ -109,13 +109,13 @@ class FormulaMigrationService
     public function decide(FormulaMigration $mig, bool $approve, ?string $note, User $by): FormulaMigration
     {
         if ($mig->status !== 'requested') {
-            throw new AccountingRefusal('Cette demande a déjà été traitée.');
+            throw new AccountingRefusal(__('Cette demande a déjà été traitée.'));
         }
         if ((int) $mig->requested_by === (int) $by->id) {
-            throw new AccountingRefusal('Une autre personne doit décider : vous avez fait cette demande.');
+            throw new AccountingRefusal(__('Une autre personne doit décider : vous avez fait cette demande.'));
         }
         if (! $approve && mb_strlen(trim((string) $note)) < 5) {
-            throw new AccountingRefusal('Indiquez le motif du refus.');
+            throw new AccountingRefusal(__('Indiquez le motif du refus.'));
         }
         $mig->update(['status' => $approve ? 'approved' : 'rejected', 'decided_by' => $by->id, 'decided_at' => now(), 'decision_note' => $note ? trim($note) : null]);
         if ($approve && $mig->effective_date->toDateString() <= now()->toDateString()) {
@@ -128,7 +128,7 @@ class FormulaMigrationService
     public function cancel(FormulaMigration $mig, User $by): void
     {
         if ($mig->status !== 'requested' && $mig->status !== 'approved') {
-            throw new AccountingRefusal('Cette demande ne peut plus être retirée.');
+            throw new AccountingRefusal(__('Cette demande ne peut plus être retirée.'));
         }
         $mig->update(['status' => 'cancelled', 'decision_note' => trim(($mig->decision_note ? $mig->decision_note . ' — ' : '') . 'Retirée par ' . $by->first_name . ' ' . $by->last_name)]);
     }
@@ -140,13 +140,13 @@ class FormulaMigrationService
     public static function targetProblem(?GuaranteeVersion $version): ?string
     {
         if (! $version) {
-            return 'La formule cible n’a pas de version en vigueur à la date d’effet.';
+            return __('La formule cible n’a pas de version en vigueur à la date d’effet.');
         }
         if ((int) $version->base_contribution_minor <= 0) {
-            return 'La cotisation de la formule cible n’est pas fixée (0) : fixez-la d’abord dans le catalogue (nouvelle version datée).';
+            return __('La cotisation de la formule cible n’est pas fixée (0) : fixez-la d’abord dans le catalogue (nouvelle version datée).');
         }
         if (! ScheduleGenerationService::stepMonths($version)) {
-            return 'La périodicité de la formule cible n’a pas de nombre de mois : complétez-la d’abord dans le catalogue.';
+            return __('La périodicité de la formule cible n’a pas de nombre de mois : complétez-la d’abord dans le catalogue.');
         }
 
         return null;
@@ -157,15 +157,15 @@ class FormulaMigrationService
     {
         $date = $mig->effective_date->toDateString();
         if ($mig->status !== 'approved') {
-            throw new AccountingRefusal('Seule une demande validée peut être appliquée.');
+            throw new AccountingRefusal(__('Seule une demande validée peut être appliquée.'));
         }
         if ($date > now()->toDateString()) {
-            throw new AccountingRefusal('La date d’effet n’est pas encore atteinte : la demande sera appliquée ce jour-là.');
+            throw new AccountingRefusal(__('La date d’effet n’est pas encore atteinte : la demande sera appliquée ce jour-là.'));
         }
         // Une seule application, même en cas de double clic ou de tâche de nuit simultanée.
         $claimed = FormulaMigration::whereKey($mig->id)->where('status', 'approved')->update(['status' => 'applied', 'applied_at' => now()]);
         if (! $claimed) {
-            throw new AccountingRefusal('Cette demande est déjà en cours d’application ou appliquée.');
+            throw new AccountingRefusal(__('Cette demande est déjà en cours d’application ou appliquée.'));
         }
 
         $c = $this->candidates($mig->source_guarantee_id, $mig->target_guarantee_id, $date, $mig->member_ids);
@@ -242,23 +242,23 @@ class FormulaMigrationService
     {
         $status = $m->status instanceof \BackedEnum ? $m->status->value : (string) $m->status;
         if ($status !== 'active') {
-            return 'Adhérent non actif (statut : ' . $status . ').';
+            return __('Adhérent non actif (statut : :status).', ['status' => $status]);
         }
         if (! $target || ! $version) {
-            return 'La formule cible n’a pas de version en vigueur à la date d’effet.';
+            return __('La formule cible n’a pas de version en vigueur à la date d’effet.');
         }
         if ($m->subscriptions()->where('status', 'captured')->exists()) {
-            return 'Une souscription saisie attend sa validation.';
+            return __('Une souscription saisie attend sa validation.');
         }
         if ($m->subscriptions()->where('status', 'validated')->whereKeyNot($sub->id)->whereDate('effective_date', '>', $sub->effective_date)->exists()) {
-            return 'Une autre souscription plus récente existe déjà.';
+            return __('Une autre souscription plus récente existe déjà.');
         }
         if ($refusal = $target->subscriptionRefusal($m, $date)) {
             return $refusal;
         }
         $paid = $this->futureSchedules($sub, $date, true)->exists();
         if ($paid) {
-            return 'Une échéance de l’ancienne formule, due à partir de la date d’effet, est réglée ou porte un encaissement (même annulé) : à régulariser au guichet avant le changement.';
+            return __('Une échéance de l’ancienne formule, due à partir de la date d’effet, est réglée ou porte un encaissement (même annulé) : à régulariser au guichet avant le changement.');
         }
 
         return null;

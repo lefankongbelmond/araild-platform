@@ -47,13 +47,13 @@ class PharmacyService
         $today = now()->toDateString();
         $validity = MutualSetting::int('prescription_validity_days');
         if ($rx['prescribed_on'] > $today) {
-            throw new AccountingRefusal('La date de l’ordonnance ne peut pas être dans le futur.');
+            throw new AccountingRefusal(__('La date de l’ordonnance ne peut pas être dans le futur.'));
         }
         if ($validity !== null && now()->startOfDay()->gt(\Illuminate\Support\Carbon::parse($rx['prescribed_on'])->addDays($validity))) {
-            throw new AccountingRefusal("Ordonnance périmée : la mutuelle accepte les ordonnances de moins de {$validity} jours.");
+            throw new AccountingRefusal(__('Ordonnance périmée : la mutuelle accepte les ordonnances de moins de :count jours.', ['count' => $validity]));
         }
         if (! $lines) {
-            throw new AccountingRefusal('Indiquez au moins un médicament délivré.');
+            throw new AccountingRefusal(__('Indiquez au moins un médicament délivré.'));
         }
 
         $outcome = ['reasons' => []];
@@ -69,15 +69,15 @@ class PharmacyService
                 foreach ($lines as $l) {
                     $m = $medicines[$l['medicine_id']] ?? null;
                     if (! $m) {
-                        throw new AccountingRefusal('Médicament inconnu.');
+                        throw new AccountingRefusal(__('Médicament inconnu.'));
                     }
                     $qp = (int) $l['quantity_prescribed'];
                     $qd = (int) $l['quantity_dispensed'];
                     if ($qp < 1 || $qd < 1) {
-                        throw new AccountingRefusal("Quantités invalides pour {$m->label}.");
+                        throw new AccountingRefusal(__('Quantités invalides pour :label.', ['label' => $m->label]));
                     }
                     if ($qd > $qp) {
-                        throw new AccountingRefusal("{$m->label} : la quantité délivrée ({$qd}) dépasse la quantité prescrite ({$qp}).");
+                        throw new AccountingRefusal(__(':label : la quantité délivrée (:done) dépasse la quantité prescrite (:prescribed).', ['label' => $m->label, 'done' => $qd, 'prescribed' => $qp]));
                     }
                     $already = $this->alreadyDispensed($prescription->id, $m->id);
                     if ($already + $qd > $qp * $cycles) {
@@ -99,7 +99,7 @@ class PharmacyService
                         'above_reference' => $m->reference_price_minor > 0 && $unit > $m->reference_price_minor];
                 }
                 if ($total <= 0) {
-                    throw new AccountingRefusal('Indiquez le prix des médicaments délivrés.');
+                    throw new AccountingRefusal(__('Indiquez le prix des médicaments délivrés.'));
                 }
 
                 $claim = CareClaim::create(['member_id' => $member->id, 'dependent_id' => $dependent?->id, 'opened_on' => $today, 'status' => 'open']);

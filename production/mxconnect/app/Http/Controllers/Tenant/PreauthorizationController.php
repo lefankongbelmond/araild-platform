@@ -65,14 +65,14 @@ class PreauthorizationController extends Controller
             'planned_on'      => ['required', 'date', 'after_or_equal:today'],
             'estimated'       => ['required', 'numeric', 'min:1', 'max:999999999'],
             'clinical_info'   => ['nullable', 'string', 'max:2000'],
-        ], ['provider_id.in' => 'Choisissez un établissement conventionné.', 'planned_on.after_or_equal' => 'La date prévue ne peut pas être passée.']);
+        ], ['provider_id.in' => __('Choisissez un établissement conventionné.'), 'planned_on.after_or_equal' => __('La date prévue ne peut pas être passée.')]);
         $member = Member::where('member_code', trim($d['member_code']))->first();
         if (! $member) {
-            return back()->withInput()->withErrors(['member_code' => 'Aucun adhérent avec ce numéro.']);
+            return back()->withInput()->withErrors(['member_code' => __('Aucun adhérent avec ce numéro.')]);
         }
         $dependent = ! empty($d['dependent_id']) ? $member->dependents()->whereKey($d['dependent_id'])->first() : null;
         if (! empty($d['dependent_id']) && ! $dependent) {
-            return back()->withInput()->withErrors(['dependent_id' => 'Cet ayant droit n’appartient pas à l’adhérent.']);
+            return back()->withInput()->withErrors(['dependent_id' => __('Cet ayant droit n’appartient pas à l’adhérent.')]);
         }
         $p = $this->service->request([
             'member' => $member, 'dependent' => $dependent, 'provider_id' => (int) $d['provider_id'], 'act_type_id' => (int) $d['act_type_id'],
@@ -80,7 +80,7 @@ class PreauthorizationController extends Controller
             'clinical_info' => TenantAccess::can('capacite.donnees-sante') ? ($d['clinical_info'] ?? null) : null,
         ], $request->user(), 'mutual');
 
-        return redirect()->route('preauth.show', $p)->with('success', 'Demande d’accord préalable enregistrée. Une autre personne doit l’examiner.');
+        return redirect()->route('preauth.show', $p)->with('success', __('Demande d’accord préalable enregistrée. Une autre personne doit l’examiner.'));
     }
 
     public function decide(Request $request, Preauthorization $preauth)
@@ -102,7 +102,7 @@ class PreauthorizationController extends Controller
 
         return back()->with('success', $d['decision'] === 'approved'
             ? "Accord préalable n° {$preauth->number} accordé. Le prestataire le voit dans son portail."
-            : 'Demande rejetée. Le motif est communiqué au prestataire.');
+            : __('Demande rejetée. Le motif est communiqué au prestataire.'));
     }
 
     private function providerNames()

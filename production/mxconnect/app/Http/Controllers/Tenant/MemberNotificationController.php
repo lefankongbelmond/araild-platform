@@ -56,13 +56,13 @@ class MemberNotificationController extends Controller
             'guarantee_id'=> ['required_if:audience,guarantee', 'nullable', 'integer'],
             'title'       => ['required', 'string', 'max:150'],
             'body'        => ['required', 'string', 'max:1000'],
-        ], ['member_code.required_if' => 'Indiquez le code de l’adhérent.', 'antenna_id.required_if' => 'Choisissez l’antenne.', 'guarantee_id.required_if' => 'Choisissez la garantie.'],
+        ], ['member_code.required_if' => __('Indiquez le code de l’adhérent.'), 'antenna_id.required_if' => __('Choisissez l’antenne.'), 'guarantee_id.required_if' => __('Choisissez la garantie.')],
             ['title' => 'titre', 'body' => 'message']);
 
         [$query, $label, $ref] = $this->audience($data);
         $members = $query->get(['id', 'phone', 'first_name', 'last_name', 'member_code']);
         if ($members->isEmpty()) {
-            return back()->withInput()->with('error', 'Aucun adhérent ne correspond à ce public.');
+            return back()->withInput()->with('error', __('Aucun adhérent ne correspond à ce public.'));
         }
         $links = MemberLink::where('mutual_id', tenant('id'))->whereIn('member_id', $members->pluck('id'))->pluck('public_account_id', 'member_id');
         $mutual = \App\Models\Central\Mutual::find(tenant('id'));
@@ -90,8 +90,8 @@ class MemberNotificationController extends Controller
         }
 
         return redirect()->route('member-notifications.show', $campaign)->with('success',
-            'Notification enregistrée pour ' . $members->count() . ' adhérent(s) : ' . $links->count() . ' reçue(s) dans l’application MX-CONNECT. '
-            . 'Utilisez WhatsApp ou l’export SMS pour les autres.');
+            __('Notification enregistrée pour :count adhérent(s) : :app reçue(s) dans l’application MX-CONNECT. Utilisez WhatsApp ou l’export SMS pour les autres.',
+                ['count' => $members->count(), 'app' => $links->count()]));
     }
 
     public function show(Request $request, MemberNotification $notification)
@@ -132,7 +132,7 @@ class MemberNotificationController extends Controller
         return match ($d['audience']) {
             'member'    => (function () use ($d) {
                 $m = Member::where('member_code', trim((string) $d['member_code']))->first();
-                abort_unless($m, 422, 'Aucun adhérent avec ce code.');
+                abort_unless($m, 422, __('Aucun adhérent avec ce code.'));
 
                 return [Member::whereKey($m->id), $m->last_name . ' ' . $m->first_name . ' (' . $m->member_code . ')', (string) $m->id];
             })(),

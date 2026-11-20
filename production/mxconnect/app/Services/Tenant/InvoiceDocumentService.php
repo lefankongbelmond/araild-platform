@@ -30,9 +30,9 @@ class InvoiceDocumentService
     public static function messages(): array
     {
         return [
-            'document.max'       => 'La facture PDF ne doit pas dépasser 5 Mo.',
-            'document.mimetypes' => 'La facture doit être un fichier PDF.',
-            'document.uploaded'  => 'Le fichier n’a pas pu être envoyé (trop lourd ?). 5 Mo au plus.',
+            'document.max'       => __('La facture PDF ne doit pas dépasser 5 Mo.'),
+            'document.mimetypes' => __('La facture doit être un fichier PDF.'),
+            'document.uploaded'  => __('Le fichier n’a pas pu être envoyé (trop lourd ?). 5 Mo au plus.'),
         ];
     }
 
@@ -44,7 +44,7 @@ class InvoiceDocumentService
             fclose($fh);
         }
         if ($head !== '%PDF-') {
-            throw ValidationException::withMessages(['document' => 'Ce fichier n’est pas un PDF valide.']);
+            throw ValidationException::withMessages(['document' => __('Ce fichier n’est pas un PDF valide.')]);
         }
 
         $old = $invoice->supporting_doc_path;

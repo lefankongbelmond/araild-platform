@@ -16,7 +16,7 @@ trait MutualContext
 
     protected function requireRoles(Request $request, array $roles): void
     {
-        abort_unless($request->user()?->hasAnyRole($roles), 403, 'Accès réservé.');
+        abort_unless($request->user()?->hasAnyRole($roles), 403, __('Accès réservé.'));
     }
 
     /**

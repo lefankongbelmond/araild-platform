@@ -57,7 +57,7 @@ class MedicineController extends Controller
     {
         Medicine::create($this->payload($request->validated()));
 
-        return redirect()->route('medicines.index')->with('success', 'Médicament enregistré.');
+        return redirect()->route('medicines.index')->with('success', __('Médicament enregistré.'));
     }
 
     public function update(MedicineRequest $request, Medicine $medicine)
@@ -65,7 +65,7 @@ class MedicineController extends Controller
         $medicine->update($this->payload($request->validated()));
 
         return redirect()->route('medicines.index', $request->only(['q', 'categorie', 'fournisseur', 'devise', 'page']))
-            ->with('success', 'Médicament modifié.');
+            ->with('success', __('Médicament modifié.'));
     }
 
     /** Suppression (corbeille) : les prestations passées gardent leur référence. */
@@ -75,7 +75,7 @@ class MedicineController extends Controller
         $medicine->delete();
 
         return redirect()->route('medicines.index', $request->only(['q', 'categorie', 'fournisseur', 'devise', 'page']))
-            ->with('success', 'Médicament « ' . $medicine->label . ' » supprimé du catalogue. Les prestations déjà enregistrées ne sont pas modifiées.');
+            ->with('success', __('Médicament « :label » supprimé du catalogue. Les prestations déjà enregistrées ne sont pas modifiées.', ['label' => $medicine->label]));
     }
 
     private function payload(array $data): array

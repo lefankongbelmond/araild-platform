@@ -70,19 +70,19 @@ class BudgetController extends Controller
             }
         });
 
-        return redirect()->route('budget.index', ['annee' => $data['year']])->with('success', 'Budget ' . $data['year'] . ' créé (brouillon).');
+        return redirect()->route('budget.index', ['annee' => $data['year']])->with('success', __('Budget :year créé (brouillon).', ['year' => $data['year']]));
     }
 
     public function storeLine(Request $request, Budget $budget)
     {
         \App\Support\TenantAccess::authorize();
-        abort_if($budget->isAdopted(), 422, 'Budget adopté : il n’est plus modifiable.');
+        abort_if($budget->isAdopted(), 422, __('Budget adopté : il n’est plus modifiable.'));
         $data = $request->validate([
             'kind'       => ['required', 'in:income,expense'],
             'account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id'), Rule::unique('budget_lines', 'account_id')->where('budget_id', $budget->id)],
             'label'      => ['required_without:account_id', 'nullable', 'string', 'max:180'],
             'amount'     => ['required', 'string', 'max:20'],
-        ], ['account_id.unique' => 'Ce compte a déjà une ligne dans ce budget.', 'label.required_without' => 'Indiquez un libellé ou choisissez un compte.']);
+        ], ['account_id.unique' => __('Ce compte a déjà une ligne dans ce budget.'), 'label.required_without' => __('Indiquez un libellé ou choisissez un compte.')]);
         $account = ! empty($data['account_id']) ? Account::find($data['account_id']) : null;
         $budget->lines()->create([
             'kind' => $account ? ($account->class === 7 ? 'income' : 'expense') : $data['kind'],
@@ -91,13 +91,13 @@ class BudgetController extends Controller
             'amount_minor' => max(0, $this->currency()->toMinor($this->amount($data['amount']))),
         ]);
 
-        return back()->with('success', 'Ligne budgétaire ajoutée.');
+        return back()->with('success', __('Ligne budgétaire ajoutée.'));
     }
 
     public function updateLines(Request $request, Budget $budget)
     {
         \App\Support\TenantAccess::authorize();
-        abort_if($budget->isAdopted(), 422, 'Budget adopté : il n’est plus modifiable.');
+        abort_if($budget->isAdopted(), 422, __('Budget adopté : il n’est plus modifiable.'));
         $currency = $this->currency();
         foreach ((array) $request->input('amounts', []) as $id => $raw) {
             $line = $budget->lines()->find((int) $id);
@@ -109,7 +109,7 @@ class BudgetController extends Controller
             $budget->update(['notes' => mb_substr((string) $request->input('notes'), 0, 2000) ?: null]);
         }
 
-        return back()->with('success', 'Montants enregistrés.');
+        return back()->with('success', __('Montants enregistrés.'));
     }
 
     public function destroyLine(Request $request, Budget $budget, BudgetLine $line)
@@ -118,18 +118,18 @@ class BudgetController extends Controller
         abort_if($budget->isAdopted() || $line->budget_id !== $budget->id, 422);
         $line->delete();
 
-        return back()->with('success', 'Ligne supprimée.');
+        return back()->with('success', __('Ligne supprimée.'));
     }
 
     public function adopt(Request $request, Budget $budget)
     {
-        abort_unless($request->user()?->hasRole('mutual_admin'), 403, 'Seul l’administrateur adopte le budget.');
+        abort_unless($request->user()?->hasRole('mutual_admin'), 403, __('Seul l’administrateur adopte le budget.'));
         abort_if($budget->isAdopted(), 422);
-        abort_if($budget->lines()->count() === 0, 422, 'Le budget est vide.');
+        abort_if($budget->lines()->count() === 0, 422, __('Le budget est vide.'));
         $request->validate(['adopted_on' => ['required', 'date']], [], ['adopted_on' => 'date d’adoption']);
         $budget->update(['status' => 'adopted', 'adopted_on' => $request->input('adopted_on'), 'adopted_by' => $request->user()->id]);
 
-        return back()->with('success', 'Budget adopté. Il n’est plus modifiable ; son exécution reste suivie automatiquement.');
+        return back()->with('success', __('Budget adopté. Il n’est plus modifiable ; son exécution reste suivie automatiquement.'));
     }
 
     /**

@@ -41,10 +41,10 @@ class MedicineRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'code.unique'          => 'Ce code est déjà utilisé par un autre médicament (y compris supprimé).',
-            'category.required'    => 'Choisissez une catégorie.',
-            'currency_code.in'     => 'Devise non disponible.',
-            'reference_price.numeric' => 'Prix invalide : saisissez un nombre, par exemple 1250 ou 12,50.',
+            'code.unique'          => __('Ce code est déjà utilisé par un autre médicament (y compris supprimé).'),
+            'category.required'    => __('Choisissez une catégorie.'),
+            'currency_code.in'     => __('Devise non disponible.'),
+            'reference_price.numeric' => __('Prix invalide : saisissez un nombre, par exemple 1250 ou 12,50.'),
         ];
     }
 

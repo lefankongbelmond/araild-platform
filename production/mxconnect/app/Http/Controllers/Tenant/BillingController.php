@@ -140,8 +140,8 @@ class BillingController extends Controller
                     : ($medCur === $currency->code ? (int) $med->reference_price_minor : 0);
                 if ($unit <= 0) {
                     $errors[] = $medCur !== $currency->code && ($row['price'] ?? '') === ''
-                        ? '« ' . $med->label . ' » : prix de référence en ' . $medCur . ', saisissez le prix en ' . $currency->code . ' (pas de conversion automatique).'
-                        : '« ' . $med->label . ' » : prix à renseigner.';
+                        ? __('« :label » : prix de référence en :from, saisissez le prix en :to (pas de conversion automatique).', ['label' => $med->label, 'from' => $medCur, 'to' => $currency->code])
+                        : __('« :label » : prix à renseigner.', ['label' => $med->label]);
                     continue;
                 }
                 $total = $unit * $qty;

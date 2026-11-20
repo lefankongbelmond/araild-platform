@@ -86,7 +86,7 @@ class ComplaintController extends Controller
     public function reply(Request $request, Complaint $complaint)
     {
         $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:3000']]);
-        abort_if($complaint->status === 'closed', 422, 'Réclamation clôturée.');
+        abort_if($complaint->status === 'closed', 422, __('Réclamation clôturée.'));
         \App\Models\Tenant\ComplaintMessage::create(['complaint_id' => $complaint->id, 'author' => 'staff', 'user_id' => $request->user()->id, 'body' => trim($data['body'])]);
         if ($complaint->status === 'received') {
             $complaint->update(['status' => 'in_progress']);
@@ -95,7 +95,7 @@ class ComplaintController extends Controller
             \App\Support\MemberNotifier::notify($complaint->member_id, \App\Support\Msg::of('Réponse de votre mutuelle à la demande :ref', ['ref' => $complaint->ref]), null, 'reclamations/' . $complaint->id);
         }
 
-        return back()->with('success', 'Réponse envoyée à l’adhérent.');
+        return back()->with('success', __('Réponse envoyée à l’adhérent.'));
     }
 
     public function members()

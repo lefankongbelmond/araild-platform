@@ -54,7 +54,7 @@ class AccountingOperationController extends Controller
             'amount'    => ['required', 'string', 'max:24'],
             'label'     => ['required', 'string', 'min:3', 'max:255'],
             'piece'     => ['nullable', 'string', 'max:60'],
-        ], ['credit.different' => 'Le compte débité et le compte crédité doivent être différents.', 'label.required' => 'Indiquez le libellé de l’opération.']);
+        ], ['credit.different' => __('Le compte débité et le compte crédité doivent être différents.'), 'label.required' => __('Indiquez le libellé de l’opération.')]);
         $amount = $this->currency()->toMinor($this->amount($data['amount']));
 
         return $this->attempt(function () use ($data, $amount, $request) {
@@ -62,7 +62,7 @@ class AccountingOperationController extends Controller
                 $amount, trim($data['label']), ! empty($data['piece']) ? trim($data['piece']) : null, (int) $request->user()->id);
 
             return redirect()->route('accounting.entries.index')
-                ->with('success', "Opération enregistrée (pièce {$e->piece}). Elle attend la validation d’une autre personne (administrateur ou contrôleur).");
+                ->with('success', __('Opération enregistrée (pièce :piece). Elle attend la validation d’une autre personne (administrateur ou contrôleur).', ['piece' => $e->piece]));
         });
     }
 
@@ -71,19 +71,19 @@ class AccountingOperationController extends Controller
         return $this->attempt(function () use ($request, $entry) {
             $this->accounting->validateEntry($entry, (int) $request->user()->id);
 
-            return back()->with('success', "Écriture {$entry->piece} validée : elle figure désormais dans le journal et les états.");
+            return back()->with('success', __('Écriture :piece validée : elle figure désormais dans le journal et les états.', ['piece' => $entry->piece]));
         });
     }
 
     public function reject(Request $request, AccountingEntry $entry)
     {
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']],
-            ['note.required' => 'Indiquez le motif du rejet.', 'note.min' => 'Précisez le motif du rejet.']);
+            ['note.required' => __('Indiquez le motif du rejet.'), 'note.min' => __('Précisez le motif du rejet.')]);
 
         return $this->attempt(function () use ($request, $entry, $data) {
             $this->accounting->rejectEntry($entry, (int) $request->user()->id, trim($data['note']));
 
-            return back()->with('success', "Écriture {$entry->piece} rejetée. Elle n’entre pas dans les états.");
+            return back()->with('success', __('Écriture :piece rejetée. Elle n’entre pas dans les états.', ['piece' => $entry->piece]));
         });
     }
 
@@ -94,7 +94,7 @@ class AccountingOperationController extends Controller
         return $this->attempt(function () use ($request, $entry, $data) {
             $r = $this->accounting->reverse($entry, $data['date'], (int) $request->user()->id);
 
-            return back()->with('success', "Extourne {$r->piece} préparée. Elle attend la validation d’une autre personne.");
+            return back()->with('success', __('Extourne :piece préparée. Elle attend la validation d’une autre personne.', ['piece' => $r->piece]));
         });
     }
 
@@ -105,10 +105,10 @@ class AccountingOperationController extends Controller
         $data = $request->validate([
             'number' => ['required', 'regex:/^[1-8][0-9]{1,9}$/', Rule::unique('accounts', 'number')],
             'label'  => ['required', 'string', 'min:2', 'max:180'],
-        ], ['number.regex' => 'Numéro SYSCOHADA : 2 à 10 chiffres, commençant par la classe (1 à 8).', 'number.unique' => 'Ce numéro de compte existe déjà.']);
+        ], ['number.regex' => __('Numéro SYSCOHADA : 2 à 10 chiffres, commençant par la classe (1 à 8).'), 'number.unique' => __('Ce numéro de compte existe déjà.')]);
         Account::create(['number' => $data['number'], 'label' => trim($data['label']), 'class' => (int) $data['number'][0]]);
 
-        return back()->with('success', "Compte {$data['number']} ajouté au plan comptable.");
+        return back()->with('success', __('Compte :number ajouté au plan comptable.', ['number' => $data['number']]));
     }
 
     public function importAccounts()
@@ -119,7 +119,7 @@ class AccountingOperationController extends Controller
             $added += $a->wasRecentlyCreated ? 1 : 0;
         }
 
-        return back()->with('success', $added ? "{$added} compte(s) usuel(s) ajouté(s). Les comptes existants n’ont pas été modifiés." : 'Tous les comptes usuels sont déjà dans votre plan.');
+        return back()->with('success', $added ? "{$added} compte(s) usuel(s) ajouté(s). Les comptes existants n’ont pas été modifiés." : __('Tous les comptes usuels sont déjà dans votre plan.'));
     }
 
     public function updateAccount(Request $request, Account $account)
@@ -127,17 +127,17 @@ class AccountingOperationController extends Controller
         $data = $request->validate(['label' => ['required', 'string', 'min:2', 'max:180']]);
         $account->update(['label' => trim($data['label'])]);
 
-        return back()->with('success', "Compte {$account->number} renommé.");
+        return back()->with('success', __('Compte :number renommé.', ['number' => $account->number]));
     }
 
     public function destroyAccount(Account $account)
     {
         if ($reason = $this->protectedReason($account)) {
-            return back()->with('error', "Le compte {$account->number} ne peut pas être supprimé : {$reason}.");
+            return back()->with('error', __('Le compte :number ne peut pas être supprimé : :reason.', ['number' => $account->number, 'reason' => $reason]));
         }
         $account->delete();
 
-        return back()->with('success', "Compte {$account->number} supprimé du plan comptable.");
+        return back()->with('success', __('Compte :number supprimé du plan comptable.', ['number' => $account->number]));
     }
 
     /** Pourquoi un compte ne peut pas être supprimé (null = suppression possible). */

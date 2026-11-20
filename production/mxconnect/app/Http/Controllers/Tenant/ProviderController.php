@@ -52,7 +52,7 @@ class ProviderController extends Controller
     public function approveAffiliation(Request $request, int $affiliation)
     {
         $aff = ProviderAffiliation::where('mutual_id', (string) tenant('id'))->where('status', 'requested')->findOrFail($affiliation);
-        abort_if(ProviderConvention::where('care_provider_id', $aff->care_provider_id)->exists(), 422, 'Cet établissement est déjà conventionné.');
+        abort_if(ProviderConvention::where('care_provider_id', $aff->care_provider_id)->exists(), 422, __('Cet établissement est déjà conventionné.'));
         $data = $request->validate($this->rules(), $this->messages());
 
         $c = DB::transaction(fn () => ProviderConvention::create($this->conventionData($data) + [
@@ -64,20 +64,20 @@ class ProviderController extends Controller
         \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_approved', 'Demande d’affiliation acceptée',
             'La convention est créée : votre personnel peut ouvrir le portail de la mutuelle depuis cet espace.', 'mutuals', 'conventions.view');
 
-        return redirect()->route('providers.show', $c->id)->with('success', 'Demande acceptée : la convention est créée. Le personnel de l’établissement peut désormais ouvrir votre portail depuis son espace prestataire.');
+        return redirect()->route('providers.show', $c->id)->with('success', __('Demande acceptée : la convention est créée. Le personnel de l’établissement peut désormais ouvrir votre portail depuis son espace prestataire.'));
     }
 
     public function rejectAffiliation(Request $request, int $affiliation)
     {
         $aff = ProviderAffiliation::where('mutual_id', (string) tenant('id'))->where('status', 'requested')->findOrFail($affiliation);
-        $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], ['note.required' => 'Indiquez le motif du refus : il est communiqué à l’établissement.', 'note.min' => 'Précisez le motif du refus.']);
+        $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']], ['note.required' => __('Indiquez le motif du refus : il est communiqué à l’établissement.'), 'note.min' => __('Précisez le motif du refus.')]);
         $aff->fill(['status' => 'rejected', 'decision_note' => trim($data['note']), 'decided_at' => now()]);
         $aff->log('Demande refusée', $request->user()->name, trim($data['note']));
         $aff->save();
         \App\Support\ProviderNotifier::notify((int) $aff->care_provider_id, 'affiliation_rejected', 'Demande d’affiliation refusée',
             'Motif : ' . trim($data['note']), 'mutuals', 'affiliation.request');
 
-        return back()->with('success', 'Demande refusée ; le motif est communiqué à l’établissement.');
+        return back()->with('success', __('Demande refusée ; le motif est communiqué à l’établissement.'));
     }
 
     /**
@@ -90,9 +90,9 @@ class ProviderController extends Controller
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:120'], 'last_name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:180'], 'phone' => ['nullable', 'string', 'max:30'],
-        ], ['email.required' => 'Indiquez l’adresse e-mail du responsable (elle sert d’identifiant).']);
+        ], ['email.required' => __('Indiquez l’adresse e-mail du responsable (elle sert d’identifiant).')]);
         if (ProviderMembership::where('care_provider_id', $c->care_provider_id)->where('role', 'admin')->where('active', true)->exists()) {
-            return back()->with('error', 'Cet établissement a déjà un administrateur dans l’espace prestataire : c’est lui qui ajoute son personnel.');
+            return back()->with('error', __('Cet établissement a déjà un administrateur dans l’espace prestataire : c’est lui qui ajoute son personnel.'));
         }
         $email = \Illuminate\Support\Str::lower(trim($data['email']));
         $account = ProviderAccount::where('email', $email)->first();
@@ -108,8 +108,8 @@ class ProviderController extends Controller
         ProviderSpaceService::syncFromConvention($c, 'Accès du responsable ouvert', $request->user()->name);
 
         return back()->with('success', $temp
-            ? 'Espace prestataire ouvert pour le responsable. Transmettez-lui l’adresse et le mot de passe provisoire : il ne sera plus affiché.'
-            : 'Cette personne avait déjà un compte prestataire : elle devient administratrice de l’établissement avec son mot de passe habituel.')
+            ? __('Espace prestataire ouvert pour le responsable. Transmettez-lui l’adresse et le mot de passe provisoire : il ne sera plus affiché.')
+            : __('Cette personne avait déjà un compte prestataire : elle devient administratrice de l’établissement avec son mot de passe habituel.'))
             ->with('temp_password', $temp ? ['email' => $email, 'password' => $temp, 'url' => rtrim((string) config('app.url'), '/') . '/espace-prestataire'] : null);
     }
 
@@ -128,7 +128,7 @@ class ProviderController extends Controller
         $convention = DB::transaction(function () use ($data, $request) {
             if ($data['mode'] === 'existing') {
                 $provider = $this->available()->firstWhere('id', (int) $data['care_provider_id']);
-                abort_unless($provider, 422, 'Prestataire introuvable ou déjà conventionné.');
+                abort_unless($provider, 422, __('Prestataire introuvable ou déjà conventionné.'));
             } else {
                 $provider = CareProvider::on('central')->create($this->providerData($data) + [
                     'country_id' => tenant('country_id'), 'active' => true, 'created_by_mutual' => (string) tenant('id'),
@@ -139,7 +139,7 @@ class ProviderController extends Controller
         });
         ProviderSpaceService::syncFromConvention($convention, 'Convention créée par la mutuelle', $request->user()->name);
 
-        return redirect()->route('providers.show', $convention->id)->with('success', 'Prestataire conventionné ajouté. Vous pouvez maintenant créer ses comptes dans « Équipe et rôles » (rôle « Prestataire de soins »).');
+        return redirect()->route('providers.show', $convention->id)->with('success', __('Prestataire conventionné ajouté. Vous pouvez maintenant créer ses comptes dans « Équipe et rôles » (rôle « Prestataire de soins »).'));
     }
 
     public function show(int $convention)
@@ -191,7 +191,7 @@ class ProviderController extends Controller
 
         ProviderSpaceService::syncFromConvention($c, 'Convention modifiée', $request->user()->name);
 
-        return redirect()->route('providers.show', $c->id)->with('success', 'Convention mise à jour.');
+        return redirect()->route('providers.show', $c->id)->with('success', __('Convention mise à jour.'));
     }
 
     public function toggle(Request $request, int $convention)
@@ -203,8 +203,8 @@ class ProviderController extends Controller
         ProviderSpaceService::syncFromConvention($c, $c->active ? 'Convention réactivée' : 'Convention suspendue', $request->user()->name);
 
         return back()->with('success', $c->active
-            ? 'Convention réactivée : le portail du prestataire est de nouveau ouvert.'
-            : 'Convention suspendue : les comptes de ce prestataire ne peuvent plus vérifier de droits ni déclarer de soins.');
+            ? __('Convention réactivée : le portail du prestataire est de nouveau ouvert.')
+            : __('Convention suspendue : les comptes de ce prestataire ne peuvent plus vérifier de droits ni déclarer de soins.'));
     }
 
     // ---
@@ -249,9 +249,9 @@ class ProviderController extends Controller
     private function messages(): array
     {
         return [
-            'care_provider_id.required' => 'Choisissez un prestataire du registre, ou créez-en un nouveau.',
-            'name.required'             => 'Indiquez le nom du prestataire.',
-            'ends_on.after_or_equal'    => 'La fin de la convention doit suivre son début.',
+            'care_provider_id.required' => __('Choisissez un prestataire du registre, ou créez-en un nouveau.'),
+            'name.required'             => __('Indiquez le nom du prestataire.'),
+            'ends_on.after_or_equal'    => __('La fin de la convention doit suivre son début.'),
         ];
     }
 

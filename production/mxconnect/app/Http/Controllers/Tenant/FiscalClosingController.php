@@ -62,20 +62,21 @@ class FiscalClosingController extends Controller
         }
         $c = $this->currency();
 
-        return back()->with('success', "Exercice {$year} clôturé. " . ($result >= 0 ? 'Bénéfice' : 'Perte') . ' : ' . $c->format(abs($result))
-            . '. Plus aucune écriture ne peut être datée de ' . $year . '. Il reste à affecter le résultat (décision de l’assemblée générale).');
+        return back()->with('success', $result >= 0
+            ? __('Exercice :year clôturé. Bénéfice : :amount. Plus aucune écriture ne peut être datée de :year. Il reste à affecter le résultat (décision de l’assemblée générale).', ['year' => $year, 'amount' => $c->format(abs($result))])
+            : __('Exercice :year clôturé. Perte : :amount. Plus aucune écriture ne peut être datée de :year. Il reste à affecter le résultat (décision de l’assemblée générale).', ['year' => $year, 'amount' => $c->format(abs($result))]));
     }
 
     public function reopen(Request $request, int $year)
     {
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']],
-            ['note.required' => 'Indiquez le motif de la réouverture.', 'note.min' => 'Précisez le motif de la réouverture.']);
+            ['note.required' => __('Indiquez le motif de la réouverture.'), 'note.min' => __('Précisez le motif de la réouverture.')]);
         try {
             $this->accounting->reopenYear($year, (int) $request->user()->id, trim($data['note']));
         } catch (AccountingRefusal $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Exercice {$year} rouvert : les écritures de clôture ont été retirées. Pensez à le clôturer à nouveau.");
+        return back()->with('success', __('Exercice :year rouvert : les écritures de clôture ont été retirées. Pensez à le clôturer à nouveau.', ['year' => $year]));
     }
 }

@@ -54,7 +54,7 @@ class ProviderPortalController extends Controller
     public function verify(Request $request, BeneficiaryLookupService $lookup)
     {
         [$provider, $convention] = $this->context($request, 'act');
-        $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => 'Saisissez le code adhérent ou collez le lien de la carte.']);
+        $data = $request->validate(['code' => ['required', 'string', 'max:500']], ['code.required' => __('Saisissez le code adhérent ou collez le lien de la carte.')]);
 
         // Lien ou jeton de la carte (QR) : signature vérifiée ; sinon code adhérent imprimé sur la carte.
         $id = $lookup->identify($data['code']);
@@ -74,11 +74,11 @@ class ProviderPortalController extends Controller
             ? $request->validate([
                 'last_name' => ['required', 'string', 'min:2', 'max:120'], 'first_name' => ['nullable', 'string', 'max:120'],
                 'birth_date' => ['required', 'date', 'before_or_equal:today'],
-            ], ['last_name.required' => 'Indiquez le nom de famille.', 'birth_date.required' => 'La date de naissance complète est obligatoire pour une recherche par nom.'])
+            ], ['last_name.required' => __('Indiquez le nom de famille.'), 'birth_date.required' => __('La date de naissance complète est obligatoire pour une recherche par nom.')])
             : $request->validate([
                 'phone' => ['required', 'string', 'max:30', 'regex:/(\D*\d){8,}/'], 'birth_year' => ['required', 'integer', 'min:1900', 'max:' . now()->year],
-            ], ['phone.regex' => 'Saisissez le numéro complet (8 chiffres au moins).', 'birth_year.required' => 'L’année de naissance est obligatoire pour une recherche par téléphone.']);
-        abort_unless(BeneficiaryLookupService::hasSearchTable(), 503, 'Mise à jour de la mutuelle en cours : réessayez dans un instant.');
+            ], ['phone.regex' => __('Saisissez le numéro complet (8 chiffres au moins).'), 'birth_year.required' => __('L’année de naissance est obligatoire pour une recherche par téléphone.')]);
+        abort_unless(BeneficiaryLookupService::hasSearchTable(), 503, __('Mise à jour de la mutuelle en cours : réessayez dans un instant.'));
 
         $results = $lookup->search($mode, $data, $request->user(), $provider->id);
 
@@ -93,7 +93,7 @@ class ProviderPortalController extends Controller
         [$provider, $convention] = $this->context($request, 'act');
         $request->validate(['pick' => ['required', 'string', 'max:2000']]);
         $found = $lookup->pick((string) $request->input('pick'), $request->user(), $provider->id);
-        abort_unless($found, 410, 'Ce résultat de recherche a expiré : relancez la recherche.');
+        abort_unless($found, 410, __('Ce résultat de recherche a expiré : relancez la recherche.'));
 
         return $this->runCheck($request, $provider, $convention, $found['member'], $found['dependent'], 'search');
     }
@@ -107,14 +107,14 @@ class ProviderPortalController extends Controller
         [$provider, $convention] = $this->context($request, 'act');
         $c = $this->usableCheck($request, $provider, $check);
         $data = $request->validate(['act_type_id' => ['required', 'integer'], 'total' => ['required', 'string', 'max:20']],
-            ['act_type_id.required' => 'Choisissez l’acte.', 'total.required' => 'Indiquez le montant prévu.']);
-        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+            ['act_type_id.required' => __('Choisissez l’acte.'), 'total.required' => __('Indiquez le montant prévu.')]);
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, __('Acte inconnu.'));
         $total = $this->currency()->toMinor($this->amount($data['total']));
         if ($total <= 0) {
-            return back()->withErrors(['total' => 'Indiquez le montant prévu des soins.']);
+            return back()->withErrors(['total' => __('Indiquez le montant prévu des soins.')]);
         }
         $version = $this->capture->versionFor($c->member, now()->toDateString());
-        abort_unless($version, 422, 'Aucune garantie en cours pour cet adhérent.');
+        abort_unless($version, 422, __('Aucune garantie en cours pour cet adhérent.'));
         $dependent = RightsCheck::hasIdentificationColumns() && $c->dependent_id ? Dependent::find($c->dependent_id) : null;
         $estimate = $coverage->estimate($version, $c->member, (int) $data['act_type_id'], $total, now()->toDateString(), $dependent, $provider->id,
             ['emergency' => $request->boolean('emergency'), 'accident' => $request->boolean('accident')]);
@@ -147,18 +147,18 @@ class ProviderPortalController extends Controller
             'care_date'   => ['required', 'date', 'before_or_equal:today', 'after_or_equal:' . now()->subDays(30)->toDateString()],
             'total'       => ['required', 'string', 'max:20'],
         ], [
-            'care_date.before_or_equal' => 'La date des soins ne peut pas être dans le futur.',
-            'care_date.after_or_equal'  => 'Les soins de plus de 30 jours se déclarent auprès de la mutuelle.',
+            'care_date.before_or_equal' => __('La date des soins ne peut pas être dans le futur.'),
+            'care_date.after_or_equal'  => __('Les soins de plus de 30 jours se déclarent auprès de la mutuelle.'),
         ]);
-        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, __('Acte inconnu.'));
         $dependentId = null;
         if ($data['beneficiary'] !== 'member') {
             $dependentId = $member->dependents()->where('status', 'active')->whereKey((int) $data['beneficiary'])->value('id');
-            abort_unless($dependentId, 422, 'Bénéficiaire inconnu.');
+            abort_unless($dependentId, 422, __('Bénéficiaire inconnu.'));
         }
         $total = $this->amount($data['total']);
         if ($total <= 0) {
-            return back()->withInput()->withErrors(['total' => 'Indiquez le montant total des soins.']);
+            return back()->withInput()->withErrors(['total' => __('Indiquez le montant total des soins.')]);
         }
 
         // Double saisie probable (2026-11-15) : même établissement, même personne, même acte, même
@@ -243,23 +243,23 @@ class ProviderPortalController extends Controller
             'planned_on'    => ['required', 'date', 'after_or_equal:today', 'before_or_equal:' . now()->addYear()->toDateString()],
             'total'         => ['required', 'string', 'max:20'],
             'clinical_info' => ['nullable', 'string', 'max:2000'],
-        ], ['planned_on.after_or_equal' => 'La date prévue ne peut pas être passée. Une urgence se déclare directement (régularisation ensuite).']);
-        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        ], ['planned_on.after_or_equal' => __('La date prévue ne peut pas être passée. Une urgence se déclare directement (régularisation ensuite).')]);
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, __('Acte inconnu.'));
         $dependent = null;
         if ($data['beneficiary'] !== 'member') {
             $dependent = $member->dependents()->where('status', 'active')->whereKey((int) $data['beneficiary'])->first();
-            abort_unless($dependent, 422, 'Bénéficiaire inconnu.');
+            abort_unless($dependent, 422, __('Bénéficiaire inconnu.'));
         }
         $total = $this->amount($data['total']);
         if ($total <= 0) {
-            return back()->withInput()->withErrors(['total' => 'Indiquez le montant prévu des soins.']);
+            return back()->withInput()->withErrors(['total' => __('Indiquez le montant prévu des soins.')]);
         }
         $p = $service->request([
             'member' => $member, 'dependent' => $dependent, 'provider_id' => $provider->id, 'act_type_id' => (int) $data['act_type_id'],
             'planned_on' => $data['planned_on'], 'estimated_minor' => $this->currency()->toMinor($total), 'clinical_info' => $data['clinical_info'] ?? null,
         ], $request->user(), 'provider');
 
-        return redirect()->route('portal.preauth')->with('success', "Demande d’accord préalable n° {$p->id} envoyée à la mutuelle. Vous verrez sa décision ici.");
+        return redirect()->route('portal.preauth')->with('success', __('Demande d’accord préalable n° :id envoyée à la mutuelle. Vous verrez sa décision ici.', ['id' => $p->id]));
     }
 
     public function preauthCancel(Request $request, int $preauth, \App\Services\Tenant\PreauthorizationService $service)
@@ -272,7 +272,7 @@ class ProviderPortalController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Demande retirée.');
+        return back()->with('success', __('Demande retirée.'));
     }
 
     // ------------------------------------------------------------------ pharmacie (2026-11-19)
@@ -312,14 +312,14 @@ class ProviderPortalController extends Controller
             'lines.*.dispensed'   => ['nullable', 'integer', 'min:1', 'max:9999'],
             'lines.*.unit_price'  => ['nullable', 'string', 'max:20'],
         ], [
-            'reference.required' => 'Indiquez le numéro de l’ordonnance.', 'prescriber.required' => 'Indiquez le prescripteur.',
-            'prescribed_on.before_or_equal' => 'La date de l’ordonnance ne peut pas être dans le futur.',
+            'reference.required' => __('Indiquez le numéro de l’ordonnance.'), 'prescriber.required' => __('Indiquez le prescripteur.'),
+            'prescribed_on.before_or_equal' => __('La date de l’ordonnance ne peut pas être dans le futur.'),
         ]);
-        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, 'Acte inconnu.');
+        abort_unless(ActType::whereKey($data['act_type_id'])->exists(), 422, __('Acte inconnu.'));
         $dependent = null;
         if ($data['beneficiary'] !== 'member') {
             $dependent = $member->dependents()->where('status', 'active')->whereKey((int) $data['beneficiary'])->first();
-            abort_unless($dependent, 422, 'Bénéficiaire inconnu.');
+            abort_unless($dependent, 422, __('Bénéficiaire inconnu.'));
         }
         $lines = [];
         foreach ($data['lines'] as $l) {
@@ -327,7 +327,7 @@ class ProviderPortalController extends Controller
                 continue;   // ligne vide du formulaire
             }
             if (empty($l['prescribed']) || empty($l['dispensed']) || ($l['unit_price'] ?? '') === '') {
-                return back()->withInput()->withErrors(['lines' => 'Pour chaque médicament, indiquez la quantité prescrite, la quantité délivrée et le prix unitaire.']);
+                return back()->withInput()->withErrors(['lines' => __('Pour chaque médicament, indiquez la quantité prescrite, la quantité délivrée et le prix unitaire.')]);
             }
             $lines[] = ['medicine_id' => (int) $l['medicine_id'], 'quantity_prescribed' => (int) $l['prescribed'], 'quantity_dispensed' => (int) $l['dispensed'],
                 'unit_price_minor' => $this->currency()->toMinor($this->amount($l['unit_price']))];
@@ -393,15 +393,15 @@ class ProviderPortalController extends Controller
         $data = $request->validate([
             'prestations' => ['required', 'array', 'min:1', 'max:' . ProviderBillingService::MAX_LINES], 'prestations.*' => ['integer'],
             'provider_reference' => ['nullable', 'string', 'max:60'],
-        ] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages() + ['prestations.required' => 'Cochez au moins une prestation à facturer.']);
+        ] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages() + ['prestations.required' => __('Cochez au moins une prestation à facturer.')]);
         try {
             $inv = $billing->submit($provider->id, $data['prestations'], $request->user(), $data['provider_reference'] ?? null, $request->file('document'), 'batch');
         } catch (AccountingRefusal $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('portal.invoices.show', $inv->id)->with('success', 'Facture ' . $inv->reference . ' transmise à la mutuelle ('
-            . $this->currency()->format($inv->amount_minor) . '). Elle sera contrôlée ligne par ligne ; le paiement est fait par la mutuelle, hors de la plateforme.');
+        return redirect()->route('portal.invoices.show', $inv->id)->with('success', __('Facture :ref transmise à la mutuelle (:amount). Elle sera contrôlée ligne par ligne ; le paiement est fait par la mutuelle, hors de la plateforme.',
+            ['ref' => $inv->reference, 'amount' => $this->currency()->format($inv->amount_minor)]));
     }
 
     /** Une prise en charge entière (ancien bouton conservé) : même circuit, une facture à lignes. */
@@ -415,14 +415,14 @@ class ProviderPortalController extends Controller
             return $this->legacyRequestPayment($request, $provider, $c, $data, $docs);
         }
         $ids = $billing->billable($provider->id)->where('care_claim_id', $c->id)->pluck('id')->all();
-        abort_if(! $ids, 422, 'Cette prise en charge est déjà facturée, ou n’a aucune prestation validée à facturer.');
+        abort_if(! $ids, 422, __('Cette prise en charge est déjà facturée, ou n’a aucune prestation validée à facturer.'));
         try {
             $inv = $billing->submit($provider->id, $ids, $request->user(), $data['provider_reference'] ?? null, $request->file('document'), 'claim');
         } catch (AccountingRefusal $e) {
             abort(422, $e->getMessage());
         }
 
-        return back()->with('success', 'Demande de paiement ' . $inv->reference . ' transmise à la mutuelle (' . $this->currency()->format($inv->amount_minor) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
+        return back()->with('success', __('Demande de paiement :ref transmise à la mutuelle (:amount). Le paiement est fait par la mutuelle, hors de la plateforme.', ['ref' => $inv->reference, 'amount' => $this->currency()->format($inv->amount_minor)]));
     }
 
     /** Détail d'une facture : lignes, motifs des rejets, historique, paiement ; imprimable (bordereau). */
@@ -474,12 +474,12 @@ class ProviderPortalController extends Controller
     {
         [$provider, $convention] = $this->context($request, 'bill');
         $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
-        abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, 'Cette facture est déjà en paiement : la pièce ne se modifie plus.');
-        $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => 'Choisissez le fichier PDF de la facture.']);
+        abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, __('Cette facture est déjà en paiement : la pièce ne se modifie plus.'));
+        $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => __('Choisissez le fichier PDF de la facture.')]);
         $docs->attach($inv, $request->file('document'));
         $billing->event($inv, 'document', $request->user()->id);
 
-        return back()->with('success', 'Facture PDF jointe à la demande ' . $inv->label() . '.');
+        return back()->with('success', __('Facture PDF jointe à la demande :label.', ['label' => $inv->label()]));
     }
 
     /** Ancien circuit (mutuelle pas encore migrée) : une facture par prise en charge, sans ligne. */
@@ -489,7 +489,7 @@ class ProviderPortalController extends Controller
             CareClaim::whereKey($c->id)->lockForUpdate()->first();
             abort_if(ProviderInvoice::where('provider_id', $provider->id)->where('care_claim_id', $c->id)->exists(), 422, 'Cette prise en charge est déjà facturée.');
             $amount = (int) $c->prestations()->where('provider_id', $provider->id)->where('status', 'validated')->sum('mutual_part_minor');
-            abort_if($amount <= 0, 422, 'Aucune prestation validée à facturer.');
+            abort_if($amount <= 0, 422, __('Aucune prestation validée à facturer.'));
             $invoice = ProviderInvoice::create([
                 'provider_id' => $provider->id, 'care_claim_id' => $c->id, 'amount_minor' => $amount, 'status' => 'captured',
                 'captured_by' => $request->user()->id, 'provider_reference' => $data['provider_reference'] ?? null,
@@ -501,7 +501,7 @@ class ProviderPortalController extends Controller
             return $amount;
         });
 
-        return back()->with('success', 'Demande de paiement transmise à la mutuelle (' . $this->currency()->format($amount) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
+        return back()->with('success', __('Demande de paiement transmise à la mutuelle (:amount). Le paiement est fait par la mutuelle, hors de la plateforme.', ['amount' => $this->currency()->format($amount)]));
     }
 
     /** Le prestataire retélécharge la pièce de SA facture. */
@@ -530,7 +530,7 @@ class ProviderPortalController extends Controller
         $user = $request->user();
         $provider = $user->care_provider_id ? CareProvider::on('central')->find($user->care_provider_id) : null;
         $convention = ProviderConvention::forProvider($provider?->id);
-        abort_unless($provider && $convention, 403, 'Ce compte n’est rattaché à aucun prestataire conventionné. Contactez la mutuelle.');
+        abort_unless($provider && $convention, 403, __('Ce compte n’est rattaché à aucun prestataire conventionné. Contactez la mutuelle.'));
 
         $canAct = $provider->active !== false && $convention->inForce();
         $canBill = $provider->active !== false && (bool) $convention->active;
@@ -543,8 +543,8 @@ class ProviderPortalController extends Controller
             'space'   => $user->provider_account_id ? rtrim((string) config('app.url'), '/') . '/espace-prestataire' : null,
         ];
         view()->share('portal', $state);
-        abort_if($mode === 'act' && ! $canAct, 403, 'La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.');
-        abort_if($mode === 'bill' && ! $canBill, 403, 'La convention de votre établissement a été suspendue par la mutuelle : la facturation en ligne est fermée. Contactez la mutuelle.');
+        abort_if($mode === 'act' && ! $canAct, 403, __('La convention de votre établissement avec la mutuelle n’est pas en vigueur. Contactez la mutuelle.'));
+        abort_if($mode === 'bill' && ! $canBill, 403, __('La convention de votre établissement a été suspendue par la mutuelle : la facturation en ligne est fermée. Contactez la mutuelle.'));
 
         return [$provider, $convention];
     }
@@ -555,7 +555,7 @@ class ProviderPortalController extends Controller
         $c = RightsCheck::with('member')->whereKey($check)->where('user_id', $request->user()->id)
             ->where('care_provider_id', $provider->id)->where('ok', true)->whereNotNull('member_id')->first();
         abort_unless($c, 404);
-        abort_if($c->created_at->lt(now()->subHours(self::CHECK_HOURS)), 410, 'Cette vérification a expiré : vérifiez de nouveau les droits de l’adhérent.');
+        abort_if($c->created_at->lt(now()->subHours(self::CHECK_HOURS)), 410, __('Cette vérification a expiré : vérifiez de nouveau les droits de l’adhérent.'));
 
         return $c;
     }

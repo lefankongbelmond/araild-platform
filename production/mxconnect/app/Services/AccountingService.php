@@ -140,11 +140,11 @@ class AccountingService
     {
         $year = (int) Carbon::parse($date)->year;
         if ($this->isYearClosed($year)) {
-            $this->refuse("L’exercice {$year} est clôturé : aucune écriture ne peut y être passée.");
+            $this->refuse(__('L’exercice :year est clôturé : aucune écriture ne peut y être passée.', ['year' => $year]));
         }
         $day = $this->resolveDay($date);
         if ($day->isClosed()) {
-            $this->refuse('La journée du ' . $day->day->format('d/m/Y') . ' est arrêtée (arrêté de caisse) : choisissez une autre date.');
+            $this->refuse(__('La journée du :date est arrêtée (arrêté de caisse) : choisissez une autre date.', ['date' => $day->day->format('d/m/Y')]));
         }
 
         return $day;
@@ -154,10 +154,10 @@ class AccountingService
     public function capture(string $date, Account $debit, Account $credit, int $amountMinor, string $label, ?string $piece, int $userId): AccountingEntry
     {
         if ($debit->id === $credit->id) {
-            $this->refuse('Le compte débité et le compte crédité doivent être différents.');
+            $this->refuse(__('Le compte débité et le compte crédité doivent être différents.'));
         }
         if ($amountMinor <= 0) {
-            $this->refuse('Le montant doit être supérieur à zéro.');
+            $this->refuse(__('Le montant doit être supérieur à zéro.'));
         }
         $day = $this->openDay($date);
 
@@ -178,14 +178,14 @@ class AccountingService
     public function validateEntry(AccountingEntry $entry, int $userId): void
     {
         if ($entry->status !== 'captured') {
-            $this->refuse('Cette écriture n’est plus en attente de validation.');
+            $this->refuse(__('Cette écriture n’est plus en attente de validation.'));
         }
         if ((int) $entry->captured_by === $userId) {
-            $this->refuse('Vous avez saisi cette écriture : une autre personne doit la valider (contrôle « 4 yeux »).');
+            $this->refuse(__('Vous avez saisi cette écriture : une autre personne doit la valider (contrôle « 4 yeux »).'));
         }
         $this->openDay($entry->accountingDay->day->toDateString());
         if ($entry->kind === 'reversal' && $entry->reversed_entry_id && $this->reversalOf($entry->reversed_entry_id, $entry->id)) {
-            $this->refuse('Cette écriture a déjà été extournée.');
+            $this->refuse(__('Cette écriture a déjà été extournée.'));
         }
         $entry->update(['status' => 'validated', 'validated_by' => $userId, 'validated_at' => now()]);
     }
@@ -193,10 +193,10 @@ class AccountingService
     public function rejectEntry(AccountingEntry $entry, int $userId, string $note): void
     {
         if ($entry->status !== 'captured') {
-            $this->refuse('Cette écriture n’est plus en attente de validation.');
+            $this->refuse(__('Cette écriture n’est plus en attente de validation.'));
         }
         if ((int) $entry->captured_by === $userId) {
-            $this->refuse('Vous avez saisi cette écriture : une autre personne doit décider (contrôle « 4 yeux »).');
+            $this->refuse(__('Vous avez saisi cette écriture : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
         $entry->update(['status' => 'rejected', 'validated_by' => $userId, 'validated_at' => now(), 'decision_note' => $note]);
     }
@@ -205,13 +205,13 @@ class AccountingService
     public function reverse(AccountingEntry $entry, string $date, int $userId): AccountingEntry
     {
         if (! in_array($entry->status, ['validated', 'posted'], true)) {
-            $this->refuse('Seule une écriture validée peut être extournée.');
+            $this->refuse(__('Seule une écriture validée peut être extournée.'));
         }
         if (in_array($entry->kind, ['closing', 'reversal'], true)) {
-            $this->refuse($entry->kind === 'closing' ? 'Une écriture de clôture ne s’extourne pas : rouvrez l’exercice.' : 'Une extourne ne s’extourne pas : saisissez une nouvelle opération.');
+            $this->refuse($entry->kind === 'closing' ? __('Une écriture de clôture ne s’extourne pas : rouvrez l’exercice.') : __('Une extourne ne s’extourne pas : saisissez une nouvelle opération.'));
         }
         if ($this->reversalOf($entry->id)) {
-            $this->refuse('Cette écriture a déjà une extourne (validée ou en attente).');
+            $this->refuse(__('Cette écriture a déjà une extourne (validée ou en attente).'));
         }
         $day = $this->openDay($date);
 
@@ -327,17 +327,17 @@ class AccountingService
     {
         $fy = FiscalYear::where('label', (string) $year)->first();
         if (! $fy || $fy->status !== 'closed') {
-            $this->refuse("L’exercice {$year} n’est pas clôturé.");
+            $this->refuse(__('L’exercice :year n’est pas clôturé.', ['year' => $year]));
         }
         if ($this->isYearClosed($year + 1)) {
-            $this->refuse('L’exercice ' . ($year + 1) . ' est clôturé : rouvrez-le d’abord.');
+            $this->refuse(__('L’exercice :year est clôturé : rouvrez-le d’abord.', ['year' => $year + 1]));
         }
         $resultAccounts = Account::whereIn('number', array_keys(self::CLOSING_ACCOUNTS))->pluck('id');
         $used = AccountingEntry::where('kind', '!=', 'closing')->whereIn('status', ['captured', 'validated', 'posted'])
             ->where(fn ($q) => $q->whereIn('debit_account_id', $resultAccounts)->orWhereIn('credit_account_id', $resultAccounts))
             ->whereHas('accountingDay', fn ($q) => $q->where('day', '>', "{$year}-12-31"))->exists();
         if ($used) {
-            $this->refuse('Le résultat de ' . $year . ' a déjà été affecté (écriture sur les comptes 130, 131 ou 139) : extournez d’abord cette affectation.');
+            $this->refuse(__('Le résultat de :year a déjà été affecté (écriture sur les comptes 130, 131 ou 139) : extournez d’abord cette affectation.', ['year' => $year]));
         }
 
         DB::transaction(function () use ($fy, $year, $userId, $note) {

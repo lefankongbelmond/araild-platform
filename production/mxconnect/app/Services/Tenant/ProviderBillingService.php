@@ -91,10 +91,10 @@ class ProviderBillingService
     {
         $ids = array_values(array_unique(array_map('intval', $prestationIds)));
         if (! $ids) {
-            throw new AccountingRefusal('Cochez au moins une prestation à facturer.');
+            throw new AccountingRefusal(__('Cochez au moins une prestation à facturer.'));
         }
         if (count($ids) > self::MAX_LINES) {
-            throw new AccountingRefusal('Un bordereau compte au plus ' . self::MAX_LINES . ' prestations : envoyez-en plusieurs.');
+            throw new AccountingRefusal(__('Un bordereau compte au plus :max prestations : envoyez-en plusieurs.', ['max' => self::MAX_LINES]));
         }
 
         return DB::transaction(function () use ($providerId, $ids, $by, $providerReference, $document, $kind) {
@@ -103,7 +103,7 @@ class ProviderBillingService
             $locked = Prestation::whereIn('id', $ids)->where('provider_id', $providerId)->lockForUpdate()->get();
             $ok = $this->billable($providerId)->whereIn('id', $ids)->orderBy('care_date')->orderBy('id')->get();
             if ($locked->count() !== count($ids) || $ok->count() !== count($ids)) {
-                throw new AccountingRefusal('Une ou plusieurs prestations ne sont plus à facturer (déjà facturées, ou non validées). Actualisez la page.');
+                throw new AccountingRefusal(__('Une ou plusieurs prestations ne sont plus à facturer (déjà facturées, ou non validées). Actualisez la page.'));
             }
 
             $total = (int) $ok->sum('mutual_part_minor');
@@ -138,17 +138,17 @@ class ProviderBillingService
     public function decideLines(ProviderInvoice $invoice, array $decisions, User $by): array
     {
         if ((int) $invoice->captured_by === (int) $by->id) {
-            throw new AccountingRefusal('Vous avez saisi cette facture : une autre personne doit la contrôler (contrôle « 4 yeux »).');
+            throw new AccountingRefusal(__('Vous avez saisi cette facture : une autre personne doit la contrôler (contrôle « 4 yeux »).'));
         }
 
         $result = DB::transaction(function () use ($invoice, $decisions, $by) {
             $inv = ProviderInvoice::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
             if ($inv->status !== 'captured') {
-                throw new AccountingRefusal('Cette facture n’est plus à contrôler.');
+                throw new AccountingRefusal(__('Cette facture n’est plus à contrôler.'));
             }
             $lines = $inv->lines()->where('status', 'pending')->whereIn('id', array_map('intval', array_keys($decisions)))->get()->keyBy('id');
             if ($lines->isEmpty()) {
-                throw new AccountingRefusal('Aucune ligne à contrôler dans votre choix.');
+                throw new AccountingRefusal(__('Aucune ligne à contrôler dans votre choix.'));
             }
             foreach ($lines as $id => $line) {
                 [$decision, $note] = $decisions[$id] + [1 => null];
@@ -156,11 +156,11 @@ class ProviderBillingService
                 if ($decision === 'accepted') {
                     $p = Prestation::find($line->prestation_id);
                     if (! $p || $p->status !== 'validated' || (int) $p->provider_id !== (int) $inv->provider_id) {
-                        throw new AccountingRefusal("La prestation n° {$line->prestation_id} n’est plus validée : rejetez cette ligne avec un motif.");
+                        throw new AccountingRefusal(__('La prestation n° :id n’est plus validée : rejetez cette ligne avec un motif.', ['id' => $line->prestation_id]));
                     }
                 } elseif ($decision === 'rejected') {
                     if (mb_strlen((string) $note) < 5) {
-                        throw new AccountingRefusal('Indiquez le motif de chaque ligne rejetée (5 caractères au moins) : il est communiqué à l’établissement.');
+                        throw new AccountingRefusal(__('Indiquez le motif de chaque ligne rejetée (5 caractères au moins) : il est communiqué à l’établissement.'));
                     }
                 } else {
                     continue;
@@ -192,12 +192,12 @@ class ProviderBillingService
     public function reject(ProviderInvoice $invoice, User $by, string $note): void
     {
         if ((int) $invoice->captured_by === (int) $by->id) {
-            throw new AccountingRefusal('Vous avez saisi cette facture : une autre personne doit décider (contrôle « 4 yeux »).');
+            throw new AccountingRefusal(__('Vous avez saisi cette facture : une autre personne doit décider (contrôle « 4 yeux »).'));
         }
         DB::transaction(function () use ($invoice, $by, $note) {
             $inv = ProviderInvoice::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
             if (! in_array($inv->status, ProviderInvoice::PAYABLE, true)) {
-                throw new AccountingRefusal('Cette facture n’est plus en attente de paiement.');
+                throw new AccountingRefusal(__('Cette facture n’est plus en attente de paiement.'));
             }
             $inv->update(['status' => 'rejected', 'validated_by' => $by->id]
                 + (Schema::hasColumn('provider_invoices', 'decision_note') ? ['decision_note' => $note, 'decided_at' => now()] : []));
@@ -213,13 +213,13 @@ class ProviderBillingService
     public function payBlocker(ProviderInvoice $invoice): ?string
     {
         if ($invoice->status === 'paid') {
-            return 'Cette facture est déjà payée.';
+            return __('Cette facture est déjà payée.');
         }
         if (! in_array($invoice->status, ProviderInvoice::PAYABLE, true)) {
-            return 'Cette facture n’est pas à payer.';
+            return __('Cette facture n’est pas à payer.');
         }
         if ($invoice->hasLines() && $invoice->status === 'captured') {
-            return 'Contrôlez d’abord les lignes de cette facture : seule une facture validée se paie.';
+            return __('Contrôlez d’abord les lignes de cette facture : seule une facture validée se paie.');
         }
 
         return null;
@@ -231,22 +231,22 @@ class ProviderBillingService
         $reference = trim((string) $reference);
         $day = Carbon::parse($date)->startOfDay();
         if (! array_key_exists($mode, self::MODES)) {
-            throw new AccountingRefusal('Mode de paiement inconnu.');
+            throw new AccountingRefusal(__('Mode de paiement inconnu.'));
         }
         if (mb_strlen($reference) < 3) {
-            throw new AccountingRefusal('Indiquez la référence du paiement effectué (n° de virement, de transaction Mobile Money ou de reçu de caisse).');
+            throw new AccountingRefusal(__('Indiquez la référence du paiement effectué (n° de virement, de transaction Mobile Money ou de reçu de caisse).'));
         }
         if ($day->gt(now()->startOfDay())) {
-            throw new AccountingRefusal('La date du paiement ne peut pas être dans le futur : enregistrez le paiement une fois effectué.');
+            throw new AccountingRefusal(__('La date du paiement ne peut pas être dans le futur : enregistrez le paiement une fois effectué.'));
         }
         if ($this->accounting->isYearClosed((int) $day->year)) {
-            throw new AccountingRefusal("L’exercice {$day->year} est clôturé : choisissez une date dans un exercice ouvert.");
+            throw new AccountingRefusal(__('L’exercice :year est clôturé : choisissez une date dans un exercice ouvert.', ['year' => $day->year]));
         }
         if (AccountingDay::whereDate('day', $day->toDateString())->first()?->isClosed()) {
-            throw new AccountingRefusal('La journée du ' . $day->format('d/m/Y') . ' est arrêtée (arrêté de caisse) : choisissez une autre date.');
+            throw new AccountingRefusal(__('La journée du :date est arrêtée (arrêté de caisse) : choisissez une autre date.', ['date' => $day->format('d/m/Y')]));
         }
         if ((int) $invoice->captured_by === (int) $by->id || ($invoice->checked_by && (int) $invoice->checked_by === (int) $by->id)) {
-            throw new AccountingRefusal('Vous avez saisi ou contrôlé cette facture : une autre personne doit enregistrer le paiement (contrôle « 4 yeux »).');
+            throw new AccountingRefusal(__('Vous avez saisi ou contrôlé cette facture : une autre personne doit enregistrer le paiement (contrôle « 4 yeux »).'));
         }
 
         $paid = DB::transaction(function () use ($invoice, $by, $mode, $reference, $day) {

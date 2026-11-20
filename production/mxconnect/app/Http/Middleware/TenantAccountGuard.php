@@ -35,7 +35,7 @@ class TenantAccountGuard
         }
         if ($user && ($user->must_change_password ?? false)
             && ! $request->routeIs('account.password', 'account.password.update', 'tenant.logout', 'tenant.mfa.*')) {
-            return redirect()->route('account.password')->with('error', 'Choisissez votre mot de passe personnel avant de continuer.');
+            return redirect()->route('account.password')->with('error', __('Choisissez votre mot de passe personnel avant de continuer.'));
         }
 
         return $next($request);

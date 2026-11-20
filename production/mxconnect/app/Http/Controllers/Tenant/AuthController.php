@@ -43,7 +43,7 @@ class AuthController extends Controller
         // l'espace prestataire (double authentification et droits de l'établissement contrôlés là-bas).
         if (Auth::guard('web')->user()->provider_account_id ?? null) {
             Auth::guard('web')->logout();
-            throw ValidationException::withMessages(['email' => 'Ce compte s’utilise depuis l’espace prestataire MX-CONNECT : connectez-vous sur ' . rtrim((string) config('app.url'), '/') . '/espace-prestataire.']);
+            throw ValidationException::withMessages(['email' => __('Ce compte s’utilise depuis l’espace prestataire MX-CONNECT : connectez-vous sur :url.', ['url' => rtrim((string) config('app.url'), '/') . '/espace-prestataire'])]);
         }
 
         $request->session()->regenerate();

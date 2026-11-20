@@ -98,7 +98,7 @@ class ContributionController extends Controller
             'paid_on'   => ['required', 'date'],
             'mode'      => ['required', 'in:' . implode(',', array_keys(ContributionPayment::MODES))],
             'reference' => ['nullable', 'string', 'max:60', 'required_if:mode,bank,mobile_money'],
-        ], ['reference.required_if' => 'Indiquez la référence (n° de transaction ou de bordereau).']);
+        ], ['reference.required_if' => __('Indiquez la référence (n° de transaction ou de bordereau).')]);
 
         try {
             $r = $this->collections->collect($member, $this->currency()->toMinor($this->amount($data['amount'])), $data['paid_on'],
@@ -107,8 +107,8 @@ class ContributionController extends Controller
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('contributions.member', $member)->with('success', 'Encaissement ' . $r['ref'] . ' enregistré : '
-            . $this->currency()->format($r['amount']) . ' sur ' . $r['payments']->count() . ' échéance(s). Reçu disponible ; mouvement de trésorerie créé.');
+        return redirect()->route('contributions.member', $member)->with('success', __('Encaissement :ref enregistré : :amount sur :count échéance(s). Reçu disponible ; mouvement de trésorerie créé.',
+            ['ref' => $r['ref'], 'amount' => $this->currency()->format($r['amount']), 'count' => $r['payments']->count()]));
     }
 
     /** Raccourci de la liste : solde d'une échéance (montant restant, aujourd'hui). */
@@ -116,7 +116,7 @@ class ContributionController extends Controller
     {
         $request->validate(['mode' => ['required', 'in:cash,group']]);
         $member = $schedule->subscription?->member;
-        abort_unless($member, 422, 'Échéance sans adhérent.');
+        abort_unless($member, 422, __('Échéance sans adhérent.'));
         try {
             $r = $this->collections->collect($member, $schedule->remainingMinor(), now()->toDateString(), $request->get('mode'), null,
                 (int) $request->user()->id, [$schedule->id]);
@@ -124,21 +124,21 @@ class ContributionController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Échéance ' . $schedule->label() . ' encaissée (' . $r['ref'] . '). Reçu généré ; mouvement de trésorerie créé.');
+        return back()->with('success', __('Échéance :label encaissée (:ref). Reçu généré ; mouvement de trésorerie créé.', ['label' => $schedule->label(), 'ref' => $r['ref']]));
     }
 
     /** Demande d'annulation d'un encaissement (trésorier, motif) : décidée par une autre personne. */
     public function requestCancellation(Request $request, string $ref)
     {
         $data = $request->validate(['reason' => ['required', 'string', 'min:5', 'max:500']],
-            ['reason.required' => 'Indiquez le motif de l’annulation.', 'reason.min' => 'Précisez le motif de l’annulation.']);
+            ['reason.required' => __('Indiquez le motif de l’annulation.'), 'reason.min' => __('Précisez le motif de l’annulation.')]);
         try {
             $c = $this->collections->requestCancellation($ref, trim($data['reason']), (int) $request->user()->id);
         } catch (AccountingRefusal $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Annulation de l’encaissement {$c->collection_ref} demandée. Elle attend la décision de l’administrateur ou du contrôleur.");
+        return back()->with('success', __('Annulation de l’encaissement :ref demandée. Elle attend la décision de l’administrateur ou du contrôleur.', ['ref' => $c->collection_ref]));
     }
 
     public function approveCancellation(Request $request, CollectionCancellation $cancellation)
@@ -149,20 +149,20 @@ class ContributionController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Encaissement {$cancellation->collection_ref} annulé : échéances rouvertes, mouvement de trésorerie inverse créé, reçu marqué « ANNULÉ ».");
+        return back()->with('success', __('Encaissement :ref annulé : échéances rouvertes, mouvement de trésorerie inverse créé, reçu marqué « ANNULÉ ».', ['ref' => $cancellation->collection_ref]));
     }
 
     public function rejectCancellation(Request $request, CollectionCancellation $cancellation)
     {
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:500']],
-            ['note.required' => 'Indiquez le motif du refus.', 'note.min' => 'Précisez le motif du refus.']);
+            ['note.required' => __('Indiquez le motif du refus.'), 'note.min' => __('Précisez le motif du refus.')]);
         try {
             $this->collections->rejectCancellation($cancellation, (int) $request->user()->id, trim($data['note']));
         } catch (AccountingRefusal $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Demande d’annulation de {$cancellation->collection_ref} refusée : l’encaissement est maintenu.");
+        return back()->with('success', __('Demande d’annulation de :ref refusée : l’encaissement est maintenu.', ['ref' => $cancellation->collection_ref]));
     }
 
     /** Appelle le droit d'adhésion prévu par la garantie (souscription validée avant le 2026-11-07). */
@@ -188,13 +188,13 @@ class ContributionController extends Controller
     public function updatePolicy(Request $request)
     {
         $d = $request->validate(['grace_days' => ['nullable', 'integer', 'between:0,' . \App\Support\ArrearsPolicy::MAX_DAYS]],
-            ['grace_days.between' => 'Le délai de grâce doit être compris entre 0 et ' . \App\Support\ArrearsPolicy::MAX_DAYS . ' jours.']);
+            ['grace_days.between' => __('Le délai de grâce doit être compris entre 0 et :max jours.', ['max' => \App\Support\ArrearsPolicy::MAX_DAYS])]);
         $days = (int) ($d['grace_days'] ?? 0);
         \App\Models\Tenant\MutualSetting::put(\App\Support\ArrearsPolicy::KEY, $days > 0 ? (string) $days : null, $request->user()->id);
 
         return back()->with('success', $days > 0
             ? "Délai de grâce enregistré : les droits sont suspendus {$days} jour(s) après une échéance impayée."
-            : 'Délai de grâce retiré : les droits sont suspendus dès le lendemain d’une échéance impayée.');
+            : __('Délai de grâce retiré : les droits sont suspendus dès le lendemain d’une échéance impayée.'));
     }
 
     /** Prolonge les échéanciers (horizon glissant) et marque les retards. */
@@ -202,7 +202,7 @@ class ContributionController extends Controller
     {
         $r = $schedules->refreshAll();
 
-        return back()->with('success', "Échéanciers actualisés : {$r['created']} échéance(s) ajoutée(s), {$r['overdue']} passée(s) en retard.");
+        return back()->with('success', __('Échéanciers actualisés : :created échéance(s) ajoutée(s), :overdue passée(s) en retard.', ['created' => $r['created'], 'overdue' => $r['overdue']]));
     }
 
     /** Export CSV de l'onglet courant (relances : téléphone, reste dû). */

@@ -25,19 +25,19 @@ class TeamService
     {
         $roles = array_values(array_intersect(config('mxconnect.mutual_roles', []), $roles));
         if (! $roles) {
-            throw ValidationException::withMessages(['roles' => 'Choisissez au moins un rôle.']);
+            throw ValidationException::withMessages(['roles' => __('Choisissez au moins un rôle.')]);
         }
         foreach (config('mxconnect.exclusive_roles', []) as $x) {
             if (in_array($x, $roles, true) && count($roles) > 1) {
                 $lx = \App\Support\TenantNav::ROLE_LABELS[$x] ?? $x;
-                throw ValidationException::withMessages(['roles' => "Le rôle « {$lx} » ne se cumule avec aucun autre rôle."]);
+                throw ValidationException::withMessages(['roles' => __('Le rôle « :role » ne se cumule avec aucun autre rôle.', ['role' => __($lx)])]);
             }
         }
         foreach (config('mxconnect.incompatible_role_pairs', []) as [$a, $b]) {
             if (in_array($a, $roles, true) && in_array($b, $roles, true)) {
                 $la = \App\Support\TenantNav::ROLE_LABELS[$a] ?? $a;
                 $lb = \App\Support\TenantNav::ROLE_LABELS[$b] ?? $b;
-                throw ValidationException::withMessages(['roles' => "Contrôle « 4 yeux » : une même personne ne peut pas être à la fois « {$la} » et « {$lb} »."]);
+                throw ValidationException::withMessages(['roles' => __('Contrôle « 4 yeux » : une même personne ne peut pas être à la fois « :a » et « :b ».', ['a' => __($la), 'b' => __($lb)])]);
             }
         }
 
@@ -50,7 +50,7 @@ class TeamService
         $roles = self::checkRoles($roles);
         $email = mb_strtolower(trim($data['email']));
         if (User::withTrashed()->where('email', $email)->exists()) {
-            throw ValidationException::withMessages(['email' => 'Un membre de l’équipe utilise déjà cette adresse e-mail.']);
+            throw ValidationException::withMessages(['email' => __('Un membre de l’équipe utilise déjà cette adresse e-mail.')]);
         }
         $password = self::temporaryPassword();
 
@@ -73,7 +73,7 @@ class TeamService
     {
         $roles = self::checkRoles($roles);
         if ($user->hasRole('mutual_admin') && ! in_array('mutual_admin', $roles, true)) {
-            $this->assertAnotherAdmin($user, 'retirer le rôle d’administrateur');
+            $this->assertAnotherAdmin($user, __('Impossible de retirer le rôle d’administrateur : c’est le dernier administrateur actif de la mutuelle. Nommez d’abord un autre administrateur.'));
         }
         DB::transaction(function () use ($user, $data, $roles) {
             $user->update(['first_name' => trim($data['first_name']), 'last_name' => trim($data['last_name']),
@@ -89,10 +89,10 @@ class TeamService
     {
         if (! $active) {
             if ($user->is($by)) {
-                throw ValidationException::withMessages(['team' => 'Vous ne pouvez pas désactiver votre propre compte.']);
+                throw ValidationException::withMessages(['team' => __('Vous ne pouvez pas désactiver votre propre compte.')]);
             }
             if ($user->hasRole('mutual_admin')) {
-                $this->assertAnotherAdmin($user, 'désactiver ce compte');
+                $this->assertAnotherAdmin($user, __('Impossible de désactiver ce compte : c’est le dernier administrateur actif de la mutuelle. Nommez d’abord un autre administrateur.'));
             }
         }
         $user->update(['active' => $active]);
@@ -129,7 +129,7 @@ class TeamService
         }
         $id = (int) ($data['care_provider_id'] ?? 0);
         if (! $id || ! \App\Models\Tenant\ProviderConvention::where('care_provider_id', $id)->exists()) {
-            throw ValidationException::withMessages(['care_provider_id' => 'Choisissez le prestataire conventionné que cette personne représente (Paramètres → Prestataires conventionnés).']);
+            throw ValidationException::withMessages(['care_provider_id' => __('Choisissez le prestataire conventionné que cette personne représente (Paramètres → Prestataires conventionnés).')]);
         }
 
         return $id;
@@ -151,11 +151,11 @@ class TeamService
         return $has[$key] ??= Schema::hasColumn('users', 'must_change_password');
     }
 
-    private function assertAnotherAdmin(User $user, string $action): void
+    private function assertAnotherAdmin(User $user, string $message): void
     {
         $others = User::role('mutual_admin')->where('active', true)->whereKeyNot($user->id)->count();
         if ($others === 0) {
-            throw ValidationException::withMessages(['roles' => "Impossible de {$action} : c’est le dernier administrateur actif de la mutuelle. Nommez d’abord un autre administrateur."]);
+            throw ValidationException::withMessages(['roles' => $message]);
         }
     }
 }
