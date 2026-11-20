@@ -32,7 +32,7 @@ class AuditController extends Controller
         // Accès aux données de santé et opérations sensibles tracées dans audit_logs (2026-11-22).
         $access = collect();
         if (\Illuminate\Support\Facades\Schema::hasTable('audit_logs')) {
-            $access = DB::table('audit_logs')->whereIn('action', [\App\Support\HealthAccessLog::ACTION, 'test_data_reset'])->orderByDesc('occurred_at')->limit(50)->get();
+            $access = DB::table('audit_logs')->whereIn('action', [\App\Support\HealthAccessLog::ACTION, 'test_data_reset', 'identity_updated'])->orderByDesc('occurred_at')->limit(50)->get();
             $names = \App\Models\Tenant\User::whereIn('id', $access->pluck('user_id')->filter()->unique())->get()
                 ->mapWithKeys(fn ($u) => [$u->id => trim($u->first_name . ' ' . $u->last_name)]);
             $access = $access->map(fn ($a) => (object) ((array) $a + ['who' => $names[$a->user_id] ?? null]));

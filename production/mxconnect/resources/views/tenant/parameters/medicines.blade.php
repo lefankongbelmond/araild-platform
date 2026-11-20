@@ -30,10 +30,10 @@
     <div class="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
       <span class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-leaf-500 to-leaf-700 text-white shadow-lg shadow-leaf-500/30">{!! $ico($pill, 32) !!}</span>
       <div class="min-w-0">
-        <p class="text-xs font-semibold uppercase tracking-[.14em] text-brand-600">Paramètres · Catalogue</p>
-        <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[#0B1F3A] sm:text-[34px]">Médicaments</h1>
-        <p class="mt-1 text-[15px] text-ink/60">Gérez le catalogue des médicaments et leurs prix de référence, dans la devise de votre choix.</p>
-        @if ($canManage)<a href="{{ route('catalog.import', 'medicaments') }}" class="relative z-10 mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-ink/10 bg-white px-4 text-sm font-semibold text-[#0B1F3A] hover:bg-paper"><x-tenant.icon name="library" :size="16"/> Liste des médicaments essentiels</a>@endif
+        <p class="text-xs font-semibold uppercase tracking-[.14em] text-brand-600">{{ __('Paramètres · Catalogue') }}</p>
+        <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[#0B1F3A] sm:text-[34px]">{{ __('Médicaments') }}</h1>
+        <p class="mt-1 text-[15px] text-ink/60">{{ __('Gérez le catalogue des médicaments et leurs prix de référence, dans la devise de votre choix.') }}</p>
+        @if ($canManage)<a href="{{ route('catalog.import', 'medicaments') }}" class="relative z-10 mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-ink/10 bg-white px-4 text-sm font-semibold text-[#0B1F3A] hover:bg-paper"><x-tenant.icon name="library" :size="16"/> {{ __('Liste des médicaments essentiels') }}</a>@endif
       </div>
     </div>
     {{-- Illustration décorative (dessin vectoriel original) --}}
@@ -79,46 +79,46 @@
     <section class="min-w-0 rounded-3xl bg-white shadow-soft ring-1 ring-ink/[.05]" aria-labelledby="med-list-title">
       <div class="flex flex-wrap items-center justify-between gap-3 px-5 pt-5 sm:px-6">
         <h2 id="med-list-title" class="flex items-center gap-2.5 text-lg font-bold text-[#0B1F3A]">
-          <span class="grid h-8 w-8 place-items-center rounded-full bg-leaf-500 text-white">{!! $ico($pill, 16) !!}</span> Liste des médicaments
+          <span class="grid h-8 w-8 place-items-center rounded-full bg-leaf-500 text-white">{!! $ico($pill, 16) !!}</span> {{ __('Liste des médicaments') }}
         </h2>
-        <span class="text-sm text-ink/50">{{ $medicines->total() }} résultat(s)</span>
+        <span class="text-sm text-ink/50">{{ __(':count résultat(s)', ['count' => $medicines->total()]) }}</span>
       </div>
 
-      <form method="GET" action="{{ route('medicines.index') }}" class="grid gap-2.5 px-5 pt-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))_auto]" role="search" aria-label="Filtrer les médicaments">
+      <form method="GET" action="{{ route('medicines.index') }}" class="grid gap-2.5 px-5 pt-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))_auto]" role="search" aria-label="{{ __('Filtrer les médicaments') }}">
         <label class="relative block">
-          <span class="sr-only">Rechercher</span>
+          <span class="sr-only">{{ __('Rechercher') }}</span>
           <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40">{!! $ico('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>', 17) !!}</span>
-          <input name="q" value="{{ $f['q'] }}" placeholder="Code, libellé ou fournisseur…" class="h-11 w-full rounded-xl border border-ink/10 bg-paper pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100">
+          <input name="q" value="{{ $f['q'] }}" placeholder="{{ __('Code, libellé ou fournisseur…') }}" class="h-11 w-full rounded-xl border border-ink/10 bg-paper pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100">
         </label>
-        <label class="block"><span class="sr-only">Catégorie</span>
+        <label class="block"><span class="sr-only">{{ __('Catégorie') }}</span>
           <select name="categorie" class="h-11 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-            <option value="">Toutes les catégories</option>
+            <option value="">{{ __('Toutes les catégories') }}</option>
             @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected($f['category'] === $k)>{{ $l }}</option> @endforeach
           </select>
         </label>
-        <label class="block"><span class="sr-only">Fournisseur</span>
+        <label class="block"><span class="sr-only">{{ __('Fournisseur') }}</span>
           <select name="fournisseur" class="h-11 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-            <option value="">Tous les fournisseurs</option>
+            <option value="">{{ __('Tous les fournisseurs') }}</option>
             @foreach ($suppliers as $s) <option @selected($f['supplier'] === $s)>{{ $s }}</option> @endforeach
           </select>
         </label>
-        <label class="block"><span class="sr-only">Devise</span>
+        <label class="block"><span class="sr-only">{{ __('Devise') }}</span>
           <select name="devise" class="h-11 w-full rounded-xl border border-ink/10 bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
-            <option value="">Toutes les devises</option>
+            <option value="">{{ __('Toutes les devises') }}</option>
             @foreach ($currencies as $c) <option value="{{ $c->code }}" @selected($f['currencyCode'] === $c->code)>{{ $c->code }} — {{ $c->name }}</option> @endforeach
           </select>
         </label>
         <div class="flex gap-2">
-          <button class="grid h-11 flex-1 place-items-center rounded-xl bg-[#0B1F3A] px-4 text-sm font-semibold text-white hover:bg-brand-700 sm:w-11 sm:flex-none sm:px-0" title="Filtrer" aria-label="Filtrer">{!! $ico('<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>', 18) !!}</button>
-          @if ($hasFilters)<a href="{{ route('medicines.index') }}" class="grid h-11 place-items-center rounded-xl border border-ink/10 px-3 text-sm font-medium text-ink/60 hover:bg-paper" title="Effacer les filtres">Effacer</a>@endif
+          <button class="grid h-11 flex-1 place-items-center rounded-xl bg-[#0B1F3A] px-4 text-sm font-semibold text-white hover:bg-brand-700 sm:w-11 sm:flex-none sm:px-0" title="{{ __('Filtrer') }}" aria-label="{{ __('Filtrer') }}">{!! $ico('<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>', 18) !!}</button>
+          @if ($hasFilters)<a href="{{ route('medicines.index') }}" class="grid h-11 place-items-center rounded-xl border border-ink/10 px-3 text-sm font-medium text-ink/60 hover:bg-paper" title="{{ __('Effacer les filtres') }}">{{ __('Effacer') }}</a>@endif
         </div>
       </form>
 
       @if ($medicines->isEmpty())
         <div class="px-6 py-14 text-center">
           <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-leaf-50 text-leaf-600">{!! $ico($pill, 30) !!}</span>
-          <h3 class="mt-4 font-bold text-[#0B1F3A]">{{ $hasFilters ? 'Aucun médicament ne correspond à ces filtres' : 'Le catalogue est vide' }}</h3>
-          <p class="mx-auto mt-1 max-w-sm text-sm text-ink/55">{{ $hasFilters ? 'Modifiez la recherche ou effacez les filtres.' : 'Ajoutez votre premier médicament avec le formulaire : code, libellé, catégorie et prix de référence.' }}</p>
+          <h3 class="mt-4 font-bold text-[#0B1F3A]">{{ $hasFilters ? __('Aucun médicament ne correspond à ces filtres') : __('Le catalogue est vide') }}</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-ink/55">{{ $hasFilters ? __('Modifiez la recherche ou effacez les filtres.') : __('Ajoutez votre premier médicament avec le formulaire : code, libellé, catégorie et prix de référence.') }}</p>
         </div>
       @else
         {{-- Tableau (ordinateur) --}}
@@ -126,9 +126,9 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-[#EEF4FC] text-left text-[12.5px] font-semibold text-[#0B1F3A]/80">
-                <th class="py-3 pl-6 pr-3">Code</th><th class="px-3 py-3">Libellé</th><th class="px-3 py-3">Catégorie</th>
-                <th class="hidden px-3 py-3 min-[1760px]:table-cell">Fournisseur</th><th class="whitespace-nowrap px-3 py-3 text-right">Prix de référence</th>
-                <th class="py-3 pl-2 pr-5 text-center">Actions</th>
+                <th class="py-3 pl-6 pr-3">{{ __('Code') }}</th><th class="px-3 py-3">{{ __('Libellé') }}</th><th class="px-3 py-3">{{ __('Catégorie') }}</th>
+                <th class="hidden px-3 py-3 min-[1760px]:table-cell">{{ __('Fournisseur') }}</th><th class="whitespace-nowrap px-3 py-3 text-right">{{ __('Prix de référence') }}</th>
+                <th class="py-3 pl-2 pr-5 text-center">{{ __('Actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-ink/[.06]">
@@ -136,10 +136,10 @@
                 @php $cur = $m->currencyIn($currencies, $currency); @endphp
                 <tr class="transition hover:bg-[#F7FAFE] {{ $e?->id === $m->id ? 'bg-brand-50/60' : '' }}">
                   <td class="py-3.5 pl-6 pr-3"><span class="inline-flex rounded-lg bg-brand-50 px-2.5 py-1 font-mono text-xs font-semibold text-brand-700 ring-1 ring-brand-100">{{ $m->code }}</span></td>
-                  <td class="min-w-[180px] px-3 py-3.5"><div class="font-semibold text-[#0B1F3A]">{{ $m->label }}</div>@if($m->presentation)<div class="text-xs text-ink/50">{{ $m->presentation }}</div>@endif @if($m->supplier)<div class="text-xs text-ink/50 min-[1760px]:hidden">Fournisseur : {{ $m->supplier }}</div>@endif</td>
+                  <td class="min-w-[180px] px-3 py-3.5"><div class="font-semibold text-[#0B1F3A]">{{ $m->label }}</div>@if($m->presentation)<div class="text-xs text-ink/50">{{ $m->presentation }}</div>@endif @if($m->supplier)<div class="text-xs text-ink/50 min-[1760px]:hidden">{{ __('Fournisseur : :supplier', ['supplier' => $m->supplier]) }}</div>@endif</td>
                   <td class="px-3 py-3.5">@if($m->category)<span class="inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 {{ $badge[$m->categoryColor()] }}">{{ $m->categoryLabel() }}</span>@else<span class="text-xs text-ink/35">—</span>@endif</td>
                   <td class="hidden px-3 py-3.5 text-ink/70 min-[1760px]:table-cell">{{ $m->supplier ?: '—' }}</td>
-                  <td class="whitespace-nowrap px-3 py-3.5 text-right font-semibold tabular-nums text-[#0B1F3A]">@if($m->reference_price_minor <= 0)<span class="mr-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 ring-1 ring-amber-200">prix à renseigner</span>@else{{ number_format($m->reference_price_minor / (10 ** $cur->minor_unit), $cur->minor_unit, ',', ' ') }}@endif <span class="ml-1 inline-flex rounded-md px-1.5 py-0.5 align-middle text-[10.5px] font-bold ring-1 {{ $curBadge($cur->code) }}" title="{{ $cur->name }}">{{ $cur->code === 'XAF' ? 'FCFA' : $cur->code }}</span></td>
+                  <td class="whitespace-nowrap px-3 py-3.5 text-right font-semibold tabular-nums text-[#0B1F3A]">@if($m->reference_price_minor <= 0)<span class="mr-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 ring-1 ring-amber-200">{{ __('prix à renseigner') }}</span>@else{{ number_format($m->reference_price_minor / (10 ** $cur->minor_unit), $cur->minor_unit, ',', ' ') }}@endif <span class="ml-1 inline-flex rounded-md px-1.5 py-0.5 align-middle text-[10.5px] font-bold ring-1 {{ $curBadge($cur->code) }}" title="{{ $cur->name }}">{{ $cur->code === 'XAF' ? 'FCFA' : $cur->code }}</span></td>
                   <td class="py-3.5 pl-2 pr-5">
                     @include('tenant.parameters.partials.medicine-actions', ['m' => $m, 'cur' => $cur])
                   </td>
@@ -172,14 +172,14 @@
           @endforeach
         </ul>
         <div class="flex flex-wrap items-center justify-between gap-3 border-t border-ink/[.06] px-5 py-4 text-sm text-ink/55 sm:px-6">
-          <span>Affichage de {{ $medicines->firstItem() }} à {{ $medicines->lastItem() }} sur {{ $medicines->total() }} médicament(s)</span>
+          <span>{{ __('Affichage de :firstitem à :lastitem sur :count médicament(s)', ['firstitem' => $medicines->firstItem(), 'lastitem' => $medicines->lastItem(), 'count' => $medicines->total()]) }}</span>
           @if ($medicines->hasPages())
-            <nav class="flex items-center gap-1" aria-label="Pagination">
-              <a href="{{ $medicines->previousPageUrl() ?: '#' }}" @class(['grid h-9 w-9 place-items-center rounded-lg ring-1 ring-ink/10', 'pointer-events-none opacity-40' => $medicines->onFirstPage(), 'hover:bg-paper' => ! $medicines->onFirstPage()]) aria-label="Page précédente">‹</a>
+            <nav class="flex items-center gap-1" aria-label="{{ __('Pagination') }}">
+              <a href="{{ $medicines->previousPageUrl() ?: '#' }}" @class(['grid h-9 w-9 place-items-center rounded-lg ring-1 ring-ink/10', 'pointer-events-none opacity-40' => $medicines->onFirstPage(), 'hover:bg-paper' => ! $medicines->onFirstPage()]) aria-label="{{ __('Page précédente') }}">‹</a>
               @foreach ($medicines->getUrlRange(max(1, $medicines->currentPage() - 2), min($medicines->lastPage(), $medicines->currentPage() + 2)) as $p => $u)
                 <a href="{{ $u }}" @class(['grid h-9 min-w-9 place-items-center rounded-lg px-2 font-semibold', 'bg-brand-500 text-white' => $p === $medicines->currentPage(), 'ring-1 ring-ink/10 hover:bg-paper' => $p !== $medicines->currentPage()]) @if($p === $medicines->currentPage()) aria-current="page" @endif>{{ $p }}</a>
               @endforeach
-              <a href="{{ $medicines->nextPageUrl() ?: '#' }}" @class(['grid h-9 w-9 place-items-center rounded-lg ring-1 ring-ink/10', 'pointer-events-none opacity-40' => ! $medicines->hasMorePages(), 'hover:bg-paper' => $medicines->hasMorePages()]) aria-label="Page suivante">›</a>
+              <a href="{{ $medicines->nextPageUrl() ?: '#' }}" @class(['grid h-9 w-9 place-items-center rounded-lg ring-1 ring-ink/10', 'pointer-events-none opacity-40' => ! $medicines->hasMorePages(), 'hover:bg-paper' => $medicines->hasMorePages()]) aria-label="{{ __('Page suivante') }}">›</a>
             </nav>
           @endif
         </div>
@@ -191,62 +191,62 @@
       <section id="formulaire" class="h-max overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-ink/[.05] xl:sticky xl:top-24" aria-labelledby="med-form-title">
         <div class="flex items-center gap-3 bg-gradient-to-r {{ $e ? 'from-brand-500 to-[#0B2A5B]' : 'from-leaf-500 via-leaf-600 to-[#0B4A9C]' }} px-5 py-4 text-white">
           <span class="grid h-9 w-9 place-items-center rounded-full bg-white/20 ring-2 ring-white/40">{!! $ico($e ? '<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>' : '<path d="M12 5v14M5 12h14"/>', 18) !!}</span>
-          <h2 id="med-form-title" class="text-lg font-bold">{{ $e ? 'Modifier le médicament' : 'Ajouter un médicament' }}</h2>
+          <h2 id="med-form-title" class="text-lg font-bold">{{ $e ? __('Modifier le médicament') : __('Ajouter un médicament') }}</h2>
         </div>
         <form method="POST" action="{{ $e ? route('medicines.update', $e) : route('medicines.store') }}" class="space-y-4 p-5" novalidate>
           @csrf
           @if ($e) @method('PUT') @foreach (['q', 'categorie', 'fournisseur', 'devise', 'page'] as $k)@if(request($k) !== null)<input type="hidden" name="{{ $k }}" value="{{ request($k) }}">@endif @endforeach @endif
           @php $field = 'h-11 w-full rounded-xl border bg-white px-3.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100'; @endphp
           <div>
-            <label for="m-code" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Code du médicament <span class="text-clay">*</span></label>
-            <input id="m-code" name="code" value="{{ old('code', $e?->code) }}" required maxlength="30" placeholder="Ex. MED001" autocomplete="off" class="{{ $field }} font-mono uppercase placeholder:normal-case placeholder:font-sans {{ $errors->has('code') ? 'border-clay' : 'border-ink/12 border-ink/10' }}">
+            <label for="m-code" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Code du médicament') }} <span class="text-clay">*</span></label>
+            <input id="m-code" name="code" value="{{ old('code', $e?->code) }}" required maxlength="30" placeholder="{{ __('Ex. MED001') }}" autocomplete="off" class="{{ $field }} font-mono uppercase placeholder:normal-case placeholder:font-sans {{ $errors->has('code') ? 'border-clay' : 'border-ink/12 border-ink/10' }}">
             @error('code')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
           </div>
           <div>
-            <label for="m-label" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Libellé <span class="text-clay">*</span></label>
-            <input id="m-label" name="label" value="{{ old('label', $e?->label) }}" required maxlength="180" placeholder="Ex. Paracétamol 500 mg" class="{{ $field }} {{ $errors->has('label') ? 'border-clay' : 'border-ink/10' }}">
+            <label for="m-label" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Libellé') }} <span class="text-clay">*</span></label>
+            <input id="m-label" name="label" value="{{ old('label', $e?->label) }}" required maxlength="180" placeholder="{{ __('Ex. Paracétamol 500 mg') }}" class="{{ $field }} {{ $errors->has('label') ? 'border-clay' : 'border-ink/10' }}">
             @error('label')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
           </div>
           <div>
-            <label for="m-pres" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Forme et conditionnement <span class="font-normal text-ink/45">(facultatif)</span></label>
-            <input id="m-pres" name="presentation" value="{{ old('presentation', $e?->presentation) }}" maxlength="120" placeholder="Ex. Comprimé, boîte de 16" class="{{ $field }} border-ink/10">
+            <label for="m-pres" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Forme et conditionnement') }} <span class="font-normal text-ink/45">{{ __('(facultatif)') }}</span></label>
+            <input id="m-pres" name="presentation" value="{{ old('presentation', $e?->presentation) }}" maxlength="120" placeholder="{{ __('Ex. Comprimé, boîte de 16') }}" class="{{ $field }} border-ink/10">
           </div>
           <div>
-            <label for="m-cat" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Catégorie <span class="text-clay">*</span></label>
+            <label for="m-cat" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Catégorie') }} <span class="text-clay">*</span></label>
             <select id="m-cat" name="category" required class="{{ $field }} {{ $errors->has('category') ? 'border-clay' : 'border-ink/10' }}">
-              <option value="">Sélectionner une catégorie</option>
+              <option value="">{{ __('Sélectionner une catégorie') }}</option>
               @foreach (Medicine::CATEGORIES as $k => [$l]) <option value="{{ $k }}" @selected(old('category', $e?->category) === $k)>{{ $l }}</option> @endforeach
             </select>
             @error('category')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
           </div>
           <div>
-            <label for="m-sup" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Fournisseur <span class="font-normal text-ink/45">(facultatif)</span></label>
-            <input id="m-sup" name="supplier" list="m-suppliers" value="{{ old('supplier', $e?->supplier) }}" maxlength="120" placeholder="Choisir ou saisir un fournisseur" class="{{ $field }} border-ink/10">
+            <label for="m-sup" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Fournisseur') }} <span class="font-normal text-ink/45">{{ __('(facultatif)') }}</span></label>
+            <input id="m-sup" name="supplier" list="m-suppliers" value="{{ old('supplier', $e?->supplier) }}" maxlength="120" placeholder="{{ __('Choisir ou saisir un fournisseur') }}" class="{{ $field }} border-ink/10">
             <datalist id="m-suppliers">@foreach ($suppliers as $s)<option value="{{ $s }}">@endforeach</datalist>
           </div>
           <div>
-            <label for="m-price" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Prix de référence <span class="text-clay">*</span></label>
+            <label for="m-price" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Prix de référence') }} <span class="text-clay">*</span></label>
             <div class="flex gap-2">
-              <input id="m-price" name="reference_price" value="{{ $priceValue }}" required inputmode="decimal" placeholder="Ex. 1 250" class="h-11 min-w-0 flex-1 rounded-xl border bg-white px-3.5 text-sm tabular-nums outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 {{ $errors->has('reference_price') ? 'border-clay' : 'border-ink/10' }}">
-              <label class="sr-only" for="m-cur">Devise</label>
+              <input id="m-price" name="reference_price" value="{{ $priceValue }}" required inputmode="decimal" placeholder="{{ __('Ex. 1 250') }}" class="h-11 min-w-0 flex-1 rounded-xl border bg-white px-3.5 text-sm tabular-nums outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 {{ $errors->has('reference_price') ? 'border-clay' : 'border-ink/10' }}">
+              <label class="sr-only" for="m-cur">{{ __('Devise') }}</label>
               <select id="m-cur" name="currency_code" class="h-11 w-[124px] shrink-0 rounded-xl border border-ink/10 bg-white px-2.5 text-sm font-semibold outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
                 @foreach ($currencies as $c) <option value="{{ $c->code }}" @selected($formCurrency === $c->code) title="{{ $c->name }}">{{ $c->code }} · {{ $c->symbol }}</option> @endforeach
               </select>
             </div>
             @error('reference_price')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
             @error('currency_code')<p class="mt-1 text-xs text-clay">{{ $message }}</p>@enderror
-            <p class="mt-1 text-[11.5px] text-ink/45">Devise de la mutuelle : {{ $currency->name }} ({{ $currency->code }}). Le montant est enregistré dans la devise choisie, sans conversion.</p>
+            <p class="mt-1 text-[11.5px] text-ink/45">{{ __('Devise de la mutuelle : :name (:currency). Le montant est enregistré dans la devise choisie, sans conversion.', ['name' => $currency->name, 'currency' => $currency->code]) }}</p>
           </div>
           <div>
-            <label for="m-desc" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">Description <span class="font-normal text-ink/45">(facultatif)</span></label>
-            <textarea id="m-desc" name="description" rows="3" maxlength="2000" placeholder="Composition, posologie usuelle, remarques…" class="w-full rounded-xl border border-ink/10 px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">{{ old('description', $e?->description) }}</textarea>
+            <label for="m-desc" class="mb-1.5 block text-[13px] font-semibold text-[#0B1F3A]">{{ __('Description') }} <span class="font-normal text-ink/45">{{ __('(facultatif)') }}</span></label>
+            <textarea id="m-desc" name="description" rows="3" maxlength="2000" placeholder="{{ __('Composition, posologie usuelle, remarques…') }}" class="w-full rounded-xl border border-ink/10 px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100">{{ old('description', $e?->description) }}</textarea>
           </div>
           <div class="grid grid-cols-2 gap-2.5 pt-1">
             <button class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-leaf-600 text-sm font-bold text-white shadow-lg shadow-leaf-500/25 transition hover:brightness-105">
               {!! $ico('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>', 17) !!} Enregistrer
             </button>
             @if ($e)
-              <a href="{{ route('medicines.index', request()->only(['q', 'categorie', 'fournisseur', 'devise', 'page'])) }}" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-ink/12 border-ink/10 text-sm font-semibold text-ink/70 hover:bg-paper">Annuler</a>
+              <a href="{{ route('medicines.index', request()->only(['q', 'categorie', 'fournisseur', 'devise', 'page'])) }}" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-ink/12 border-ink/10 text-sm font-semibold text-ink/70 hover:bg-paper">{{ __('Annuler') }}</a>
             @else
               <button type="reset" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-ink/10 text-sm font-semibold text-ink/70 hover:bg-paper">
                 {!! $ico('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 16) !!} Réinitialiser
@@ -262,17 +262,17 @@
   <dialog id="med-view" class="w-[min(520px,calc(100vw-24px))] rounded-3xl p-0 shadow-2xl backdrop:bg-[#011544]/50">
     <div class="flex items-center justify-between bg-gradient-to-r from-[#0B2A5B] to-brand-500 px-6 py-4 text-white">
       <div><div class="text-xs font-semibold uppercase tracking-wider text-white/70" data-v="code"></div><div class="text-lg font-bold" data-v="label"></div></div>
-      <form method="dialog"><button class="grid h-9 w-9 place-items-center rounded-full bg-white/15 hover:bg-white/25" aria-label="Fermer">✕</button></form>
+      <form method="dialog"><button class="grid h-9 w-9 place-items-center rounded-full bg-white/15 hover:bg-white/25" aria-label="{{ __('Fermer') }}">✕</button></form>
     </div>
     <dl class="grid grid-cols-[150px_1fr] gap-x-4 gap-y-3 px-6 py-5 text-sm">
-      <dt class="text-ink/50">Forme</dt><dd data-v="presentation"></dd>
-      <dt class="text-ink/50">Catégorie</dt><dd data-v="category"></dd>
-      <dt class="text-ink/50">Fournisseur</dt><dd data-v="supplier"></dd>
-      <dt class="text-ink/50">Prix de référence</dt><dd class="font-bold text-[#0B1F3A]" data-v="price"></dd>
-      <dt class="text-ink/50">Devise</dt><dd data-v="currency"></dd>
-      <dt class="text-ink/50">Utilisation</dt><dd data-v="usage"></dd>
-      <dt class="text-ink/50">Mis à jour</dt><dd data-v="updated"></dd>
-      <dt class="text-ink/50">Description</dt><dd class="whitespace-pre-line" data-v="description"></dd>
+      <dt class="text-ink/50">{{ __('Forme') }}</dt><dd data-v="presentation"></dd>
+      <dt class="text-ink/50">{{ __('Catégorie') }}</dt><dd data-v="category"></dd>
+      <dt class="text-ink/50">{{ __('Fournisseur') }}</dt><dd data-v="supplier"></dd>
+      <dt class="text-ink/50">{{ __('Prix de référence') }}</dt><dd class="font-bold text-[#0B1F3A]" data-v="price"></dd>
+      <dt class="text-ink/50">{{ __('Devise') }}</dt><dd data-v="currency"></dd>
+      <dt class="text-ink/50">{{ __('Utilisation') }}</dt><dd data-v="usage"></dd>
+      <dt class="text-ink/50">{{ __('Mis à jour') }}</dt><dd data-v="updated"></dd>
+      <dt class="text-ink/50">{{ __('Description') }}</dt><dd class="whitespace-pre-line" data-v="description"></dd>
     </dl>
   </dialog>
 

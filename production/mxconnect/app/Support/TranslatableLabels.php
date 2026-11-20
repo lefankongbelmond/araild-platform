@@ -13,6 +13,13 @@ class TranslatableLabels
     /** Listes du réseau social et du portail adhérent (M2). */
     public const LISTS = [
         [\App\Support\JsTranslations::class, 'SOCIAL'],   // textes du JavaScript du réseau (M2b)
+        // Back-office des mutuelles (M3a, 2026-11-30)
+        [\App\Support\TenantNav::class, 'ROLE_LABELS'], [\App\Support\TenantNav::class, 'ROLE_DESCRIPTIONS'],
+        [\App\Support\CatalogLabels::class, 'STATUSES'], [\App\Models\Tenant\ProviderConvention::class, 'TYPES'],
+        [\App\Models\Tenant\CoverageRule::class, 'BENEFICIARY_CATEGORIES'], [\App\Models\Tenant\Preauthorization::class, 'REVIEWS'],
+        [\App\Models\Tenant\CoverageLimit::class, 'SCOPES'], [\App\Models\Tenant\CoverageLimit::class, 'HOLDERS'],
+        [\App\Models\Tenant\ServiceCategory::class, 'FAMILIES'], [\App\Models\Tenant\Ceiling::class, 'PERIODS'],
+        [\App\Models\Tenant\CoverageException::class, 'STATUSES'], [\App\Models\Tenant\CoverageException::class, 'KINDS'],
         [\App\Support\SocialDomains::class, 'ALL'],
         [\App\Models\Social\Post::class, 'TYPES'], [\App\Models\Social\Post::class, 'MEMBER_TYPES'],
         [\App\Models\Social\Post::class, 'ACTIVITY_CATEGORIES'], [\App\Models\Social\Post::class, 'REACTIONS'],
@@ -55,6 +62,40 @@ class TranslatableLabels
             });
         }
 
+        // Libellés portés par des clés de tableau ou des méthodes (menu, cartes des paramètres, matrice des droits).
+        foreach (self::extra() as $s) {
+            $out[$s] = true;
+        }
+
         return array_keys($out);
+    }
+
+    /** Menu du back-office, cartes « Paramètres », rubriques de la page « Rôles et droits ». */
+    private static function extra(): array
+    {
+        $out = [];
+        foreach (TenantNav::groups() as $group => $items) {
+            $out[] = $group;
+            foreach ($items as [$label]) {
+                if (! str_starts_with($label, 'mxconnect.')) {
+                    $out[] = $label;
+                }
+            }
+        }
+        foreach (TenantSettings::SECTIONS as $section => $cards) {
+            $out[] = $section;
+            foreach ($cards as [$title, $desc]) {
+                $out[] = $title;
+                $out[] = $desc;
+            }
+        }
+        foreach (TenantAccess::SUMMARY as $section => $actions) {
+            $out[] = $section;
+            foreach ($actions as $label) {
+                $out[] = $label;
+            }
+        }
+
+        return $out;
     }
 }

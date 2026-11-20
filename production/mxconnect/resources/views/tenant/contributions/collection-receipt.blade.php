@@ -7,7 +7,7 @@ table{width:100%;border-collapse:collapse;margin-top:1rem}td,th{padding:.45rem 0
 @media print{button{display:none}}</style></head>
 <body>
   <div class="head">
-    <div><strong>{{ $mutual }}</strong><br><span class="muted">Mutuelle de santé · MX-CONNECT</span></div>
+    <div><strong>{{ $mutual }}</strong><br><span class="muted">Mutuelle de santé · MX-CONNECT</span>@if ($mxIdentity = \App\Support\MutualIdentity::line())<br><span class="muted">{{ $mxIdentity }}</span>@endif</div>
     <div class="r"><strong>Reçu de cotisation</strong><br>{{ $number }}<br>{{ $day->format('d/m/Y') }}</div>
   </div>
   <table>

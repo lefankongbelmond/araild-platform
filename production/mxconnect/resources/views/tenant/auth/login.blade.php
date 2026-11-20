@@ -1,7 +1,7 @@
 <x-layouts.tenant :title="__('mxconnect.auth.login')">
   <div class="mx-auto max-w-sm mt-10">
     <h1 class="text-2xl font-semibold tracking-tight">{{ __('mxconnect.auth.login') }}</h1>
-    <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.auth.tenant_login_sub', ['name' => tenant('name') ?? 'votre mutuelle']) }}</p>
+    <p class="mt-1 text-sm text-ink/60">{{ __('mxconnect.auth.tenant_login_sub', ['name' => tenant('name') ?? __('votre mutuelle')]) }}</p>
 
     <form method="POST" action="{{ route('tenant.login') }}" class="mt-6 space-y-4">
       @csrf

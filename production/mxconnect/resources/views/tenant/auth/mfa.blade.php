@@ -12,8 +12,8 @@
           parse_str((string) parse_url($qrUrl, PHP_URL_QUERY), $otp);
           $otpKey = trim(chunk_split((string) ($otp['secret'] ?? ''), 4, ' '));
         @endphp
-        @if ($qrSvg){!! $qrSvg !!}@else<p class="text-sm text-clay">Le QR code ne peut pas être affiché sur ce serveur : saisissez la clé ci-dessous dans votre application.</p>@endif
-        @if ($otpKey)<p class="mt-3 text-xs text-ink/60">Ou saisissez cette clé dans Google Authenticator / Microsoft Authenticator (« Saisir une clé ») :</p>
+        @if ($qrSvg){!! $qrSvg !!}@else<p class="text-sm text-clay">{{ __('Le QR code ne peut pas être affiché sur ce serveur : saisissez la clé ci-dessous dans votre application.') }}</p>@endif
+        @if ($otpKey)<p class="mt-3 text-xs text-ink/60">{{ __('Ou saisissez cette clé dans Google Authenticator / Microsoft Authenticator (« Saisir une clé ») :') }}</p>
           <p class="mt-1 select-all break-all rounded bg-mist px-2 py-1 font-mono text-sm tracking-wider">{{ $otpKey }}</p>@endif
       </div>
       <form method="POST" action="{{ route('tenant.mfa.confirm') }}" class="mt-4 space-y-3">

@@ -37,6 +37,7 @@ class TenantNav
 
     /** Écrans sans entrée propre dans le menu : entrée à mettre en évidence. */
     public const ACTIVE_ALIASES = [
+        'settings.identity' => 'settings.index',
         'accounting.ledger' => 'accounting.balance',
         'accounting.income' => 'accounting.balance',
         'accounting.sheet'  => 'accounting.balance',
@@ -108,6 +109,7 @@ class TenantNav
                 'conversations.index'    => ['mxconnect.social.messages_nav', 'message'],
             ],
             'Paramètres' => [
+                'settings.index'   => ['Tous les paramètres', 'settings'],
                 'team.index'       => ['Équipe et rôles', 'lock'],
                 'providers.index'  => ['Prestataires conventionnés', 'stethoscope'],
                 'formulas.index'   => ['Catalogue des formules', 'library'],

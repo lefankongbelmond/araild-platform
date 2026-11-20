@@ -47,6 +47,7 @@
       'search' => '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
       'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
       'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+      'settings' => '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
       'lock' => '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   ];
   $svg = fn ($n, $s = 20) => '<svg width="'.$s.'" height="'.$s.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.($icons[$n] ?? '').'</svg>';
@@ -60,7 +61,7 @@
   // Navigation affichée seulement une fois la connexion complète (double authentification comprise).
   $showNav = $user && ! request()->routeIs('tenant.mfa.*');
   $roleLabels = \App\Support\TenantNav::ROLE_LABELS;
-  $roleName = $user && method_exists($user, 'getRoleNames') ? ($roleLabels[$user->getRoleNames()->first()] ?? ucfirst(str_replace('_', ' ', (string) $user->getRoleNames()->first()))) : null;
+  $roleName = $user && method_exists($user, 'getRoleNames') ? (isset($roleLabels[$user->getRoleNames()->first()]) ? __($roleLabels[$user->getRoleNames()->first()]) : ucfirst(str_replace('_', ' ', (string) $user->getRoleNames()->first()))) : null;
   $mutualCurrency = null;
   try { $mutualCurrency = \App\Models\Central\Currency::on('central')->find(tenant('currency_id')); } catch (\Throwable $e) {}
   $version = @file_get_contents(base_path('VERSION')) ?: null;
@@ -75,7 +76,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'MX-CONNECT' }} · {{ tenant('name') ?? 'Mutuelle' }}</title>
+    <title>{{ $title ?? 'MX-CONNECT' }} · {{ tenant('name') ?? __('Mutuelle') }}</title>
     <link rel="icon" href="{{ $base }}/brand/favicon.png" type="image/png">
     <link rel="preload" href="{{ $base }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ $base }}/css/mx-tenant.css?v={{ config('mxconnect.asset_version') }}">
@@ -101,12 +102,12 @@
   <div class="mx-shell min-h-screen lg:pl-64 print:pl-0">
     {{-- Barre latérale --}}
     <label for="mx-nav-toggle" class="mx-scrim fixed inset-0 z-30 hidden bg-navy-deep/50 lg:hidden" aria-hidden="true"></label>
-    <aside class="mx-side print:hidden fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-gradient-to-b from-[#0B2A5B] via-[#08234D] to-[#061A3A] text-white transition-transform duration-200 lg:translate-x-0" aria-label="Navigation du back-office">
+    <aside class="mx-side print:hidden fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-gradient-to-b from-[#0B2A5B] via-[#08234D] to-[#061A3A] text-white transition-transform duration-200 lg:translate-x-0" aria-label="{{ __('Navigation du back-office') }}">
       <div class="flex h-16 items-center gap-3 px-5 border-b border-white/10">
         <span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-8 w-8"></span>
         <div class="leading-tight min-w-0">
           <div class="font-extrabold tracking-wide text-[15px]">MX<span class="text-[#7BD389]">-</span>CONNECT</div>
-          <div class="truncate text-[11px] text-white/60">{{ tenant('name') ?? 'Mutuelle' }}</div>
+          <div class="truncate text-[11px] text-white/60">{{ tenant('name') ?? __('Mutuelle') }}</div>
         </div>
       </div>
       @if ($showNav)
@@ -117,7 +118,7 @@
           @endphp
           @if ($visible->isNotEmpty())
             <div>
-              <div class="px-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[.12em] text-white/40">{{ $groupLabel }}</div>
+              <div class="px-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[.12em] text-white/40">{{ __($groupLabel) }}</div>
               <ul class="space-y-0.5">
                 @foreach ($visible as $r => [$label, $icon])
                   @php $on = $r === $activeNav; @endphp
@@ -126,7 +127,7 @@
                        class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition {{ $on ? 'bg-gradient-to-r from-leaf-500 to-leaf-600 text-white shadow-lg shadow-black/20' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
                       <span class="{{ $on ? 'text-white' : 'text-white/55 group-hover:text-white' }}">{!! $svg($icon, 19) !!}</span>
                       <span class="flex-1">{{ __($label) }}</span>
-                      @if (! empty($navAlerts[$r]))<span class="rounded-full bg-[#E5484D] px-1.5 py-0.5 text-[10.5px] font-bold leading-none" title="À traiter">{{ $navAlerts[$r] }}</span>@endif
+                      @if (! empty($navAlerts[$r]))<span class="rounded-full bg-[#E5484D] px-1.5 py-0.5 text-[10.5px] font-bold leading-none" title="{{ __('À traiter') }}">{{ $navAlerts[$r] }}</span>@endif
                     </a>
                   </li>
                 @endforeach
@@ -137,8 +138,8 @@
       </nav>
       @endif
       <div class="m-3 mt-2 rounded-2xl bg-white/[.06] p-4 ring-1 ring-white/10">
-        <div class="flex items-center gap-2 text-sm font-semibold">{!! $svg('lock', 16) !!} Données protégées</div>
-        <p class="mt-1 text-[11.5px] leading-relaxed text-white/60">Base de données propre à la mutuelle, accès par rôles et journal d’audit.</p>
+        <div class="flex items-center gap-2 text-sm font-semibold">{!! $svg('lock', 16) !!} {{ __('Données protégées') }}</div>
+        <p class="mt-1 text-[11.5px] leading-relaxed text-white/60">{{ __('Base de données propre à la mutuelle, accès par rôles et journal d’audit.') }}</p>
       </div>
     </aside>
 
@@ -146,13 +147,13 @@
       {{-- En-tête --}}
       <header class="print:hidden sticky top-0 z-20 border-b border-ink/[.06] bg-white/85 backdrop-blur">
         <div class="flex h-16 items-center gap-3 px-4 sm:px-6">
-          <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="Ouvrir le menu">{!! $svg('menu', 22) !!}</label>
+          <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="{{ __('Ouvrir le menu') }}">{!! $svg('menu', 22) !!}</label>
           @if ($showNav)
             @if (Route::has('members.index') && \App\Support\TenantAccess::can('members.index'))
               <form action="{{ route('members.index') }}" method="GET" role="search" class="relative hidden max-w-md flex-1 sm:block">
                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">{!! $svg('search', 18) !!}</span>
-                <label for="mx-tsearch" class="sr-only">Rechercher un adhérent</label>
-                <input id="mx-tsearch" name="q" value="{{ request()->routeIs('members.index') ? request('q') : '' }}" placeholder="Rechercher un adhérent (nom, code, téléphone)…"
+                <label for="mx-tsearch" class="sr-only">{{ __('Rechercher un adhérent') }}</label>
+                <input id="mx-tsearch" name="q" value="{{ request()->routeIs('members.index') ? request('q') : '' }}" placeholder="{{ __('Rechercher un adhérent (nom, code, téléphone)…') }}"
                        class="h-10 w-full rounded-full border border-ink/10 bg-paper pl-10 pr-4 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100">
               </form>
             @endif
@@ -169,7 +170,7 @@
                 <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-navy text-sm font-bold text-white">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</span>
                 <span class="hidden leading-tight sm:block"><span class="block text-sm font-semibold">{{ $user->name }}</span>@if($roleName)<span class="block text-[11.5px] text-ink/50">{{ $roleName }}</span>@endif</span>
               </div>
-              @if (Route::has('account.password'))<a href="{{ route('account.password') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="Mon mot de passe" aria-label="Mon mot de passe">{!! $svg('lock', 18) !!}</a>@endif
+              @if (Route::has('account.password'))<a href="{{ route('account.password') }}" class="grid h-10 w-10 place-items-center rounded-xl text-ink/60 hover:bg-mist" title="{{ __('Mon mot de passe') }}" aria-label="{{ __('Mon mot de passe') }}">{!! $svg('lock', 18) !!}</a>@endif
               <form method="POST" action="{{ url('/deconnexion') }}">
                 @csrf
                 <button class="grid h-10 w-10 place-items-center rounded-xl text-clay hover:bg-clay/10" title="{{ __('mxconnect.auth.logout') }}" aria-label="{{ __('mxconnect.auth.logout') }}">{!! $svg('logout', 19) !!}</button>
@@ -181,7 +182,7 @@
 
       <div class="px-4 sm:px-6">
         @if (\App\Support\TestEnvironment::active())
-          <div role="note" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"><b>Environnement de test</b> — MUTUELLE TEST : données d’essai, sans valeur réelle. @if (\Illuminate\Support\Facades\Route::has('test-env.index') && \App\Support\TenantAccess::can('test-env.index')) <a href="{{ route('test-env.index') }}" class="font-medium underline">Réinitialiser les données de test</a>@endif</div>
+          <div role="note" class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"><b>{{ __('Environnement de test') }}</b> — {{ __('MUTUELLE TEST : données d’essai, sans valeur réelle.') }} @if (\Illuminate\Support\Facades\Route::has('test-env.index') && \App\Support\TenantAccess::can('test-env.index')) <a href="{{ route('test-env.index') }}" class="font-medium underline">{{ __('Réinitialiser les données de test') }}</a>@endif</div>
         @endif
         @foreach (['success' => 'leaf', 'error' => 'clay'] as $key => $c)
           @if (session($key))
@@ -194,11 +195,11 @@
 
       <footer class="print:hidden border-t border-ink/[.06] bg-white/70">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-ink/50 sm:px-6">
-          <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> · Plateforme de gestion des mutuelles de santé</span>
+          <span class="flex items-center gap-2"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-5 w-5"><b class="text-ink/70">MX-CONNECT</b> {{ __('· Plateforme de gestion des mutuelles de santé') }}</span>
           <span class="flex flex-wrap items-center gap-4">
-            <span class="flex items-center gap-1.5">{!! $svg('lock', 14) !!} Accès sécurisé par rôles</span>
-            <span class="flex items-center gap-1.5">{!! $svg('history', 14) !!} Journal d’audit</span>
-            @if ($version)<span>Version {{ trim($version) }}</span>@endif
+            <span class="flex items-center gap-1.5">{!! $svg('lock', 14) !!} {{ __('Accès sécurisé par rôles') }}</span>
+            <span class="flex items-center gap-1.5">{!! $svg('history', 14) !!} {{ __('Journal d’audit') }}</span>
+            @if ($version)<span>{{ __('Version :value', ['value' => trim($version)]) }}</span>@endif
           </span>
         </div>
       </footer>

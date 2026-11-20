@@ -1,9 +1,9 @@
 {{-- Gabarit des documents imprimables du portail adhérent (attestation, reçu). --}}
 <!DOCTYPE html>
-<html lang="fr">
+<html {!! \App\Support\Locales::htmlAttributes() !!}>
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ $docTitle }} · MX-CONNECT</title>
+  <title>{{ __($docTitle) }} · MX-CONNECT</title>
   <link rel="stylesheet" href="{{ rtrim(config('app.url'), '/') }}/css/mx-social.css?v={{ config('mxconnect.asset_version') }}">
   <style>
     body{background:#F4F6FA;margin:0;padding:16px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0B1F3A}
@@ -16,6 +16,10 @@
 </head>
 <body>
   <div class="bar"><button class="mx-btn mx-btn--primary" onclick="window.print()">{{ __('Imprimer ou enregistrer en PDF') }}</button><a class="mx-btn mx-btn--ghost" href="{{ $back }}">{{ __('Retour') }}</a></div>
-  <div class="doc">{{ $slot ?? '' }}@yield('doc')</div>
+  <div class="doc">
+    @php $mxIdentity = \App\Support\MutualIdentity::line(); @endphp
+    @if ($mxIdentity)<p style="margin:0 0 10px;font-size:12.5px;color:#5B6B82">{{ $mxIdentity }}</p>@endif
+    {{ $slot ?? '' }}@yield('doc')
+  </div>
 </body>
 </html>

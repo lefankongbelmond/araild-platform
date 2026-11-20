@@ -3,7 +3,7 @@
     <x-slot:title>{{ __('mxconnect.guarantee.plural') }}</x-slot:title>
     <x-slot:subtitle>{{ __('mxconnect.guarantee.sub') }}</x-slot:subtitle>
     <x-slot:actions>
-    @can('manage-parameters')<a href="{{ route('catalog.import', 'garanties') }}" class="inline-flex h-10 items-center gap-2 rounded-xl border border-ink/10 bg-white px-4 text-sm font-semibold text-[#0B1F3A] hover:bg-paper"><x-tenant.icon name="library" :size="16"/> Formules types</a>@endcan
+    @can('manage-parameters')<a href="{{ route('catalog.import', 'garanties') }}" class="inline-flex h-10 items-center gap-2 rounded-xl border border-ink/10 bg-white px-4 text-sm font-semibold text-[#0B1F3A] hover:bg-paper"><x-tenant.icon name="library" :size="16"/> {{ __('Formules types') }}</a>@endcan
 
     @can('manage-parameters')
     <a href="{{ route('guarantees.create') }}" class="rounded-md bg-pine px-4 py-2 text-sm font-medium text-white hover:bg-ink transition">+ {{ __('mxconnect.guarantee.new') }}</a>
@@ -30,7 +30,7 @@
             <td class="px-4 py-3">{{ $v ? $currency->format($v->base_contribution_minor) : '—' }} <span class="text-xs text-ink/40">/ {{ $v ? \App\Support\CatalogLabels::periodicity($v) : '' }}</span></td>
             <td class="px-4 py-3"><b class="text-leaf-700">{{ $v ? rtrim(rtrim(number_format((float) $v->coverage_rate, 2, ',', ''), '0'), ',') : '—' }} %</b> <span class="text-xs text-ink/40">({{ __('mxconnect.guarantee.copay') }} {{ $v ? rtrim(rtrim(number_format((float) $v->copay_rate, 2, ',', ''), '0'), ',') : '' }} %)</span></td>
             <td class="px-4 py-3">{{ $v?->observation_days }} {{ __('mxconnect.guarantee.days') }}</td>
-            <td class="px-4 py-3"><span class="rounded-full bg-mist px-2 py-0.5 text-xs">V{{ $v?->version_no }}</span></td>
+            <td class="px-4 py-3"><span class="rounded-full bg-mist px-2 py-0.5 text-xs">{{ __('V:version_no', ['version_no' => $v?->version_no]) }}</span></td>
             <td class="px-4 py-3 text-right"><a href="{{ route('guarantees.show', $g) }}" class="text-pine hover:underline">{{ __('mxconnect.guarantee.history') }}</a></td>
           </tr>
         @empty

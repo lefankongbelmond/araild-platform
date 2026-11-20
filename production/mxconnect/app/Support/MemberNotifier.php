@@ -29,7 +29,8 @@ final class MemberNotifier
             }
             $slug = tenant('slug') ?? $mutualId;
             app(NotificationService::class)->notify($link->public_account_id, 'mutuelle', $title, $body,
-                '/compte/mon-adhesion/' . $slug . ($path !== '' ? '/' . ltrim($path, '/') : ''));
+                '/compte/mon-adhesion/' . $slug . ($path !== '' ? '/' . ltrim($path, '/') : ''),
+                MutualIdentity::locale());   // adhérent sans langue choisie : langue de sa mutuelle (M3a)
         } catch (\Throwable $e) {
             report($e);   // une notification ne doit jamais faire échouer l'opération de gestion
         }

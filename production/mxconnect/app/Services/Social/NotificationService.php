@@ -23,14 +23,14 @@ class NotificationService
 
     public function __construct(private MailService $mail) {}
 
-    public function notify(int|PublicAccount|null $account, string $type, string|array $title, string|array|null $body = null, ?string $url = null): void
+    public function notify(int|PublicAccount|null $account, string $type, string|array $title, string|array|null $body = null, ?string $url = null, ?string $fallbackLocale = null): void
     {
         $id = $account instanceof PublicAccount ? $account->id : $account;
         if (! $id) {
             return;
         }
         $acc = $account instanceof PublicAccount ? $account : PublicAccount::find($id);
-        $locale = self::localeOf($acc);
+        $locale = self::localeOf($acc, $fallbackLocale);
         $title = self::text($title, $locale);
         $body = $body === null ? null : self::text($body, $locale);
         $n = SocialNotification::create([
@@ -49,12 +49,18 @@ class NotificationService
         }
     }
 
-    /** Langue du destinataire : celle enregistrée sur son compte si elle est proposée, sinon le français. */
-    public static function localeOf(?PublicAccount $account): string
+    /**
+     * Langue du destinataire : celle enregistrée sur son compte si elle est proposée ; sinon la langue
+     * de repli donnée par l'appelant (langue de la mutuelle pour ses adhérents, M3a) ; sinon le français.
+     */
+    public static function localeOf(?PublicAccount $account, ?string $fallback = null): string
     {
         $code = $account ? ($account->getAttributes()['locale'] ?? null) : null;
+        if ($code && \App\Support\Locales::isActive($code)) {
+            return $code;
+        }
 
-        return $code && \App\Support\Locales::isActive($code) ? $code : \App\Support\Locales::SOURCE;
+        return $fallback && \App\Support\Locales::isActive($fallback) ? $fallback : \App\Support\Locales::SOURCE;
     }
 
     /** Texte simple, ou [clé française, variables] traduit dans la langue donnée. */

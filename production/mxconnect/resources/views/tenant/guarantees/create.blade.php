@@ -25,11 +25,11 @@
           <select name="periodicity" required class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm">
             <option value="monthly">{{ __('mxconnect.periodicity.monthly') }}</option>
             <option value="quarterly">{{ __('mxconnect.periodicity.quarterly') }}</option>
-            <option value="semiannual">Semestrielle</option>
+            <option value="semiannual">{{ __('Semestrielle') }}</option>
             <option value="annual">{{ __('mxconnect.periodicity.annual') }}</option>
-            <option value="custom">Personnalisée (nombre de mois)</option>
+            <option value="custom">{{ __('Personnalisée (nombre de mois)') }}</option>
           </select>
-          <input name="period_months" type="number" min="1" max="60" placeholder="Mois entre deux échéances (si personnalisée)" class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm" aria-label="Mois entre deux échéances"></div>
+          <input name="period_months" type="number" min="1" max="60" placeholder="{{ __('Mois entre deux échéances (si personnalisée)') }}" class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm" aria-label="{{ __('Mois entre deux échéances') }}"></div>
         <div><label class="block text-sm">{{ __('mxconnect.guarantee.coverage') }} (%)</label>
           <input name="coverage_rate" type="number" step="any" min="0" max="100" required class="mt-1 w-full rounded-md border-ink/20 px-3 py-2 text-sm"></div>
         <div><label class="block text-sm">{{ __('mxconnect.guarantee.copay') }} (%)</label>

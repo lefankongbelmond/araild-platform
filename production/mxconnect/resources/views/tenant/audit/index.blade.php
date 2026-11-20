@@ -51,7 +51,7 @@
               <tr>
                 <td class="px-4 py-2 text-ink/60">{{ \Illuminate\Support\Carbon::parse($a->occurred_at)->format('d/m/Y H:i') }}</td>
                 <td class="px-4 py-2">{{ $a->who ?? ($a->user_id ? '#' . $a->user_id : 'Administration du réseau') }}</td>
-                <td class="px-4 py-2">@if ($a->action === 'test_data_reset')Réinitialisation de la MUTUELLE TEST @else{{ \App\Support\HealthAccessLog::LABELS[$a->object_type] ?? $a->object_type }}{{ $a->object_id ? ' #' . $a->object_id : '' }}@endif</td>
+                <td class="px-4 py-2">@if ($a->action === 'test_data_reset')Réinitialisation de la MUTUELLE TEST @elseif ($a->action === 'identity_updated'){{ __('Identité et langue de la mutuelle modifiées') }} @else{{ \App\Support\HealthAccessLog::LABELS[$a->object_type] ?? $a->object_type }}{{ $a->object_id ? ' #' . $a->object_id : '' }}@endif</td>
                 <td class="px-4 py-2 text-ink/50">{{ $a->ip ?? '—' }}</td>
               </tr>
             @empty

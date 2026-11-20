@@ -83,7 +83,8 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 | M1 Fondations | Faite (VERSION 2026.11.27) | `LISEZMOI-20261127.md` |
 | M2a Réseau social : paramètres du membre + écrans | Faite (VERSION 2026.11.28) | `LISEZMOI-20261128.md` |
 | M2b Réseau social : phrases avec variables, messages du serveur, notifications, e-mails, JavaScript | Faite (VERSION 2026.11.29) | `LISEZMOI-20261129.md` |
-| M3 Mutuelle | À faire | — |
+| M3a Mutuelle : page Paramètres en cartes, fiche « Identité et langue », cadre du back-office et écrans de paramétrage | Faite (VERSION 2026.11.30) | `LISEZMOI-20261130.md` |
+| M3b Mutuelle : reste du back-office (adhérents, prestations, cotisations, comptabilité, trésorerie, rapports, pharmacie, portail prestataire), messages du serveur, documents imprimés | À faire | — |
 | M4 Prestataires | À faire | — |
 | M5 Super-admin, accueil | À faire | — |
 | M6 Documents | À faire | — |
@@ -93,6 +94,13 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 - **Variables** : `:nom` identiques dans toutes les langues (contrôlé).
 - **Montants** : `Currency::format()` suit la langue (séparateurs seulement).
 - **Sens d'écriture** : `<html {!! Locales::htmlAttributes() !!}>` ; corrections physiques dans `css/mx-rtl.css` (structure, puis écran par écran).
+
+### Règles ajoutées par M3a
+- **Langue du personnel** : choix personnel (colonne `users.locale`) → langue par défaut de la mutuelle (`mutuals.locale_id`, fiche « Identité et langue ») → navigateur → français.
+- **Adhérents** : une notification à un adhérent qui n'a jamais choisi de langue est écrite dans la langue par défaut de sa mutuelle (`MutualIdentity::locale()` passée en repli à `NotificationService::notify`).
+- **Nouvelle rubrique de paramétrage** : l'ajouter à `App\Support\TenantSettings::SECTIONS` (carte affichée seulement si `TenantAccess::can()` l'autorise).
+- **Libellés de menu, rôles, sections** : traduits à l'affichage avec `__()` ; déclarés via `TranslatableLabels::extra()`.
+- **Vocabulaire `lang/<code>/mxconnect.php`** : complet en anglais ; partiel (63 clés) en pt, es, ar, sw, ha — à compléter en M3b (repli : français).
 - **Outils (M2a)** : `devtools/i18n/extraire-blade.py` (`--dry-run`, `--apply`, `--list`, `--mixed`) rend traduisibles les textes « purs » d'une vue ; `devtools/i18n/catalogue.py` (`sync`, `missing`, `merge`) tient le catalogue et refuse une traduction aux variables différentes. Relire le `git diff` après extraction (directives aux parenthèses imbriquées, attributs liés `:title`).
 - **Listes de libellés PHP** (constantes `STATUSES`, `TYPES`…) : afficher avec `__($libellé)` et **déclarer la constante dans `App\Support\TranslatableLabels::LISTS`** (test `MultilingueReseauSocialTest`). Les valeurs enregistrées en base restent les clés, jamais le texte traduit.
 - **Mot vérifié par le serveur** (« SUPPRIMER ») : jamais traduit.

@@ -163,6 +163,9 @@ class TenantAccess
             'conversations.*'         => [$A, $E, $M],
 
             // --- Paramètres ---
+            'settings.index'          => self::STAFF,     // page « Paramètres » en cartes : chaque carte filtrée par son propre droit (2026-11-30)
+            'settings.identity'       => [$A],            // fiche « Identité et langue » : administrateur seul
+            'settings.identity.update' => [$A],
             'guarantees.index'        => [$A, $E, $C, $B, $T],
             'guarantees.show'         => [$A, $E, $C, $B, $T],
             'antennas.index'          => [$A, $E, $C, $B, $T],
