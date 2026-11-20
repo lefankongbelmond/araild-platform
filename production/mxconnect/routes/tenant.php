@@ -211,6 +211,10 @@ Route::middleware([
             });
 
         // --- Module 4: mutual parameters ---
+        // Paramètres en cartes + fiche « Identité et langue » (multilingue M3a, 2026-11-30)
+        Route::get('parametres', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
+        Route::get('parametres/identite', [\App\Http\Controllers\Tenant\SettingsController::class, 'identity'])->name('settings.identity');
+        Route::put('parametres/identite', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateIdentity'])->name('settings.identity.update');
         Route::get('parametres/antennes', [AntennaController::class, 'index'])->name('antennas.index');
         Route::post('parametres/antennes', [AntennaController::class, 'store'])->name('antennas.store');
         Route::put('parametres/antennes/{antenna}', [AntennaController::class, 'update'])->name('antennas.update');
