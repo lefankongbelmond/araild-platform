@@ -18,6 +18,8 @@ use App\Services\RightsVerificationService;
 use App\Services\Tenant\BeneficiaryLookupService;
 use App\Services\Tenant\CoverageService;
 use App\Services\Tenant\InvoiceDocumentService;
+use App\Services\Tenant\ProviderBillingService;
+use App\Services\AccountingRefusal;
 use App\Support\RightsStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -362,31 +364,127 @@ class ProviderPortalController extends Controller
         ]);
     }
 
-    public function invoices(Request $request)
+    public function invoices(Request $request, ProviderBillingService $billing)
     {
         [$provider, $convention] = $this->context($request);
-        $invoiced = ProviderInvoice::where('provider_id', $provider->id)->whereNotNull('care_claim_id')->pluck('care_claim_id');
+        // Prestations VALIDÉES de cet établissement, pas encore facturées (ou rejetées sur une
+        // facture précédente : renvoi possible après correction). Phase 5 (2026-11-26).
+        $billable = $billing->billable($provider->id)->with(['careClaim.member', 'careClaim.dependent', 'actType'])
+            ->orderBy('care_date')->orderBy('id')->limit(ProviderBillingService::MAX_LINES)->get();
+        $q = ProviderInvoice::where('provider_id', $provider->id)->with('careClaim.member');
+        if (ProviderBillingService::ready()) {
+            $q->withCount(['lines', 'lines as rejected_lines_count' => fn ($l) => $l->where('status', 'rejected')]);
+        }
 
         return view('tenant.portal.invoices', [
             'provider' => $provider, 'convention' => $convention, 'currency' => $this->currency(),
-            'invoices' => ProviderInvoice::with('careClaim.member')->where('provider_id', $provider->id)->latest('id')->paginate(25),
-            // Recours avec des prestations VALIDÉES de ce prestataire, pas encore facturés par lui.
-            'billable' => CareClaim::with('member')->whereNotIn('id', $invoiced)
-                ->whereHas('prestations', fn ($q) => $q->where('provider_id', $provider->id)->where('status', 'validated'))
-                ->withSum(['prestations as due_minor' => fn ($q) => $q->where('provider_id', $provider->id)->where('status', 'validated')], 'mutual_part_minor')
-                ->latest('id')->limit(50)->get(),
+            'invoices' => $q->latest('id')->paginate(25),
+            'billable' => $billable,
+            'resend'   => $billing->previousRejections($billable->pluck('id')->all()),
+            'ready'    => ProviderBillingService::ready(),
         ]);
     }
 
-    public function requestPayment(Request $request, int $claim, InvoiceDocumentService $docs)
+    /** Bordereau : plusieurs prestations validées en une facture (phase 5, 2026-11-26). */
+    public function storeBatch(Request $request, ProviderBillingService $billing)
+    {
+        [$provider] = $this->context($request, 'bill');
+        abort_unless(ProviderBillingService::ready(), 404);
+        $data = $request->validate([
+            'prestations' => ['required', 'array', 'min:1', 'max:' . ProviderBillingService::MAX_LINES], 'prestations.*' => ['integer'],
+            'provider_reference' => ['nullable', 'string', 'max:60'],
+        ] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages() + ['prestations.required' => 'Cochez au moins une prestation à facturer.']);
+        try {
+            $inv = $billing->submit($provider->id, $data['prestations'], $request->user(), $data['provider_reference'] ?? null, $request->file('document'), 'batch');
+        } catch (AccountingRefusal $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('portal.invoices.show', $inv->id)->with('success', 'Facture ' . $inv->reference . ' transmise à la mutuelle ('
+            . $this->currency()->format($inv->amount_minor) . '). Elle sera contrôlée ligne par ligne ; le paiement est fait par la mutuelle, hors de la plateforme.');
+    }
+
+    /** Une prise en charge entière (ancien bouton conservé) : même circuit, une facture à lignes. */
+    public function requestPayment(Request $request, int $claim, InvoiceDocumentService $docs, ProviderBillingService $billing)
     {
         [$provider, $convention] = $this->context($request, 'bill');
         $data = $request->validate(['provider_reference' => ['nullable', 'string', 'max:60']] + InvoiceDocumentService::rules(), InvoiceDocumentService::messages());
         $c = CareClaim::findOrFail($claim);
 
-        // Facture et pièce ensemble : un PDF refusé n'enregistre aucune demande. Le recours est
-        // verrouillé pendant la transaction (2026-11-15) : un double clic ou deux postes en même
-        // temps ne peuvent pas créer deux demandes de paiement pour les mêmes soins.
+        if (! ProviderBillingService::ready()) {
+            return $this->legacyRequestPayment($request, $provider, $c, $data, $docs);
+        }
+        $ids = $billing->billable($provider->id)->where('care_claim_id', $c->id)->pluck('id')->all();
+        abort_if(! $ids, 422, 'Cette prise en charge est déjà facturée, ou n’a aucune prestation validée à facturer.');
+        try {
+            $inv = $billing->submit($provider->id, $ids, $request->user(), $data['provider_reference'] ?? null, $request->file('document'), 'claim');
+        } catch (AccountingRefusal $e) {
+            abort(422, $e->getMessage());
+        }
+
+        return back()->with('success', 'Demande de paiement ' . $inv->reference . ' transmise à la mutuelle (' . $this->currency()->format($inv->amount_minor) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
+    }
+
+    /** Détail d'une facture : lignes, motifs des rejets, historique, paiement ; imprimable (bordereau). */
+    public function showInvoice(Request $request, int $invoice)
+    {
+        [$provider, $convention] = $this->context($request);
+        $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
+        $ready = ProviderBillingService::ready();
+
+        return view('tenant.portal.invoice', [
+            'provider' => $provider, 'convention' => $convention, 'currency' => $this->currency(), 'inv' => $inv,
+            'lines'  => $ready ? $inv->lines()->with(['prestation.actType', 'prestation.careClaim.member', 'prestation.careClaim.dependent'])->orderBy('care_date')->orderBy('id')->get() : collect(),
+            'events' => $ready ? $inv->events()->get() : collect(),
+        ]);
+    }
+
+    /** Export CSV des lignes facturées par cet établissement (tableur, rapprochement des paiements). */
+    public function exportInvoices(Request $request)
+    {
+        [$provider] = $this->context($request);
+        abort_unless(ProviderBillingService::ready(), 404);
+        $cur = $this->currency();
+        $amount = fn ($v) => number_format(((int) $v) / (10 ** $cur->minor_unit), $cur->minor_unit, ',', '');
+        $lines = \App\Models\Tenant\ProviderInvoiceLine::with(['invoice', 'prestation.careClaim.member', 'prestation.careClaim.dependent'])
+            ->whereHas('invoice', fn ($q) => $q->where('provider_id', $provider->id))->orderBy('provider_invoice_id')->orderBy('id')->get();
+
+        $out = fopen('php://temp', 'w+');
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, ['Facture', 'Votre réf.', 'Envoyée le', 'État de la facture', 'Prestation n°', 'Date des soins', 'Bénéficiaire', 'Code adhérent',
+            'Montant', 'Devise', 'État de la ligne', 'Motif', 'Payée le', 'Réf. du paiement'], ';');
+        foreach ($lines as $l) {
+            $i = $l->invoice;
+            $claim = $l->prestation?->careClaim;
+            $who = $claim?->dependent ? trim($claim->dependent->last_name . ' ' . $claim->dependent->first_name) : trim(($claim?->member?->last_name ?? '') . ' ' . ($claim?->member?->first_name ?? ''));
+            fputcsv($out, [$i?->label(), $i?->provider_reference, $i?->created_at?->format('d/m/Y'), ProviderInvoice::STATUSES[$i?->status] ?? $i?->status,
+                $l->prestation_id, $l->care_date?->format('d/m/Y'), $who, $claim?->member?->member_code, $amount($l->amount_minor), $cur->code,
+                \App\Models\Tenant\ProviderInvoiceLine::STATUSES[$l->status] ?? $l->status, $l->decision_note, $i?->paid_on?->format('d/m/Y'), $i?->payment_reference], ';');
+        }
+        rewind($out);
+
+        return response(stream_get_contents($out), 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="mes-factures-' . now()->format('Ymd') . '.csv"',
+        ])->setPrivate();
+    }
+
+    /** Joindre (ou remplacer) la facture PDF tant que la mutuelle n'a pas payé. */
+    public function attachDocument(Request $request, int $invoice, InvoiceDocumentService $docs, ProviderBillingService $billing)
+    {
+        [$provider, $convention] = $this->context($request, 'bill');
+        $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
+        abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, 'Cette facture est déjà en paiement : la pièce ne se modifie plus.');
+        $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => 'Choisissez le fichier PDF de la facture.']);
+        $docs->attach($inv, $request->file('document'));
+        $billing->event($inv, 'document', $request->user()->id);
+
+        return back()->with('success', 'Facture PDF jointe à la demande ' . $inv->label() . '.');
+    }
+
+    /** Ancien circuit (mutuelle pas encore migrée) : une facture par prise en charge, sans ligne. */
+    private function legacyRequestPayment(Request $request, CareProvider $provider, CareClaim $c, array $data, InvoiceDocumentService $docs)
+    {
         $amount = DB::transaction(function () use ($provider, $c, $request, $data, $docs) {
             CareClaim::whereKey($c->id)->lockForUpdate()->first();
             abort_if(ProviderInvoice::where('provider_id', $provider->id)->where('care_claim_id', $c->id)->exists(), 422, 'Cette prise en charge est déjà facturée.');
@@ -404,18 +502,6 @@ class ProviderPortalController extends Controller
         });
 
         return back()->with('success', 'Demande de paiement transmise à la mutuelle (' . $this->currency()->format($amount) . '). Le paiement est fait par la mutuelle, hors de la plateforme.');
-    }
-
-    /** Joindre (ou remplacer) la facture PDF tant que la mutuelle n'a pas payé. */
-    public function attachDocument(Request $request, int $invoice, InvoiceDocumentService $docs)
-    {
-        [$provider, $convention] = $this->context($request, 'bill');
-        $inv = ProviderInvoice::where('provider_id', $provider->id)->findOrFail($invoice);
-        abort_unless(in_array($inv->status, ['captured', 'processed'], true), 422, 'Cette facture est déjà en paiement : la pièce ne se modifie plus.');
-        $request->validate(['document' => ['required', ...InvoiceDocumentService::rules()['document']]], InvoiceDocumentService::messages() + ['document.required' => 'Choisissez le fichier PDF de la facture.']);
-        $docs->attach($inv, $request->file('document'));
-
-        return back()->with('success', "Facture PDF jointe à la demande n° {$inv->id}.");
     }
 
     /** Le prestataire retélécharge la pièce de SA facture. */

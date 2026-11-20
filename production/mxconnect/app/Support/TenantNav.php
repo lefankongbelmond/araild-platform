@@ -45,6 +45,8 @@ class TenantNav
         'contributions.policy'     => 'contributions.index',
         'accounting.chart'  => 'accounting.journal',
         'formulas.show'       => 'formulas.index',
+        'invoices.show'       => 'invoices.index',
+        'portal.invoices.show' => 'portal.invoices',
         'formula-migrations.create' => 'formula-migrations.index',
         'formula-migrations.show'   => 'formula-migrations.index',
         'formulas.categories' => 'formulas.index',

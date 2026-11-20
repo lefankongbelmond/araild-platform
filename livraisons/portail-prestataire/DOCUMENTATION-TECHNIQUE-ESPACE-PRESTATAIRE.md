@@ -301,3 +301,70 @@ Toutes sont couvertes par la règle `portal.*` de `TenantAccess`. La caméra est
 - envoi par e-mail ou SMS des avis.
 
 Aujourd'hui, les avis sont visibles dans l'espace seulement.
+
+
+# Phase 5, VERSION 2026.11.26 : facturation et paiements
+
+## 15. Modèle
+
+Tout se passe dans la base de **chaque mutuelle**. La migration TENANT `2026_11_26_000100_provider_billing` est additive :
+- `provider_invoice_lines` : une ligne par prestation facturée (`prestation_id`, `care_claim_id`, `care_date`, `amount_minor` = part de la mutuelle au moment de l'envoi, `status` pending/accepted/rejected, `decision_note`, `decided_by`, `decided_at`) ;
+- `invoice_events` : historique d'une facture (`sent`, `document`, `checked`, `rejected`, `paid`), avec l'agent, le montant et une note ;
+- `provider_invoices` : `kind` (claim = une prise en charge, batch = bordereau), `reference` (BOR-AAAA-NNNNN, numéro = id), `billed_minor` (montant demandé), `checked_by`/`checked_at`, `payment_reference`, `paid_on`, `payment_mode`.
+
+Le bordereau **est** la facture (`kind = batch`) : pas de table `invoice_batches` séparée, contrairement au plan initial. `amount_minor` devient le montant **validé** (somme des lignes acceptées) au contrôle ; `billed_minor` garde le montant demandé.
+
+Les anciennes factures, **sans ligne**, gardent leur fonctionnement : elles se paient directement. `ProviderInvoice::hasLines()` les distingue.
+
+## 16. Service `App\Services\Tenant\ProviderBillingService`
+
+| Méthode | Rôle |
+|---|---|
+| `billable($providerId)` | Prestations facturables : `validated`, part mutuelle > 0, absentes de toute ligne active (`pending`/`accepted` sur une facture non rejetée), hors prises en charge couvertes par une ancienne facture sans ligne non rejetée. Une ligne rejetée libère la prestation (renvoi). |
+| `submit(...)` | Transaction ; `lockForUpdate` des prestations, puis nouvelle lecture de `billable` : deux envois simultanés ne facturent jamais deux fois la même prestation. Crée la facture, ses lignes, l'événement `sent`, la pièce PDF (refusée = rien n'est enregistré). |
+| `decideLines(...)` | Jamais par la personne qui a saisi la facture. Verrou sur la facture ; ligne acceptée seulement si la prestation est toujours validée ; ligne rejetée seulement avec un motif (≥ 5 caractères). Plus aucune ligne en attente → `processed` (montant = lignes acceptées) ou `rejected` (aucune). Avis `invoice_checked` ou `invoice_rejected`, sans motif ni acte. |
+| `reject(...)` | Rejet de toute la facture : lignes actives rejetées (redeviennent facturables). |
+| `payBlocker()` / `pay(...)` | Facture à lignes : payable seulement une fois `processed`. Paiement : mode (virement, Mobile Money, espèces), **référence obligatoire**, date ni future, ni dans un exercice clôturé, ni sur une journée arrêtée ; jamais par la personne qui a saisi ou contrôlé. Transaction + verrou ; `TreasuryMovement` outflow `provider_invoice` daté du paiement, `linked_reference` = BOR-… ; événement `paid` ; avis `invoice_paid` avec la référence. |
+
+Les refus métier sont des `AccountingRefusal` (message affiché tel quel).
+
+## 17. Écrans et routes
+
+**Portail (rôle provider)** :
+- `portal.invoices` : prestations à facturer (cases à cocher, mention « Renvoi » et motif précédent) et liste des factures ;
+- `portal.invoices.batch` (POST `prestataire/factures/bordereau`, droit d'établissement `invoices.bill`) ;
+- `portal.invoices.show` (détail imprimable = bordereau, `invoices.view`) ;
+- `portal.invoices.export` (CSV des lignes, `invoices.view`) ;
+- l'ancien `portal.invoices.store` (une prise en charge) passe par le même service.
+
+**Mutuelle** (`TenantAccess`) :
+- `invoices.index` : onglets « À contrôler » (factures à lignes non contrôlées), « Validées, à payer » (dont les anciennes factures sans ligne), « Payées », « Rejetées » ; onglet par défaut selon ce que la personne a à faire ;
+- `invoices.show` [A, C, B, T, U] : lignes, historique, paiement. L'acte n'est affiché qu'avec `capacite.donnees-sante` ;
+- `invoices.lines.decide` [A, C] : une ligne, ou « accepter toutes les lignes en attente » ;
+- `invoices.pay` [T] ;
+- `invoices.document` [A, C, B, D], journalisé par `HealthAccessLog` ;
+- `invoices.export` : `?lignes=1` donne une ligne par prestation, **sans l'acte**.
+- Ancienne route `claims.invoice.pay` : même service (référence obligatoire). La fiche du recours renvoie désormais vers le détail de la facture.
+- `claims.invoice.create` (facture saisie par la mutuelle) crée une facture à lignes, contrôlée par une autre personne.
+
+`TestDataResetService` : `provider_invoice_lines` et `invoice_events` sont classées RESET.
+
+## 18. Tests
+
+`tests/Feature/FacturationPrestataireTest.php` (4 tests), qui passent aussi en tables préfixées :
+- bordereau de 3 lignes, refus d'une seconde facturation (bordereau ou ancien bouton) ;
+- droits : auditeur et trésorier ne contrôlent pas ; paiement refusé avant contrôle ;
+- rejet partiel motivé, validation au montant accepté, avis sans acte, renvoi de la ligne rejetée ;
+- paiement : référence obligatoire, date future refusée, une seule fois, mouvement de trésorerie, avis avec la référence ;
+- rejet de toute la facture puis nouvel envoi ;
+- facture saisie par la mutuelle (« 4 yeux »), exports CSV (registre sans l'acte, portail limité à l'établissement).
+
+Cinq tests antérieurs ont été adaptés au nouveau circuit : contrôle des lignes avant paiement, et référence du paiement.
+
+## 19. Limites de la phase 5
+
+- **Pas de paiement partiel** d'une facture validée : elle est payée en une fois.
+- **Pas d'annulation d'un paiement enregistré** : à corriger en comptabilité (extourne) si une erreur survient.
+- **Ancienne facture sans ligne** couvrant une prise en charge : les prestations de cette prise en charge validées plus tard ne sont pas facturables en ligne tant que la facture n'est pas rejetée.
+- **PDF du bordereau** : par l'impression du navigateur, pas côté serveur.
+- **Bordereau** : 200 prestations au plus par envoi.

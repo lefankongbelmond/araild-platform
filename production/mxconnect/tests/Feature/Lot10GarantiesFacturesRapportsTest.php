@@ -133,7 +133,7 @@ it('rassemble les factures des prestataires : paiement par le trésorier, rejet 
 
     // Une seconde facture, payée depuis le registre.
     $inv2 = providerInvoice(5000);
-    as_('tres@equipe.test')->from($h . '/factures-prestataires')->post($h . "/recours/{$inv2->care_claim_id}/facture/{$inv2->id}/paiement")
+    as_('tres@equipe.test')->from($h . '/factures-prestataires')->post($h . "/recours/{$inv2->care_claim_id}/facture/{$inv2->id}/paiement", ['payment_reference' => 'VIR-77'])
         ->assertRedirect($h . '/factures-prestataires');
     $inv2 = $this->mutual->run(fn () => $inv2->fresh());
     expect($inv2->status)->toBe('paid')->and($inv2->decided_at)->not->toBeNull();

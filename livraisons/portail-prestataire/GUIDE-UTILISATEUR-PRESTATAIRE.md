@@ -1,4 +1,4 @@
-# Guide du portail prestataire (version 2026.11.25)
+# Guide du portail prestataire (version 2026.11.26)
 
 Pour l'accueil, le personnel soignant, la facturation et la direction des établissements de soins (hôpitaux, centres de santé, cliniques, pharmacies, laboratoires) conventionnés avec des mutuelles MX-CONNECT.
 
@@ -135,18 +135,35 @@ Menu **Prises en charge** (dans le portail : **Mes prises en charge**). Filtres 
 - Une prise en charge **rejetée** affiche le **motif** donné par la mutuelle.
 - Les rejets antérieurs au 15/11/2026 n'ont pas de motif enregistré : contactez la mutuelle.
 
-## 7. Demander le paiement
+## 7. Facturer : bordereaux, contrôle et paiement (depuis le 26/11/2026)
 Menu **Mes factures**.
-1. Les prises en charge **validées** apparaissent dans « à facturer ». Le montant correspond à la part de la mutuelle.
-2. Indiquez votre n° de facture et joignez si possible la facture en PDF (5 Mo au maximum), puis cliquez sur **Demander le paiement**.
-3. Suivez l'état de la facture : transmise, en traitement, mise en paiement, payée (avec sa date) ou rejetée (avec le motif).
 
-Une seule demande est possible par prise en charge.
+**Envoyer une facture (bordereau)**
+1. Les prestations **validées** par la mutuelle apparaissent dans « Prestations validées à facturer ». Le montant de chaque ligne est la part de la mutuelle (tiers payant).
+2. Cochez les prestations à regrouper dans une même facture. Elles sont toutes cochées au départ ; le total se met à jour.
+3. Indiquez votre n° de facture si vous en avez un, joignez si possible la facture en PDF (5 Mo au maximum), puis cliquez sur **Demander le paiement (envoyer la facture)**.
+4. La facture reçoit une référence **BOR-AAAA-NNNNN**. Sa page de détail s'imprime comme **bordereau** (bouton « Imprimer le bordereau ») ; le navigateur peut l'enregistrer en PDF.
 
-La mutuelle paie **hors de la plateforme** : MX-CONNECT ne détient aucun fonds. Une facture n'est « payée » que lorsque la mutuelle a enregistré le paiement.
+Une prestation ne peut figurer que dans **une seule facture** : un double clic ou un second envoi est refusé.
+
+**Contrôle par la mutuelle**
+- La mutuelle contrôle **chaque ligne** : acceptée, ou rejetée avec un motif.
+- Quand toutes les lignes sont contrôlées, la facture est **validée** pour le montant des lignes acceptées. Vous recevez un avis.
+- **Ligne rejetée** : le motif s'affiche dans le détail de la facture, et la prestation revient dans « à facturer » avec la mention « Renvoi ». Corrigez ce qui doit l'être, puis renvoyez-la dans une nouvelle facture.
+- **Facture entièrement rejetée** (doublon, pièce illisible…) : toutes ses prestations reviennent dans « à facturer ».
+
+**Paiement**
+- **Validée ne veut pas dire payée.** Une facture n'est « Payée » que lorsque la mutuelle a enregistré un paiement **effectué**, avec sa date, son mode et sa **référence** (n° de virement, de transaction Mobile Money ou de reçu). Ces informations s'affichent sur la facture et dans l'avis reçu.
+- La mutuelle paie **hors de la plateforme** : MX-CONNECT ne détient aucun fonds.
+
+**États d'une facture** : en contrôle → validée, à payer → payée ; ou rejetée.
+
+**Export** : le bouton **Exporter les lignes (CSV)** donne toutes vos lignes facturées, avec leur état, le motif d'un rejet, la date et la référence du paiement. Utile pour rapprocher vos relevés bancaires.
+
+Les factures envoyées avant le 26/11/2026, une par prise en charge, gardent leur fonctionnement.
 
 ## 8. Convention échue ou suspendue
-- **Convention arrivée à échéance** : vous ne pouvez plus vérifier de droits ni déclarer de soins. Vous pouvez encore demander le paiement des soins déjà validés.
+- **Convention arrivée à échéance** : vous ne pouvez plus vérifier de droits ni déclarer de soins. Vous pouvez encore facturer les soins déjà validés.
 - **Convention suspendue par la mutuelle**, ou **établissement désactivé** : seule la consultation de votre historique reste possible.
 
 ## 9. Gérer l'établissement (administrateur, gestionnaire administratif)

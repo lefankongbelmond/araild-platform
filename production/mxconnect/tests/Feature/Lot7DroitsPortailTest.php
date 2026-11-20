@@ -196,8 +196,12 @@ it('portail prestataire : vérifier, déclarer, cloisonner par établissement, f
     as_('accueil@csi-a.test')->post($h . "/prestataire/factures/{$p->care_claim_id}")->assertStatus(422);
     $inv = $this->mutual->run(fn () => ProviderInvoice::firstOrFail());
     expect($inv->amount_minor)->toBe(8000)->and($inv->provider_id)->toBe($convA->care_provider_id)->and($inv->provider_reference)->toBe('F-2026-014');
-    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement")->assertSessionHas('success');
-    expect($this->mutual->run(fn () => [$inv->fresh()->status, TreasuryMovement::where('linked_reference', 'INV-' . $inv->id)->exists()]))->toBe(['paid', true]);
+    // Phase 5 : la facture est contrôlée (lignes acceptées) avant d'être payée, avec la référence du paiement.
+    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement", ['payment_reference' => 'VIR-2026-001'])->assertSessionHas('error');
+    as_('ctrl@equipe.test')->post($h . "/factures-prestataires/{$inv->id}/lignes", ['decision' => 'accept_all'])->assertSessionHas('success');
+    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement")->assertSessionHasErrors('payment_reference');
+    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement", ['payment_reference' => 'VIR-2026-001'])->assertSessionHas('success');
+    expect($this->mutual->run(fn () => [$inv->fresh()->status, TreasuryMovement::where('linked_reference', $inv->fresh()->reference)->exists()]))->toBe(['paid', true]);
     as_('accueil@csi-a.test')->get($h . '/prestataire/factures')->assertSee('Payée')->assertSee('F-2026-014');
 
     // Convention suspendue : plus de vérification ni de déclaration ; l'historique reste consultable.

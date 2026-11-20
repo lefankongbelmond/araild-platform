@@ -97,6 +97,10 @@ Route::middleware([
                 Route::get('prises-en-charge', 'claims')->name('claims');
                 Route::get('factures', 'invoices')->name('invoices');
                 Route::post('factures/{claim}', 'requestPayment')->name('invoices.store');
+                // Phase 5 (2026-11-26) : bordereau à lignes, détail imprimable, export CSV.
+                Route::post('factures/bordereau', 'storeBatch')->name('invoices.batch')->middleware('throttle:30,1');
+                Route::get('factures/export.csv', 'exportInvoices')->name('invoices.export');
+                Route::get('factures/{invoice}', 'showInvoice')->name('invoices.show')->whereNumber('invoice');
                 Route::post('factures/{invoice}/piece', 'attachDocument')->name('invoices.document.store')->whereNumber('invoice');
                 Route::get('factures/{invoice}/piece', 'document')->name('invoices.document')->whereNumber('invoice');
                 // L3 (2026-11-19) : accords préalables et délivrances en pharmacie.
@@ -378,6 +382,11 @@ Route::middleware([
         Route::get('factures-prestataires', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'index'])->name('invoices.index');
         Route::get('factures-prestataires/export.csv', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'export'])->name('invoices.export');
         Route::post('factures-prestataires/{invoice}/rejet', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'reject'])->name('invoices.reject');
+        // Phase 5 (2026-11-26) : détail, contrôle ligne par ligne, paiement confirmé, pièce.
+        Route::get('factures-prestataires/{invoice}', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'show'])->name('invoices.show')->whereNumber('invoice');
+        Route::post('factures-prestataires/{invoice}/lignes', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'decideLines'])->name('invoices.lines.decide')->whereNumber('invoice');
+        Route::post('factures-prestataires/{invoice}/paiement', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'pay'])->name('invoices.pay')->whereNumber('invoice');
+        Route::get('factures-prestataires/{invoice}/piece', [\App\Http\Controllers\Tenant\InvoiceRegisterController::class, 'document'])->name('invoices.document')->whereNumber('invoice');
 
         // Anti-fraud alerts
         Route::get('alertes', [AlertController::class, 'index'])->name('alerts.index');

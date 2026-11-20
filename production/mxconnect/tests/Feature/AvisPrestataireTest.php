@@ -67,7 +67,7 @@ it('prévient l’établissement de chaque décision de la mutuelle, sans donné
     $i = $this->ids;
     asAdmin()->post($h . "/recours/{$i['claim']}/prestations/{$i['p1']}/validation")->assertRedirect();
     asAdmin()->post($h . "/recours/{$i['claim']}/prestations/{$i['p2']}/rejet", ['note' => 'Acte déjà facturé le même jour'])->assertRedirect();
-    as_('tresor@equipe.test')->post($h . "/recours/{$i['claim']}/facture/{$i['inv']}/paiement", ['mode' => 'bank'])->assertRedirect();
+    as_('tresor@equipe.test')->post($h . "/recours/{$i['claim']}/facture/{$i['inv']}/paiement", ['mode' => 'bank', 'payment_reference' => 'VIR-2026-55'])->assertRedirect();
     asAdmin()->post($h . "/factures-prestataires/{$i['inv2']}/rejet", ['note' => 'Pièce justificative illisible'])->assertRedirect();
     $this->mutual->run(fn () => app(PreauthorizationService::class)->decide(Preauthorization::find($i['pa']), \App\Models\Tenant\User::where('email', 'admin@equipe.test')->first(), 'approved', null, 45000));
     tenancy()->end();

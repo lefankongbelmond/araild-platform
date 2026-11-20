@@ -107,10 +107,9 @@ class ProviderDashboardService
         $n = fn ($st) => (int) ($inv[$st]->n ?? 0);
         $s = fn ($st) => (int) ($inv[$st]->s ?? 0);
 
-        // Même règle que le portail (« Mes factures ») : une prise en charge déjà facturée, même
-        // rejetée, ne se refacture pas en ligne aujourd'hui (correction et renvoi : phase 5).
-        $invoicedClaims = ProviderInvoice::where('provider_id', $pid)->whereNotNull('care_claim_id')->pluck('care_claim_id');
-        $tobill = (int) Prestation::where('provider_id', $pid)->where('status', 'validated')->whereNotIn('care_claim_id', $invoicedClaims)->sum('mutual_part_minor');
+        // Même règle que le portail (« Mes factures ») : prestations validées absentes de toute ligne
+        // active ; une ligne rejetée redevient facturable (phase 5, 2026-11-26).
+        $tobill = (int) app(\App\Services\Tenant\ProviderBillingService::class)->billable($pid)->sum('mutual_part_minor');
 
         $hasDecided = Schema::hasColumn('provider_invoices', 'decided_at');
         $paidQ = fn () => ProviderInvoice::where('provider_id', $pid)->where('status', 'paid')->whereNotNull('decided_at');

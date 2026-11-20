@@ -1,6 +1,6 @@
 @php
   $icons = ['claim_validated' => ['check', 'text-pine'], 'claim_rejected' => ['alert', 'text-clay'], 'invoice_paid' => ['wallet', 'text-pine'],
-            'invoice_rejected' => ['alert', 'text-clay'], 'preauth_approved' => ['shield', 'text-pine'], 'preauth_rejected' => ['alert', 'text-clay'],
+            'invoice_rejected' => ['alert', 'text-clay'], 'invoice_checked' => ['check', 'text-pine'], 'preauth_approved' => ['shield', 'text-pine'], 'preauth_rejected' => ['alert', 'text-clay'],
             'affiliation_approved' => ['globe', 'text-pine'], 'affiliation_rejected' => ['alert', 'text-clay']];
   $labels = ['claims' => 'Voir mes prises en charge', 'invoices' => 'Voir mes factures', 'preauth' => 'Voir mes accords préalables'];
 @endphp

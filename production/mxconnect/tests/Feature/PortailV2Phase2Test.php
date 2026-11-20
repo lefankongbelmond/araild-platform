@@ -263,7 +263,8 @@ it('affiche un tableau de bord calculé sur les vraies données de la mutuelle, 
     expect($money['billed'])->toBe(8000)->and($money['due'])->toBe(8000)->and($money['paid'])->toBe(0);
 
     // Paiement réel enregistré par le trésorier : « payé » seulement maintenant.
-    as_('treso@equipe.test')->post($this->host . "/recours/{$p1->care_claim_id}/facture/{$inv->id}/paiement", ['mode' => 'bank'])->assertRedirect();
+    as_('ctrl@equipe.test')->post($this->host . "/factures-prestataires/{$inv->id}/lignes", ['decision' => 'accept_all'])->assertSessionHas('success');
+    as_('treso@equipe.test')->post($this->host . "/recours/{$p1->care_claim_id}/facture/{$inv->id}/paiement", ['mode' => 'bank', 'payment_reference' => 'VIR-01'])->assertRedirect();
     tenancy()->end();
     \Illuminate\Support\Facades\Cache::flush();
     $d = app(\App\Services\Provider\ProviderDashboardService::class)->build(CareProvider::findOrFail($conv->care_provider_id));

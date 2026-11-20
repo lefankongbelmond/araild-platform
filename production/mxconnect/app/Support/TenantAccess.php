@@ -83,6 +83,10 @@ class TenantAccess
             'invoices.index'               => [$A, $C, $B, $T, $U],   // registre des factures des prestataires (2026-11-03)
             'invoices.export'              => [$A, $C, $T, $U],
             'invoices.reject'              => [$A, $C],
+            'invoices.show'                => [$A, $C, $B, $T, $U],   // détail d'une facture à lignes (phase 5, 2026-11-26)
+            'invoices.lines.decide'        => [$A, $C],               // contrôle ligne par ligne
+            'invoices.pay'                 => [$T],                   // paiement effectué, avec sa référence
+            'invoices.document'            => [$A, $C, $B, $D],       // pièce du prestataire : peut contenir des données de santé
             'reports.*'                    => [$A, $C, $B, $T, $U],   // rapports d'activité (détail par acte : capacite.donnees-sante)
             'alerts.*'                     => [$A, $C],
             // Détail médical d'un recours (motif, actes) : le trésorier ne voit que les montants.
@@ -213,7 +217,7 @@ class TenantAccess
         'Adhérents' => ['member-requests.index' => 'Demandes des adhérents (portail)', 'members.portal.code' => 'Codes d’activation du portail adhérent', 'members.index' => 'Consulter', 'members.store' => 'Inscrire, modifier, suspendre', 'cards.index' => 'Cartes de membre'],
         'Souscriptions' => ['subscriptions.index' => 'Consulter', 'subscriptions.store' => 'Saisir', 'subscriptions.validate' => 'Valider'],
         'Recours et prestations (santé)' => ['claims.index' => 'Consulter', 'capacite.donnees-sante' => 'Voir le détail médical', 'claims.prestations.store' => 'Saisir', 'claims.prestations.validate' => 'Valider ou rejeter', 'alerts.index' => 'Alertes anti-fraude'],
-        'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
+        'Facturation et paiements' => ['billing.dashboard' => 'Facturation, quote-part', 'invoices.index' => 'Registre des factures des prestataires', 'invoices.reject' => 'Rejeter une facture', 'invoices.lines.decide' => 'Contrôler les lignes d’une facture', 'invoices.pay' => 'Enregistrer le paiement d’une facture', 'claims.invoice.create' => 'Préparer une facture (tiers payant)', 'claims.reimbursement.pay' => 'Payer remboursements et factures'],
         'Cotisations' => ['contributions.index' => 'Consulter, relevé par adhérent, export CSV', 'contributions.collect' => 'Encaisser (partiel ou plusieurs échéances)', 'contributions.refresh' => 'Actualiser les échéanciers', 'contributions.cancel.request' => 'Demander l’annulation d’un encaissement', 'contributions.cancel.approve' => 'Valider ou refuser une annulation', 'contributions.fee' => 'Appeler le droit d’adhésion', 'contributions.policy.update' => 'Régler le délai de grâce avant suspension', 'payments.initiate' => 'Lancer un paiement en ligne'],
         'Trésorerie et comptabilité' => ['treasury.dashboard' => 'Consulter', 'treasury.movements.store' => 'Saisir, comptabiliser, arrêter la caisse',
             'accounting.entries.store' => 'Opérations diverses : saisir, préparer une extourne', 'accounting.entries.validate' => 'Opérations diverses : valider ou rejeter',

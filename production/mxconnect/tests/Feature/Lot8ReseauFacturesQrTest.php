@@ -164,7 +164,9 @@ it('permet de joindre la facture après coup, plus après le paiement', function
     $this->mutual->run(fn () => expect(Storage::disk('local')->exists($first))->toBeFalse());        // l'ancienne pièce est effacée
 
     staffUser('tres@equipe.test', ['treasurer_accountant']);
-    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement")->assertSessionHas('success');
+    staffUser('ctrl2@equipe.test', ['controller_validator']);
+    as_('ctrl2@equipe.test')->post($h . "/factures-prestataires/{$inv->id}/lignes", ['decision' => 'accept_all'])->assertSessionHas('success');
+    as_('tres@equipe.test')->post($h . "/recours/{$p->care_claim_id}/facture/{$inv->id}/paiement", ['payment_reference' => 'VIR-12'])->assertSessionHas('success');
     as_('accueil@csi-a.test')->post($h . "/prestataire/factures/{$inv->id}/piece", ['document' => pdf('f3.pdf')])->assertStatus(422);
 });
 

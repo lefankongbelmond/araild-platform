@@ -43,7 +43,7 @@ class TestDataResetService
     public const RESET = [
         'members', 'dependents', 'subscriptions', 'formula_migrations', 'amendments', 'suspensions', 'radiations', 'departures', 'member_groups',
         'contribution_schedules', 'contribution_payments', 'collection_cancellations',
-        'care_claims', 'prestations', 'prescribed_medicines', 'reimbursements', 'provider_invoices', 'coverage_exceptions',
+        'care_claims', 'prestations', 'prescribed_medicines', 'reimbursements', 'provider_invoices', 'provider_invoice_lines', 'invoice_events', 'coverage_exceptions',
         'preauthorizations', 'prescriptions', 'dispensations', 'dispensation_lines', 'rights_checks', 'beneficiary_searches', 'alerts',
         'treasury_movements', 'accounting_entries', 'accounting_days', 'accounting_periods', 'fiscal_years', 'budgets', 'budget_lines',
         'complaints', 'complaint_messages', 'member_change_requests', 'member_notifications', 'member_notification_recipients',
@@ -54,7 +54,7 @@ class TestDataResetService
     public const LABELS = [
         'members' => 'Adhérents', 'dependents' => 'Ayants droit', 'subscriptions' => 'Souscriptions',
         'contribution_schedules' => 'Échéances de cotisation', 'contribution_payments' => 'Paiements de cotisation',
-        'care_claims' => 'Recours', 'prestations' => 'Prestations', 'provider_invoices' => 'Factures des prestataires',
+        'care_claims' => 'Recours', 'prestations' => 'Prestations', 'provider_invoices' => 'Factures des prestataires', 'provider_invoice_lines' => 'Lignes des factures des prestataires', 'invoice_events' => 'Historique des factures des prestataires',
         'preauthorizations' => 'Accords préalables', 'prescriptions' => 'Ordonnances', 'dispensations' => 'Délivrances en pharmacie',
         'coverage_exceptions' => 'Dérogations', 'rights_checks' => 'Vérifications de droits', 'alerts' => 'Alertes',
         'treasury_movements' => 'Mouvements de trésorerie', 'accounting_entries' => 'Écritures comptables', 'fiscal_years' => 'Exercices',

@@ -1,20 +1,20 @@
 @php
   $S = \App\Models\Tenant\ProviderInvoice::STATUSES;
-  $tabs = ['a-payer' => 'À payer', 'payees' => 'Payées', 'rejetees' => 'Rejetées'];
   $f = 'rounded-md border border-ink/15 bg-white px-3 py-2 text-sm';
   $me = auth()->id();
 @endphp
 <x-layouts.tenant title="Factures des prestataires">
   <x-tenant.hero icon="receipt" kicker="Facturation et finances" tone="teal">
     <x-slot:title>Factures des prestataires</x-slot:title>
-    <x-slot:subtitle>Toutes les demandes de paiement des établissements conventionnés (tiers payant), au même endroit. Le paiement se fait hors de la plateforme ; MX-CONNECT l’enregistre en trésorerie.</x-slot:subtitle>
+    <x-slot:subtitle>Toutes les factures des établissements conventionnés (tiers payant) : contrôle ligne par ligne, validation, puis paiement. Le paiement se fait hors de la plateforme ; MX-CONNECT l’enregistre en trésorerie avec sa référence.</x-slot:subtitle>
     <x-slot:actions>
-      @acces('invoices.export')<a href="{{ route('invoices.export', request()->query()) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Exporter (CSV)</a>@endacces
+      @acces('invoices.export')<a href="{{ route('invoices.export', ['statut' => $statut] + request()->only('prestataire', 'du', 'au')) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Exporter (CSV)</a>
+        <a href="{{ route('invoices.export', ['statut' => $statut, 'lignes' => 1] + request()->only('prestataire', 'du', 'au')) }}" class="rounded-md border border-ink/10 bg-white px-4 py-2 text-sm font-medium text-ink/70 hover:bg-mist">Exporter les lignes (CSV)</a>@endacces
     </x-slot:actions>
   </x-tenant.hero>
   @if ($errors->any())<div class="mt-4 rounded-md border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-clay">{{ $errors->first() }}</div>@endif
 
-  <div class="mt-6 grid gap-3 sm:grid-cols-3">
+  <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
     @foreach ($tabs as $k => $label)
       <a href="{{ route('invoices.index', ['statut' => $k] + request()->only('prestataire', 'du', 'au')) }}" class="rounded-lg border bg-white p-4 {{ $statut === $k ? 'border-pine' : 'border-ink/10' }}">
         <div class="text-xs font-semibold uppercase tracking-wide text-ink/50">{{ $label }}</div>
@@ -40,25 +40,27 @@
           <div class="min-w-0 text-sm">
             <div class="flex flex-wrap items-center gap-2"><b>{{ $providers[$inv->provider_id] ?? 'Prestataire n° ' . $inv->provider_id }}</b>
               <span class="rounded-full px-2 py-0.5 text-xs {{ $inv->status === 'paid' ? 'bg-mist text-pine' : ($inv->status === 'rejected' ? 'bg-clay/10 text-clay' : 'bg-amber-50 text-amber-700') }}">{{ $S[$inv->status] ?? $inv->status }}</span></div>
-            <div class="mt-1 text-ink/60">Facture n° {{ $inv->id }}@if ($inv->provider_reference) · réf. {{ $inv->provider_reference }}@endif · reçue le {{ $inv->created_at?->format('d/m/Y') }}
+            <div class="mt-1 text-ink/60">Facture {{ $inv->label() }}@if (($inv->lines_count ?? 0) > 0) · {{ $inv->lines_count }} prestation(s)@if ($inv->pending_lines_count) dont {{ $inv->pending_lines_count }} à contrôler @endif @if ($inv->rejected_lines_count) · {{ $inv->rejected_lines_count }} rejetée(s)@endif @endif @if ($inv->provider_reference) · réf. {{ $inv->provider_reference }}@endif · reçue le {{ $inv->created_at?->format('d/m/Y') }}
               @if ($m) · {{ $m->last_name }} {{ $m->first_name }} <span class="font-mono text-xs">{{ $m->member_code }}</span>@endif</div>
-            @if ($inv->decided_at)<div class="text-xs text-ink/55">{{ $inv->status === 'paid' ? 'Payée' : 'Décision' }} le {{ $inv->decided_at->format('d/m/Y') }}</div>@endif
+            @if ($inv->status === 'paid')<div class="text-xs text-ink/55">Payée le {{ ($inv->paid_on ?? $inv->decided_at)?->format('d/m/Y') }}@if ($inv->payment_reference) · réf. {{ $inv->payment_reference }}@endif</div>
+            @elseif ($inv->decided_at)<div class="text-xs text-ink/55">Décision le {{ $inv->decided_at->format('d/m/Y') }}</div>@endif
             @if ($inv->decision_note)<div class="mt-1 text-sm text-clay">Motif : {{ $inv->decision_note }}</div>@endif
             <div class="mt-2 flex flex-wrap gap-3 text-xs">
+              <a class="font-medium text-pine underline" href="{{ route('invoices.show', $inv->id) }}">{{ $inv->status === 'captured' && ($inv->lines_count ?? 0) > 0 && $canDecide ? 'Contrôler les lignes' : 'Voir le détail' }}</a>
               @if ($canClaim && $inv->care_claim_id)<a class="text-pine underline" href="{{ route('claims.show', $inv->care_claim_id) }}">Voir le recours</a>@endif
               @if ($inv->supporting_doc_path)
-                @if ($canDoc && $inv->care_claim_id)<a class="text-pine underline" href="{{ route('claims.invoice.document', [$inv->care_claim_id, $inv->id]) }}">Facture PDF</a>
+                @if ($canDoc)<a class="text-pine underline" href="{{ route('invoices.document', $inv->id) }}">Facture PDF</a>
                 @else<span class="text-ink/45">Facture PDF reçue</span>@endif
               @endif
             </div>
           </div>
           <div class="text-right">
             <div class="text-lg font-semibold tabular-nums">{{ $currency->format($inv->amount_minor) }}</div>
+            @if ($inv->billed_minor && $inv->billed_minor !== $inv->amount_minor)<div class="text-xs text-ink/50">demandé {{ $currency->format($inv->billed_minor) }}</div>@endif
             @if (in_array($inv->status, \App\Models\Tenant\ProviderInvoice::PAYABLE, true))
               <div class="mt-2 flex flex-wrap justify-end gap-2">
-                @if ($canPay && $inv->care_claim_id && (int) $inv->captured_by !== (int) $me)
-                  <form method="POST" action="{{ route('claims.invoice.pay', [$inv->care_claim_id, $inv->id]) }}" onsubmit="return confirm('Enregistrer le paiement de {{ $currency->format($inv->amount_minor) }} ? (paiement fait hors de la plateforme)')">@csrf
-                    <button class="rounded-md bg-pine px-3 py-1.5 text-sm font-medium text-white">Enregistrer le paiement</button></form>
+                @if ($canPay && (int) $inv->captured_by !== (int) $me && ! (($inv->lines_count ?? 0) > 0 && $inv->status === 'captured'))
+                  @include('tenant.invoices._pay', ['inv' => $inv])
                 @endif
               </div>
             @endif

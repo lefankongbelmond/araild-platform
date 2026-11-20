@@ -151,8 +151,10 @@
                 @if (\App\Support\TenantAccess::can('claims.invoice.document'))<a class="text-xs text-pine underline" href="{{ route('claims.invoice.document', [$claim, $inv]) }}">Facture PDF du prestataire</a>
                 @else<div class="text-xs text-ink/45">Facture PDF reçue (consultable par le gestionnaire des prestations ou le contrôleur)</div>@endif
               @endif
-              @if ($inv->status !== 'paid' && \App\Support\TenantAccess::can('claims.invoice.pay'))
-                <form method="POST" action="{{ route('claims.invoice.pay', [$claim, $inv]) }}" class="mt-1">@csrf<button class="w-full rounded-md bg-pine px-3 py-1.5 text-xs font-medium text-white">{{ __('mxconnect.settlement.pay') }}</button></form>
+              @if ($inv->reference)<div class="text-xs text-ink/55">Facture {{ $inv->reference }}</div>@endif
+              {{-- Phase 5 (2026-11-26) : contrôle des lignes et paiement (avec sa référence) se font dans le registre. --}}
+              @if (\App\Support\TenantAccess::can('invoices.show'))
+                <a href="{{ route('invoices.show', $inv) }}" class="mt-1 block w-full rounded-md border border-pine px-3 py-1.5 text-center text-xs font-medium text-pine">{{ $inv->status === 'paid' || $inv->status === 'rejected' ? 'Voir la facture' : 'Contrôler ou payer la facture' }}</a>
               @endif
             </div>
           @endforeach

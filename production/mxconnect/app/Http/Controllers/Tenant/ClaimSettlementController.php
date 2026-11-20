@@ -65,17 +65,35 @@ class ClaimSettlementController extends Controller
         return back()->with('success', __('mxconnect.settlement.reimbursement_paid'));
     }
 
-    /** Register a tiers-payant provider invoice for the claim. */
-    public function createInvoice(Request $request, CareClaim $claim)
+    /**
+     * Facture de tiers payant saisie par la mutuelle pour un prestataire (papier reçu au guichet).
+     * Phase 5 (2026-11-26) : facture à lignes (les prestations validées de CE prestataire, pas encore
+     * facturées), contrôlée ensuite par une autre personne, comme une facture envoyée en ligne.
+     */
+    public function createInvoice(Request $request, CareClaim $claim, \App\Services\Tenant\ProviderBillingService $billing)
     {
         abort_unless($request->user()->hasAnyRole(['benefits_manager', 'controller_validator', 'mutual_admin']), 403);
         $request->validate(['provider_id' => ['required', 'integer']]);
+        $providerId = $request->integer('provider_id');
+
+        if (\App\Services\Tenant\ProviderBillingService::ready()) {
+            $ids = $billing->billable($providerId)->where('care_claim_id', $claim->id)->pluck('id')->all();
+            if (! $ids) {
+                return back()->with('error', 'Aucune prestation validée de ce prestataire à facturer dans ce recours (déjà facturée, ou aucune).');
+            }
+            try {
+                $billing->submit($providerId, $ids, $request->user(), null, null, 'claim');
+            } catch (\App\Services\AccountingRefusal $e) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            return back()->with('success', __('mxconnect.settlement.invoice_created'));
+        }
 
         $amount = $claim->mutualTotalMinor();
         abort_if($amount <= 0, 422);
-
         $claim->invoices()->create([
-            'provider_id'  => $request->integer('provider_id'),
+            'provider_id'  => $providerId,
             'amount_minor' => $amount,
             'status'       => 'captured',
             'captured_by'  => $request->user()->id,
@@ -84,8 +102,11 @@ class ClaimSettlementController extends Controller
         return back()->with('success', __('mxconnect.settlement.invoice_created'));
     }
 
-    /** Pay a provider invoice (maker-checker: payer ≠ capturer). */
-    public function payInvoice(Request $request, CareClaim $claim, ProviderInvoice $invoice)
+    /**
+     * Paiement d'une facture depuis le recours (ancienne route, conservée) : même règle que le
+     * registre (phase 5) — facture validée, paiement effectué avec sa référence, « 4 yeux ».
+     */
+    public function payInvoice(Request $request, CareClaim $claim, ProviderInvoice $invoice, \App\Services\Tenant\ProviderBillingService $billing)
     {
         abort_unless($request->user()->hasRole('treasurer_accountant'), 403);
         abort_unless($invoice->care_claim_id === $claim->id, 404);
@@ -94,23 +115,16 @@ class ClaimSettlementController extends Controller
         if ($invoice->captured_by === $request->user()->id) {
             return back()->with('error', __('mxconnect.settlement.self_pay_blocked'));
         }
-
-        DB::transaction(function () use ($request, $invoice) {
-            $invoice->update(['status' => 'paid', 'validated_by' => $request->user()->id]
-                + (\Illuminate\Support\Facades\Schema::hasColumn('provider_invoices', 'decided_at') ? ['decided_at' => now()] : []));
-
-            TreasuryMovement::create([
-                'direction'        => 'outflow',
-                'source'           => 'provider_invoice',
-                'amount_minor'     => $invoice->amount_minor,
-                'mode'             => $request->get('mode', 'bank'),
-                'linked_reference' => 'INV-' . $invoice->id,
-                'moved_on'         => now()->toDateString(),
-            ]);
-        });
-        // Établissement prévenu du paiement (phase 6, 2026-11-25).
-        \App\Support\ProviderNotifier::notify((int) $invoice->provider_id, 'invoice_paid', 'Facture n° ' . $invoice->id . ' payée',
-            'Montant : ' . \App\Support\ProviderNotifier::money((int) $invoice->amount_minor) . ' · mode : ' . ($request->get('mode', 'bank') === 'bank' ? 'virement' : $request->get('mode')) . '.', 'invoices', 'invoices.view');
+        $data = $request->validate([
+            'mode' => ['nullable', 'in:' . implode(',', array_keys(\App\Services\Tenant\ProviderBillingService::MODES))],
+            'payment_reference' => ['required', 'string', 'min:3', 'max:60'],
+            'paid_on' => ['nullable', 'date'],
+        ], ['payment_reference.required' => 'Indiquez la référence du paiement effectué (n° de virement, de transaction ou de reçu).']);
+        try {
+            $billing->pay($invoice, $request->user(), $data['mode'] ?? 'bank', $data['payment_reference'], $data['paid_on'] ?? now()->toDateString());
+        } catch (\App\Services\AccountingRefusal $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', __('mxconnect.settlement.invoice_paid'));
     }

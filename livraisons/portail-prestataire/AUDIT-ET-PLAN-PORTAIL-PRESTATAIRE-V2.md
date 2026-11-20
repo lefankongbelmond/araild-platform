@@ -38,7 +38,7 @@ Le portail n'est pas une application séparée. C'est un espace du back-office d
 | A8 | `copay_rate` (ticket modérateur) est enregistré mais jamais utilisé : la part patient = total − part mutuelle. | Info | **Affiché (phase 3)** à la vérification et dans l'estimation ; le calcul reste fondé sur le taux de couverture (aucun taux inventé) |
 | A9 | Plafond « par séjour » traité comme « par acte ». | Info | Phase 4 (hospitalisation) |
 | A10 | Le montant déclaré n'est pas comparé au tarif conventionnel de l'acte (`act_types.tariff_minor`). | Moyenne | **Corrigé (phase 3)** : signal « montant supérieur au tarif » (à examiner), avertissement dans l'estimation, jamais de correction automatique |
-| A11 | Une déclaration du portail = une prise en charge = une facture : pas de regroupement par bordereau. | Info | Phase 5 |
+| A11 | Une déclaration du portail = une prise en charge = une facture : pas de regroupement par bordereau. | Info | Phase 5 — corrigé le 26/11/2026 |
 | A12 | Le statut `controlled` des prestations existe mais n'est jamais posé. | Info | Phase 4 (circuit d'accord préalable) |
 | A13 | Recherche seulement par code ou QR ; aucune recherche par nom, téléphone ou pièce. | Info | **Corrigé (phase 3)** : nom + date de naissance, téléphone + année, journalisées ; carte recherchée dans toutes les mutuelles depuis l'espace central |
 | A14 | Aucune notification au prestataire quand la mutuelle valide, rejette ou paie. | Info | Phase 6 |
@@ -86,7 +86,7 @@ Autres points à confirmer :
 | **2. Profil et tableau de bord** — **2026.11.16, faite** (voir `DOCUMENTATION-TECHNIQUE-ESPACE-PRESTATAIRE.md`) | Fiche établissement (coordonnées, horaires, spécialités, documents de convention), utilisateurs de l'établissement et rôles, tableau de bord avec indicateurs réels (vérifications, prises en charge par statut, montants à facturer, factures en attente ou payées, délais moyens), graphiques et alertes. | Selon la décision du § 3 : `provider_accounts` + `provider_account_roles` (central) ou `provider_staff_roles` (tenant) ; `care_providers` complété | 1 livraison |
 | **3. Identification et droits** — **2026.11.17, faite** | Recherche encadrée (carte, n°, QR, nom + date de naissance, téléphone, pièce), statuts détaillés (actif, suspendu, en observation, cotisations en retard, plafond atteint, hors réseau), simulation de couverture avant soins (« estimation »), bon de prise en charge imprimable | `coverage_estimates` (ou calcul à la volée journalisé) | 1 livraison |
 | **4. Soins et accords préalables** | Demandes d'accord (types, 9 statuts, circuit, urgence), feuille de soins électronique + PDF, catalogue d'actes et tarifs par convention, CIM-10 protégée, hospitalisation (séjour, plafond par séjour), orientation, pharmacie (ordonnance, délivrance), laboratoire | `care_authorizations`, `authorization_events`, `care_sheets`, `care_sheet_lines`, `diagnoses` (chiffré), `hospital_stays`, `referrals`, `prescriptions`, `dispensations`, `lab_orders`, `convention_tariffs` (avec dates) | 2 livraisons |
-| **5. Facturation et paiements** | Factures à lignes, bordereaux d'envoi groupés (lot + PDF), rejets partiels et renvoi, statuts distincts validée/payée, paiements confirmés seulement, exports CSV | `invoice_batches`, `provider_invoice_lines`, `invoice_events` | 1 livraison |
+| **5. Facturation et paiements** | Factures à lignes, bordereaux d'envoi groupés (lot + PDF), rejets partiels et renvoi, statuts distincts validée/payée, paiements confirmés seulement, exports CSV | `provider_invoice_lines`, `invoice_events` (le bordereau est la facture elle-même : `provider_invoices.kind = batch`, pas de table `invoice_batches`) | **Faite le 26/11/2026** (VERSION 2026.11.26) |
 | **6. Contrôle et communication** — avis aux établissements **faits le 2026.11.25** (validation, rejet, paiement, accord préalable, affiliation) ; reste messagerie et tableau des signaux | Tableau des signaux (montant > tarif, doublons, fréquence), journal d'audit consultable, messagerie prestataire ↔ mutuelle par dossier, notifications (validation, rejet, paiement) | `provider_threads`, `provider_messages`, `provider_notifications` | 1 livraison |
 | **7. Rapports et fonctions avancées** | Rapports filtrés et exportés, rendez-vous, mode mobile, brouillons hors connexion et urgences (jamais de droits hors ligne), multi-mutuelles consolidé (si option B) | `appointments`, `offline_drafts` (côté appareil) | 1 livraison |
 
@@ -100,8 +100,8 @@ Chaque phase livrera : fonctionnalités, fichiers modifiés, migrations, routes,
 | Plafond atteint | Déjà couvert (part mutuelle plafonnée + signal), réservation en attente (phase 1) |
 | Acte non couvert | Déjà couvert (exclusions de la garantie) |
 | Demande rejetée | Phase 1 (motif) ; accords préalables en phase 4 |
-| Facture incomplète | Phase 5 |
-| Double facturation | Phase 1 (double déclaration, double demande) ; lignes en phase 5 |
+| Facture incomplète | Phase 5 (faite : ligne rejetée avec motif, puis renvoi) |
+| Double facturation | Phase 1 (double déclaration, double demande) ; phase 5 : une prestation dans une seule ligne active, sous verrou |
 | Convention expirée | Phase 1 |
 | Utilisateur non autorisé | Déjà couvert (matrice des droits, cloisonnement par établissement) |
 | Perte de connexion | Phase 7 (page hors ligne déjà en place, sans aucune donnée) |
