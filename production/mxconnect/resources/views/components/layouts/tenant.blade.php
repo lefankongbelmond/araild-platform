@@ -70,7 +70,7 @@
   try { $mutualApp = function_exists('tenancy') && tenancy()->initialized && \App\Support\AppCenter::enabled('mutuelle'); } catch (\Throwable $e) {}
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($mutualApp) data-app="mutuelle" data-app-endpoint="/installer/evenement" @endif>
+<html {!! \App\Support\Locales::htmlAttributes() !!} @if ($mutualApp) data-app="mutuelle" data-app-endpoint="/installer/evenement" @endif>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -79,6 +79,7 @@
     <link rel="icon" href="{{ $base }}/brand/favicon.png" type="image/png">
     <link rel="preload" href="{{ $base }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ $base }}/css/mx-tenant.css?v={{ config('mxconnect.asset_version') }}">
+    @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="{{ $base }}/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif
     @if ($mutualApp)
     <link rel="manifest" href="/app-mutuelle.webmanifest">
     <meta name="theme-color" content="#0B2559">
@@ -157,6 +158,7 @@
             @endif
           @endif
           <div class="ml-auto flex items-center gap-2 sm:gap-3">
+            <x-lang-switcher />
             @if ($mutualCurrency)
               <span class="hidden items-center gap-1.5 rounded-full border border-leaf-100 bg-leaf-50 px-3 py-1.5 text-xs font-semibold text-leaf-700 md:inline-flex" title="Devise de la mutuelle : {{ $mutualCurrency->name }}">
                 <span class="grid h-5 w-5 place-items-center rounded-full bg-leaf-500 text-[10px] text-white">{{ mb_substr($mutualCurrency->symbol, 0, 1) }}</span>{{ $mutualCurrency->symbol }} · {{ $mutualCurrency->code }}

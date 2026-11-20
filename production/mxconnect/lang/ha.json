@@ -1,0 +1,12 @@
+{
+    "Aucune traduction livrée pour cette langue : tout s’afficherait en français.": "Ba a kawo fassara don wannan harshe ba: komai zai bayyana da Faransanci.",
+    "Langue": "Harshe",
+    "Langue de l’interface": "Harshen shafin",
+    "Langue de référence de la plateforme.": "Harshen tushe na dandalin.",
+    "Le français est la langue de référence : il reste toujours activé.": "Faransanci shine harshen tushe: kullum yana nan a kunne.",
+    "Textes déjà traduisibles traduits : :pct %": "Rubutun da za a iya fassarawa da aka riga aka fassara: :pct %",
+    "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.": "Ana ba kowa harshen da aka kunna a cikin zaɓin harshe. Rubutun da ba a fassara ba tukuna suna bayyana da Faransanci. Ya kamata mai magana da harshen ya duba fassarorin da aka bayar.",
+    "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).": "Sabon harshe yana da amfani ne kawai tare da fayilolin fassararsa (lang/<code>.json).",
+    "droite à gauche": "daga dama zuwa hagu",
+    "traduction partielle": "fassara ba cikakkiya ba"
+}

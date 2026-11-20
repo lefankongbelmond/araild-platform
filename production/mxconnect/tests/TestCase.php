@@ -14,4 +14,12 @@ abstract class TestCase extends BaseTestCase
 
         return $app;
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Le client de test annonce par défaut un navigateur anglophone (Accept-Language: en-us) :
+        // les tests sont écrits en français, comme la langue source (multilingue M1, 2026-11-27).
+        $this->withHeader('Accept-Language', 'fr-FR,fr;q=0.9');
+    }
 }

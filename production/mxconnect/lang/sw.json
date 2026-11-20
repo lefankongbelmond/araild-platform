@@ -1,0 +1,12 @@
+{
+    "Aucune traduction livrée pour cette langue : tout s’afficherait en français.": "Hakuna tafsiri iliyotolewa kwa lugha hii: kila kitu kingeonyeshwa kwa Kifaransa.",
+    "Langue": "Lugha",
+    "Langue de l’interface": "Lugha ya kiolesura",
+    "Langue de référence de la plateforme.": "Lugha ya marejeo ya jukwaa.",
+    "Le français est la langue de référence : il reste toujours activé.": "Kifaransa ndiyo lugha ya marejeo: huwa imewashwa kila wakati.",
+    "Textes déjà traduisibles traduits : :pct %": "Maandishi yanayotafsirika yaliyokwisha tafsiriwa: :pct %",
+    "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.": "Lugha iliyowashwa hupatikana kwa kila mtu kwenye kichagua lugha. Maandishi ambayo bado hayajatafsiriwa huonyeshwa kwa Kifaransa. Tafsiri zilizotolewa zinapaswa kukaguliwa na mzungumzaji asilia.",
+    "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).": "Lugha mpya ina manufaa tu ikiwa na faili zake za tafsiri (lang/<code>.json).",
+    "droite à gauche": "kulia kwenda kushoto",
+    "traduction partielle": "tafsiri ya sehemu"
+}

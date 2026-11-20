@@ -25,6 +25,10 @@ class Currency extends Model implements Auditable
     public function format(int $minor): string
     {
         $major = $minor / (10 ** $this->minor_unit);
-        return number_format($major, $this->minor_unit, ',', ' ') . ' ' . $this->symbol;
+        // Séparateurs selon la langue de l'interface (2026-11-27) ; le montant et la devise ne
+        // changent jamais (aucune conversion). Français : « 51 600 FCFA », comme avant.
+        [$dec, $thousands] = \App\Support\Locales::separators();
+
+        return number_format($major, $this->minor_unit, $dec, $thousands) . ' ' . $this->symbol;
     }
 }

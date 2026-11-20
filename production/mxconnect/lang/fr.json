@@ -1,0 +1,12 @@
+{
+    "Aucune traduction livrée pour cette langue : tout s’afficherait en français.": "Aucune traduction livrée pour cette langue : tout s’afficherait en français.",
+    "Langue": "Langue",
+    "Langue de l’interface": "Langue de l’interface",
+    "Langue de référence de la plateforme.": "Langue de référence de la plateforme.",
+    "Le français est la langue de référence : il reste toujours activé.": "Le français est la langue de référence : il reste toujours activé.",
+    "Textes déjà traduisibles traduits : :pct %": "Textes déjà traduisibles traduits : :pct %",
+    "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.": "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.",
+    "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).": "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).",
+    "droite à gauche": "droite à gauche",
+    "traduction partielle": "traduction partielle"
+}

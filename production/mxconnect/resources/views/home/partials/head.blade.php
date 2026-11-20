@@ -7,3 +7,4 @@
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/mx-social.css?v={{ config('mxconnect.asset_version') }}">
 <link rel="stylesheet" href="/css/mx-home.css?v={{ config('mxconnect.asset_version') }}">
+@if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif

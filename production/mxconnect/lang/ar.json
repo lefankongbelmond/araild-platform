@@ -1,0 +1,12 @@
+{
+    "Aucune traduction livrée pour cette langue : tout s’afficherait en français.": "لم تُسلَّم أي ترجمة لهذه اللغة: سيظهر كل شيء بالفرنسية.",
+    "Langue": "اللغة",
+    "Langue de l’interface": "لغة الواجهة",
+    "Langue de référence de la plateforme.": "اللغة المرجعية للمنصة.",
+    "Le français est la langue de référence : il reste toujours activé.": "الفرنسية هي اللغة المرجعية: تبقى مفعّلة دائمًا.",
+    "Textes déjà traduisibles traduits : :pct %": "النصوص القابلة للترجمة المترجمة: :pct %",
+    "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.": "تُعرض اللغة المفعّلة على الجميع في محدد اللغة. تظهر النصوص غير المترجمة بعد باللغة الفرنسية. يجب أن يراجع الترجماتِ المقدَّمةَ متحدثٌ أصلي.",
+    "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).": "لا تكون اللغة الجديدة مفيدة إلا مع ملفات ترجمتها (lang/<code>.json).",
+    "droite à gauche": "من اليمين إلى اليسار",
+    "traduction partielle": "ترجمة جزئية"
+}

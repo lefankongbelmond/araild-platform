@@ -1,7 +1,7 @@
 @props(['title' => null, 'class' => ''])
 {{-- Écrans plein écran de l'application (démarrage, onboarding, connexion, conditions) — 2026-11-09 --}}
 <!DOCTYPE html>
-<html lang="fr" class="is-app-screen">
+<html {!! \App\Support\Locales::htmlAttributes() !!} class="is-app-screen">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,6 +14,7 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/mx-social.css?v={{ config('mxconnect.asset_version') }}">
   <link rel="stylesheet" href="/css/mx-app.css?v={{ config('mxconnect.asset_version') }}">
+  @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif
   {{ $head ?? '' }}
 </head>
 <body class="mx-appscreen">

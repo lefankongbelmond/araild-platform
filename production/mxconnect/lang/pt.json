@@ -1,0 +1,12 @@
+{
+    "Aucune traduction livrée pour cette langue : tout s’afficherait en français.": "Nenhuma tradução entregue para este idioma: tudo seria apresentado em francês.",
+    "Langue": "Idioma",
+    "Langue de l’interface": "Idioma da interface",
+    "Langue de référence de la plateforme.": "Idioma de referência da plataforma.",
+    "Le français est la langue de référence : il reste toujours activé.": "O francês é o idioma de referência: permanece sempre ativo.",
+    "Textes déjà traduisibles traduits : :pct %": "Textos traduzíveis já traduzidos: :pct %",
+    "Une langue activée est proposée à tous dans le sélecteur de langue. Les textes non encore traduits s’affichent en français. Les traductions fournies sont à faire relire par un locuteur natif.": "Um idioma ativo é proposto a todos no seletor de idioma. Os textos ainda não traduzidos aparecem em francês. As traduções fornecidas devem ser revistas por um falante nativo.",
+    "Une nouvelle langue n’est utile qu’avec ses fichiers de traduction (lang/<code>.json).": "Um novo idioma só é útil com os seus ficheiros de tradução (lang/<code>.json).",
+    "droite à gauche": "da direita para a esquerda",
+    "traduction partielle": "tradução parcial"
+}

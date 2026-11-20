@@ -34,7 +34,7 @@
   $memberships = $providerMemberships ?? collect();
 @endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html {!! \App\Support\Locales::htmlAttributes() !!}>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,6 +44,7 @@
     <link rel="icon" href="{{ $base }}/brand/favicon.png" type="image/png">
     <link rel="preload" href="{{ $base }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ $base }}/css/mx-tenant.css?v={{ config('mxconnect.asset_version') }}">
+    @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="{{ $base }}/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif
     <style>
       @font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url({{ $base }}/fonts/inter-latin.woff2) format("woff2")}
       .mx-side::-webkit-scrollbar{width:6px}.mx-side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:6px}
@@ -60,8 +61,9 @@
       <div class="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <a href="{{ $base }}/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow ring-1 ring-ink/[.05]"><img src="{{ $base }}/brand/mx-mark-128.webp" alt="" class="h-8 w-8"></span>
           <span class="leading-tight"><span class="block font-extrabold tracking-wide text-[15px] text-[#0B1F3A]">MX<span class="text-leaf-600">-</span>CONNECT</span><span class="block text-[11px] text-ink/55">Espace prestataire de soins</span></span></a>
+        <x-lang-switcher class="ml-auto" />
         @if ($account)
-          <form method="POST" action="{{ route('pro.logout') }}" class="ml-auto">@csrf<button class="rounded-xl px-3 py-2 text-sm text-clay hover:bg-clay/10">Se déconnecter</button></form>
+          <form method="POST" action="{{ route('pro.logout') }}">@csrf<button class="rounded-xl px-3 py-2 text-sm text-clay hover:bg-clay/10">Se déconnecter</button></form>
         @endif
       </div>
     </header>
@@ -118,6 +120,7 @@
         <div class="flex h-16 items-center gap-3 px-4 sm:px-6">
           <label for="mx-nav-toggle" class="grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-ink/70 hover:bg-ink/5 lg:hidden" aria-label="Ouvrir le menu"><x-tenant.icon name="menu" :size="22"/></label>
           <div class="ml-auto flex items-center gap-2 sm:gap-3">
+            <x-lang-switcher />
             @if ($account)
               <div class="flex items-center gap-3 rounded-full py-1 pl-1 pr-1 sm:pr-3">
                 <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-navy text-sm font-bold text-white">{{ mb_strtoupper(mb_substr($account->first_name, 0, 1)) }}</span>

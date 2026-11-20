@@ -1,6 +1,6 @@
 # MX-CONNECT — Refonte des paramètres et plateforme multilingue : état des lieux et workflow proposé
 
-20/11/2026. Document à valider par le fondateur **avant tout développement**.
+20/11/2026. **Validé par le fondateur le 20/11/2026** : 7 langues (français, anglais, portugais, espagnol, arabe, plus swahili et haoussa), réseau social en premier après les fondations, fiche « Identité et langue » retenue. Relecture des traductions : à désigner.
 
 ## 1. État des lieux
 
@@ -56,7 +56,7 @@ Ordre de priorité proposé :
 
 | # | Livraison | Contenu | Visible pour l'utilisateur |
 |---|---|---|---|
-| **M1** | Fondations | Choix de la langue (comptes, mutuelle, navigateur), sélecteur, `lang` et `dir` corrects, feuille droite à gauche, dates, nombres et montants selon la langue, fichiers de langue, test de complétude, écran « Langues » du super-admin avec le taux de traduction. Migrations additives : colonne `locale` sur les 4 types de comptes, langues proposées par mutuelle. | Le sélecteur ; aucune page ne change en français. |
+| **M1** — **faite le 27/11/2026** (VERSION 2026.11.27) | Fondations | Choix de la langue (comptes, mutuelle, navigateur), sélecteur, `lang` et `dir` corrects, feuille droite à gauche, dates, nombres et montants selon la langue, fichiers de langue, test de complétude, écran « Langues » du super-admin avec le taux de traduction. Migrations additives : colonne `locale` sur les 4 types de comptes, langues proposées par mutuelle. | Le sélecteur ; aucune page ne change en français. |
 | **M2** | Refonte des paramètres du réseau social, traduite | Membre : `/compte/parametres` en sections (Profil, Compte et sécurité, Confidentialité, Notifications, Langue et région, Applications, Mes données et suppression), avec navigation latérale sur ordinateur et liste repliable sur mobile. Super-admin : réglages du réseau en sections. Puis tout le réseau social, le portail adhérent, l'application Android, les notifications et les e-mails dans les 5 langues. | Paramètres réorganisés ; réseau social multilingue. |
 | **M3** | Refonte des paramètres de la mutuelle, traduite | Page d'accueil « Paramètres » en cartes, qui regroupe toutes les rubriques existantes et les réglages dispersés (règle de suspension, politique pharmaceutique, portail adhérent), avec une recherche. Nouvelle fiche « Identité et langue de la mutuelle » (A seul) : langue par défaut, langues des adhérents, coordonnées affichées. Puis tout le back-office dans les 5 langues. | Paramètres regroupés ; back-office multilingue. |
 | **M4** | Espace prestataire et portail | Espace central, portail dans la mutuelle, avis, bordereaux. | Multilingue. |
@@ -75,3 +75,21 @@ Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, te
 2. **Ordre** : commencer par le réseau social (M2) ou par la mutuelle (M3) après les fondations ?
 3. **Refonte des paramètres** : réorganisation des fonctions existantes, plus la fiche « Identité et langue », comme décrit. Faut-il ajouter d'autres réglages ?
 4. **Relecture des traductions** : qui relira l'arabe, le portugais et l'espagnol ?
+
+## 7. Suivi des livraisons
+
+| Livraison | État | LISEZMOI |
+|---|---|---|
+| M1 Fondations | Faite (VERSION 2026.11.27) | `LISEZMOI-20261127.md` |
+| M2 Réseau social | À faire | — |
+| M3 Mutuelle | À faire | — |
+| M4 Prestataires | À faire | — |
+| M5 Super-admin, accueil | À faire | — |
+| M6 Documents | À faire | — |
+
+### Règles techniques posées par M1 (à suivre dans M2 à M6)
+- **Texte traduisible** : `__('Texte français exact')`. La clé est le texte français ; elle doit être ajoutée à `lang/fr.json` et à chaque `lang/<code>.json`. Le test `MultilingueFondationsTest` échoue sinon.
+- **Variables** : `:nom` identiques dans toutes les langues (contrôlé).
+- **Montants** : `Currency::format()` suit la langue (séparateurs seulement).
+- **Sens d'écriture** : `<html {!! Locales::htmlAttributes() !!}>` ; corrections physiques dans `css/mx-rtl.css` (structure, puis écran par écran).
+- **Une langue est « complète »** seulement quand elle figure dans `Locales::COMPLETE` ; sinon le sélecteur affiche « traduction partielle ».

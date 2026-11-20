@@ -8,7 +8,7 @@
           'note' => $app->guide_note, 'apk' => $apk, 'store' => null, 'qr' => $qr];
 @endphp
 <!DOCTYPE html>
-<html lang="fr" data-app="mutuelle" data-app-install data-app-endpoint="/installer/evenement">
+<html {!! \App\Support\Locales::htmlAttributes() !!} data-app="mutuelle" data-app-install data-app-endpoint="/installer/evenement">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -21,6 +21,7 @@
   <link rel="manifest" href="/app-mutuelle.webmanifest">
   <link rel="preload" href="{{ $base }}/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ $base }}/css/mx-apps.css?v={{ $v }}">
+  @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="{{ $base }}/css/mx-rtl.css?v={{ $v }}">@endif
 </head>
 <body class="ac ac-install">
 <header class="ac-head">

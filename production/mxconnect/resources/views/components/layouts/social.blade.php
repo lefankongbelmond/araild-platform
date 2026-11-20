@@ -30,7 +30,7 @@
   $legalPending = $viewer ? app(\App\Services\Social\LegalService::class)->pendingFor($viewer)->count() : 0;
 @endphp
 <!DOCTYPE html>
-<html lang="fr" data-app="social" data-app-endpoint="/applications/evenement">
+<html {!! \App\Support\Locales::htmlAttributes() !!} data-app="social" data-app-endpoint="/applications/evenement">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -46,6 +46,7 @@
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/mx-social.css?v={{ config('mxconnect.asset_version') }}">
   <link rel="stylesheet" href="/css/mx-app.css?v={{ config('mxconnect.asset_version') }}">
+  @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif
   {{-- Mode application (2026-11-09) : application Android (TWA) ou site installé (PWA) → barre
        de navigation du bas des maquettes. Le site ouvert dans un navigateur ne change pas. --}}
   <script>(function(){try{var d=document.documentElement,s=window.sessionStorage,app=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||document.referrer.indexOf('android-app://')===0||(s&&s.getItem('mx_app')==='1');if(app){d.classList.add('is-app');if(s)s.setItem('mx_app','1');}}catch(e){}})();</script>
@@ -90,6 +91,7 @@
             </div>
           </details>
         @else
+          <x-lang-switcher class="mx-hide-sm" />
           <a class="mx-btn mx-btn--ghost mx-btn--sm mx-hide-sm" href="{{ route('social.login') }}">Connexion</a>
           <a class="mx-btn mx-btn--primary mx-btn--sm mx-hide-m" href="{{ route('social.register') }}">Inscription</a>
         @endif
@@ -125,6 +127,8 @@
                 <a href="{{ route('social.discover', ['domaine' => $code]) }}"><x-mx.icon :name="'d-' . $code" :size="20"/> {{ $label }}</a>
               @endforeach
             </div>
+            <p class="mx-nav__title">{{ __('Langue') }}</p>
+            <x-lang-switcher variant="list" />
             @if ($viewer)
               <form method="POST" action="{{ route('social.logout') }}">@csrf<button class="is-danger"><x-mx.icon name="logout" :size="18"/> Déconnexion</button></form>
             @endif
@@ -178,6 +182,7 @@
             <a href="{{ route('social.settings') }}" @class(['is-active' => $active === 'parametres'])><x-mx.icon name="settings" /> Paramètres</a>
           @endif
         </nav>
+        <x-lang-switcher up />
         @if ($viewer)
           <a class="mx-btn mx-btn--primary mx-btn--lg mx-btn--block" href="{{ route('social.home') }}#composer"><x-mx.icon name="plus" /> Créer une publication</a>
         @else

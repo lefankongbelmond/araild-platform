@@ -17,7 +17,7 @@
   ];
 @endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html {!! \App\Support\Locales::htmlAttributes() !!}>
 <head>
   @include('home.partials.head')
   <title>MX-CONNECT — La plateforme digitale des mutuelles de santé</title>

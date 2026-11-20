@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html {!! \App\Support\Locales::htmlAttributes() !!}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title }} · MX-CONNECT</title>
 <style>
   body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F4F6FA;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#344054;padding:24px;box-sizing:border-box}

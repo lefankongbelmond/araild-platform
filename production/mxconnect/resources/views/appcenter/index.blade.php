@@ -16,7 +16,7 @@
   ];
 @endphp
 <!DOCTYPE html>
-<html lang="fr" data-app="social" data-app-install data-app-endpoint="{{ route('appcenter.event') }}">
+<html {!! \App\Support\Locales::htmlAttributes() !!} data-app="social" data-app-install data-app-endpoint="{{ route('appcenter.event') }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -30,6 +30,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/mx-apps.css?v={{ $v }}">
+  @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="/css/mx-rtl.css?v={{ $v }}">@endif
 </head>
 <body class="ac">
 <a class="ac-skip" href="#applications">Aller aux applications</a>

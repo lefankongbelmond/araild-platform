@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html {!! \App\Support\Locales::htmlAttributes() !!}>
 <head>
   @include('home.partials.head')
   <title>Se connecter · MX-CONNECT</title>

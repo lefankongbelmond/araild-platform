@@ -57,6 +57,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'central.only' => App\Http\Middleware\CentralDomainOnly::class,
         ]);
 
+        // Langue de l'interface (M1 multilingue, 2026-11-27) : domaine central ici ; sur le
+        // sous-domaine d'une mutuelle, SetTenantLocale (groupe tenant) prend le relais.
+        $middleware->web(append: [App\Http\Middleware\SetLocale::class]);
+        // Préférence de langue : simple code (fr, en…), seulement accepté s'il est activé ; non chiffré.
+        $middleware->encryptCookies(except: [App\Support\Locales::COOKIE]);
+
         // Baseline security headers on every response.
         $middleware->append(App\Http\Middleware\SecurityHeaders::class);
 

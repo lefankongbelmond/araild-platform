@@ -1,0 +1,38 @@
+/*
+ * MX-CONNECT — sens d'écriture de droite à gauche (arabe). M1 multilingue, 2026-11-27.
+ * Chargée seulement quand la langue de l'interface s'écrit de droite à gauche (<html dir="rtl">).
+ * Les CSS compilés (mx-tenant.css, mx-network.css) utilisent des propriétés physiques (left,
+ * padding-left…) : on les retourne ici pour la structure (barre latérale à droite, marges, recherche).
+ * Le texte, les grilles et les flex suivent déjà « direction: rtl ».
+ */
+
+/* Barres latérales : mutuelle, espace prestataire (.mx-side) et super-admin (.nx-side) */
+[dir=rtl] .mx-side,[dir=rtl] .nx-side{left:auto;right:0}
+[dir=rtl] .mx-side.-translate-x-full,[dir=rtl] .nx-side.-translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y))}
+[dir=rtl] .peer:checked~.nx-side{--tw-translate-x:0px}
+@media (min-width:1024px){
+  [dir=rtl] .mx-side.lg\:translate-x-0,[dir=rtl] .nx-side.lg\:translate-x-0{--tw-translate-x:0px}
+  [dir=rtl] .lg\:pl-64{padding-left:0;padding-right:16rem}
+}
+@media print{[dir=rtl] .print\:pl-0{padding-right:0}}
+
+/* Utilitaires physiques les plus courants */
+[dir=rtl] .ml-auto{margin-left:0;margin-right:auto}
+[dir=rtl] .mr-auto{margin-right:0;margin-left:auto}
+[dir=rtl] .text-left{text-align:right}
+[dir=rtl] .text-right{text-align:left}
+[dir=rtl] .left-3\.5{left:auto;right:.875rem}
+[dir=rtl] .pl-10{padding-left:1rem;padding-right:2.5rem}
+[dir=rtl] .pl-1{padding-left:.25rem}
+[dir=rtl] .sm\:pr-3{padding-right:.25rem}
+@media (min-width:640px){[dir=rtl] .sm\:pr-3{padding-left:.75rem}}
+
+/* Réseau social : la mise en page suit la direction ; on retourne les décalages explicites */
+[dir=rtl] .mx-badge[style*="margin-left:auto"]{margin-left:0!important;margin-right:auto}
+[dir=rtl] .mx-search svg{left:auto;right:12px}
+
+/* Les nombres, codes et montants restent lisibles de gauche à droite */
+[dir=rtl] .tabular-nums,[dir=rtl] .font-mono{unicode-bidi:plaintext}
+
+/* Page d'accueil : champ piège anti-robots hors écran — à droite en RTL (sinon défilement) */
+[dir=rtl] .h-hp{left:auto;right:-9999px}

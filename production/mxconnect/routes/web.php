@@ -33,6 +33,10 @@ Route::get('/', function (\Illuminate\Http\Request $request) {
     return app(\App\Http\Controllers\HomeController::class)->index();
 })->name('home');
 
+// Choix de la langue de l'interface (M1 multilingue, 2026-11-27), avant ou après connexion.
+Route::get('langue/{code}', \App\Http\Controllers\Shared\LanguageController::class)
+    ->where('code', '[a-z]{2}')->name('lang.switch')->middleware('throttle:30,1');
+
 // Page d'accueil de la plateforme : demande de démo, choix de l'espace de connexion.
 Route::middleware('central.only')->group(function () {
     Route::post('demande-demo', [\App\Http\Controllers\HomeController::class, 'demo'])->name('home.demo')->middleware('throttle:social-contact');

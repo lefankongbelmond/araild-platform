@@ -69,7 +69,7 @@
   $version = trim((string) @file_get_contents(base_path('VERSION')));
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html {!! \App\Support\Locales::htmlAttributes() !!}>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -78,13 +78,14 @@
     <link rel="icon" href="/brand/favicon.png" type="image/png">
     <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/css/mx-network.css?v={{ config('mxconnect.asset_version') }}">
+    @if (\App\Support\Locales::isRtl())<link rel="stylesheet" href="/css/mx-rtl.css?v={{ config('mxconnect.asset_version') }}">@endif
     <style>@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(/fonts/inter-latin.woff2) format("woff2")}</style>
 </head>
 <body class="min-h-screen bg-paper font-sans text-ink antialiased">
 @if ($showNav)
   <input type="checkbox" id="nx-nav" class="peer hidden" aria-hidden="true">
   <label for="nx-nav" class="fixed inset-0 z-30 hidden bg-navy-deep/50 peer-checked:block lg:hidden" aria-hidden="true"></label>
-  <aside class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-gradient-to-b from-navy to-navy-deep text-white transition-transform duration-200 peer-checked:translate-x-0 lg:translate-x-0" aria-label="Navigation de l’administration du réseau">
+  <aside class="nx-side fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-gradient-to-b from-navy to-navy-deep text-white transition-transform duration-200 peer-checked:translate-x-0 lg:translate-x-0" aria-label="Navigation de l’administration du réseau">
     <a href="{{ route('network.mutuals.index') }}" class="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5">
       <span class="grid h-10 w-10 place-items-center rounded-xl bg-white shadow"><img src="/brand/mx-mark-128.webp" alt="" class="h-8 w-8"></span>
       <span class="leading-tight"><span class="block text-[15px] font-extrabold tracking-wide">MX<span class="text-leaf-300">-</span>CONNECT</span>
@@ -121,6 +122,7 @@
           <a href="/" class="flex items-center gap-2"><img src="/brand/mx-mark-128.webp" alt="" class="h-8 w-8"><b class="tracking-tight">MX-<span class="text-leaf-600">CONNECT</span></b></a>
         @endif
         <div class="min-w-0 flex-1 truncate text-sm font-semibold text-ink/80">{{ $title ?? '' }}</div>
+        <x-lang-switcher />
         @if ($u)
           <div class="flex items-center gap-2 sm:gap-3">
             <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-pine to-navy text-sm font-bold text-white">{{ mb_strtoupper(mb_substr($u->name, 0, 1)) }}</span>

@@ -40,7 +40,12 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
     \App\Http\Middleware\EnsureMutualActive::class,   // mutuelle suspendue : espace fermé (2026-11-02)
+    \App\Http\Middleware\SetTenantLocale::class,      // langue : compte, cookie, mutuelle, navigateur (2026-11-27)
 ])->group(function () {
+
+    // Choix de la langue de l'interface (personnel, prestataires ; avant ou après connexion).
+    Route::get('interface/langue/{code}', \App\Http\Controllers\Shared\LanguageController::class)
+        ->where('code', '[a-z]{2}')->name('tenant.lang.switch')->middleware('throttle:30,1');
 
     // --- Connexion du personnel de la mutuelle (guard 'web', base tenant) ---
     Route::middleware('guest:web')->group(function () {

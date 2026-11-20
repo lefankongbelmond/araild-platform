@@ -10,7 +10,7 @@
       <div><h4>Réseau social</h4><a href="{{ route('social.home') }}">Actualités</a><a href="{{ route('social.mutuals') }}">Mutuelles</a><a href="{{ route('social.groups') }}">Groupes</a><a href="{{ route('social.register') }}">Créer un compte</a></div>
       <div><h4>Accès</h4><a href="{{ route('home.login') }}">Se connecter</a><a href="{{ $home }}#contact">Demander une démo</a><a href="{{ route('social.about') }}">À propos du réseau</a><a href="{{ route('social.privacy') }}">Confidentialité</a></div>
     </div>
-    <div class="h-footer__bottom"><span>© {{ date('Y') }} MX-CONNECT — Connecter aujourd’hui pour protéger demain.</span><span><a href="{{ route('health') }}" style="display:inline">État du service</a></span></div>
+    <div class="h-footer__bottom"><span>© {{ date('Y') }} MX-CONNECT — Connecter aujourd’hui pour protéger demain.</span><span style="display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap"><x-lang-switcher up /><a href="{{ route('health') }}" style="display:inline">État du service</a></span></div>
   </div>
 </footer>
 <script>
