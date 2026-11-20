@@ -1,4 +1,4 @@
-// Rend la fiche (fiche-v2.html) en PDF A4 : node render.js sortie.pdf [fichier.html], contrôle les débordements et produit des aperçus PNG.
+// Rend le dossier (dossier-v21.html, ou fiche-v2.html) en PDF A4 : node render.js sortie.pdf [fichier.html], contrôle les débordements et produit des aperçus PNG.
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const out = process.argv[2];
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 1 });
-  await page.goto('file://' + path.join(dir, process.argv[3] || 'fiche-v2.html'));
+  await page.goto('file://' + path.join(dir, process.argv[3] || 'dossier-v21.html'));
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(400);
   // Contrôle : débordement de la page, éléments sortant du cadre, recouvrement du pied de page.
