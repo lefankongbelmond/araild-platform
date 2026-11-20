@@ -1,0 +1,77 @@
+# MX-CONNECT — Refonte des paramètres et plateforme multilingue : état des lieux et workflow proposé
+
+20/11/2026. Document à valider par le fondateur **avant tout développement**.
+
+## 1. État des lieux
+
+### 1.1 Les langues aujourd'hui
+- **Langue unique de fait : le français.** `config/app.php` fixe `fr` ; aucun code ne change la langue selon la personne ou la mutuelle.
+- **Les bases existent, mais servent peu :**
+  - une table centrale `locales` (fr, en ; activables dans Super-admin → Configuration → Langues) ;
+  - chaque mutuelle a déjà une langue (`mutuals.locale_id`), qui n'est appliquée nulle part ;
+  - des fichiers `lang/fr/mxconnect.php` et `lang/en/mxconnect.php` (840 lignes chacun), utilisés surtout par l'ancien back-office.
+- **Textes écrits en dur en français** (estimation par comptage automatique) :
+
+| Espace | Écrans | Segments de texte en dur | Déjà traduisibles |
+|---|---|---|---|
+| Réseau social, portail adhérent, application Android | 96 | ≈ 1 230 | presque aucun |
+| Back-office des mutuelles | 118 | ≈ 1 580 | ≈ 510 appels |
+| Espace prestataire | 16 | ≈ 240 | aucun |
+| Super-admin | 29 | ≈ 320 | ≈ 170 appels |
+| Accueil, App Center, erreurs, e-mails | 14 | ≈ 260 | quelques-uns |
+| Messages des contrôleurs et services (succès, refus, libellés) | — | ≈ 2 100 chaînes | quelques-unes |
+| Scripts JavaScript (fil, App Center, lecteur QR) | 4 | quelques dizaines | aucun |
+
+  Au total, environ **5 000 à 6 000 textes** à rendre traduisibles, puis à traduire dans chaque langue.
+- **Arabe** : il s'écrit de droite à gauche. Toutes les mises en page sont faites pour la gauche (barre latérale à gauche, marges, flèches). Il faudra une **feuille de style « droite à gauche »** dédiée : les CSS compilés n'ont pas de configuration dans le dépôt.
+- **Dates, nombres, montants** : formatés « à la française » à environ 100 endroits. Il faudra les faire suivre la langue, sans jamais convertir les devises.
+
+### 1.2 Les paramètres aujourd'hui
+- **Réseau social**
+  - Membre : une seule page « Paramètres du compte » (`/compte/parametres`) qui mélange profil, visibilité, notifications, mot de passe et suppression.
+  - Super-admin : « Réseau social → Réglages » (mode allégé, sponsorisation).
+- **Gestion des mutuelles**
+  - Menu « Paramètres » de 9 rubriques : équipe, prestataires, formules, changements de formule, dérogations, garanties, antennes, actes, médicaments.
+  - D'autres réglages sont dispersés ailleurs : règle de suspension (dans Cotisations), politique pharmaceutique (dans Pharmacie), accès du portail adhérent (dans Adhérents).
+  - Il n'existe pas de fiche « Identité de la mutuelle » (nom, logo, langue, devise affichée) côté mutuelle : seul le super-admin la modifie.
+
+## 2. Principes de la refonte (« sans casser ce qui marche »)
+1. **Aucune adresse ne change.** Les écrans actuels restent ; la refonte les regroupe et les réorganise.
+2. **Le français reste la langue source.** Chaque texte français devient sa propre clé de traduction (fichiers `lang/en.json`, `lang/pt.json`…). Si une traduction manque, le français s'affiche : jamais une clé technique ni un écran vide.
+3. **Livraison par espace**, chacune testée comme d'habitude : Pest, tables préfixées, navigateur 320/360/768/1366 px. On y ajoute un contrôle par langue et le sens droite à gauche pour l'arabe.
+4. **Test de complétude automatique** : toute clé française doit exister dans chaque langue activée, avec les mêmes variables (`:montant`, `:date`…). Une nouvelle phrase non traduite fait échouer les tests.
+5. **Rien n'est inventé** : les contenus saisis par les utilisateurs ne sont pas traduits automatiquement (publications, noms de formules, motifs, documents).
+6. **Honnêteté** : je fournis les traductions, mais elles sont marquées « à relire » tant qu'un locuteur natif ne les a pas validées. C'est indispensable pour l'arabe et pour le vocabulaire médical et juridique. Les documents légaux doivent être relus par un juriste.
+
+## 3. Qui voit quelle langue
+Ordre de priorité proposé :
+1. **Le choix de la personne**, enregistré sur son compte : membre, personnel de la mutuelle, prestataire, super-admin. Un sélecteur de langue est présent partout, y compris avant connexion.
+2. **La langue de la mutuelle**, pour son personnel et ses pages publiques (`mutuals.locale_id`, déjà en base).
+3. **La langue du navigateur**, si elle est activée.
+4. **Le français**.
+
+**Langues** : le super-admin active ou désactive chaque langue (l'écran existe déjà, il sera complété d'un taux de traduction). Chaque mutuelle choisit sa langue par défaut et les langues proposées à ses adhérents.
+
+## 4. Workflow proposé (6 livraisons)
+
+| # | Livraison | Contenu | Visible pour l'utilisateur |
+|---|---|---|---|
+| **M1** | Fondations | Choix de la langue (comptes, mutuelle, navigateur), sélecteur, `lang` et `dir` corrects, feuille droite à gauche, dates, nombres et montants selon la langue, fichiers de langue, test de complétude, écran « Langues » du super-admin avec le taux de traduction. Migrations additives : colonne `locale` sur les 4 types de comptes, langues proposées par mutuelle. | Le sélecteur ; aucune page ne change en français. |
+| **M2** | Refonte des paramètres du réseau social, traduite | Membre : `/compte/parametres` en sections (Profil, Compte et sécurité, Confidentialité, Notifications, Langue et région, Applications, Mes données et suppression), avec navigation latérale sur ordinateur et liste repliable sur mobile. Super-admin : réglages du réseau en sections. Puis tout le réseau social, le portail adhérent, l'application Android, les notifications et les e-mails dans les 5 langues. | Paramètres réorganisés ; réseau social multilingue. |
+| **M3** | Refonte des paramètres de la mutuelle, traduite | Page d'accueil « Paramètres » en cartes, qui regroupe toutes les rubriques existantes et les réglages dispersés (règle de suspension, politique pharmaceutique, portail adhérent), avec une recherche. Nouvelle fiche « Identité et langue de la mutuelle » (A seul) : langue par défaut, langues des adhérents, coordonnées affichées. Puis tout le back-office dans les 5 langues. | Paramètres regroupés ; back-office multilingue. |
+| **M4** | Espace prestataire et portail | Espace central, portail dans la mutuelle, avis, bordereaux. | Multilingue. |
+| **M5** | Super-admin, accueil, App Center, pages d'erreur | Dernier espace. | Toute la plateforme est multilingue. |
+| **M6** | Documents imprimables et documents légaux | Carte, reçus, attestation, bordereau dans la langue de la personne ; documents légaux versionnés **par langue** (une langue n'est imposée à l'acceptation que si sa version existe). | Documents multilingues. |
+
+Chaque livraison suit le circuit habituel : ZIP cumulatif, LISEZMOI, VERSION, tests, navigateur, CLAUDE.md.
+
+## 5. Ce qui n'est pas prévu (sauf demande)
+- Traduction automatique des contenus des utilisateurs (publications, commentaires, messages).
+- Traduction des référentiels saisis par chaque mutuelle (noms de formules, d'actes, de médicaments). Option possible plus tard : un champ « traductions » sur ces fiches.
+- Langues africaines (swahili, haoussa, wolof…) : la structure les accepte, il suffira d'ajouter un fichier de langue.
+
+## 6. Décisions demandées au fondateur
+1. **Langues de la première vague** : français, anglais, portugais, arabe, espagnol. En ajouter d'autres ?
+2. **Ordre** : commencer par le réseau social (M2) ou par la mutuelle (M3) après les fondations ?
+3. **Refonte des paramètres** : réorganisation des fonctions existantes, plus la fiche « Identité et langue », comme décrit. Faut-il ajouter d'autres réglages ?
+4. **Relecture des traductions** : qui relira l'arabe, le portugais et l'espagnol ?
